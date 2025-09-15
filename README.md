@@ -45,8 +45,8 @@ This project solves these problems with a *generic, secure, and framework-agnost
 ## How It Works
 
 1. *Frontend* sends a request containing:  
-   - filters as a *map* of key → operator + value.  
-   - combineWith as a *DSL* string using the keys.  
+   - **filters** as a *map* of key → operator + value.  
+   - **combineWith** as a *DSL* string using the keys.  
 
 2. *Backend*:  
    - Maps keys to entity/database fields via an *enum or whitelist*.  
@@ -80,13 +80,13 @@ This project solves these problems with a *generic, secure, and framework-agnost
 
 ## Implementation Overview
 
-Filters map: key → operator + value. Keys correspond to allowed fields.
+*Filters map*: key → operator + value. Keys correspond to allowed fields.
 
-DSL: string combining keys with & (AND), | (OR), ! (NOT), and parentheses.
+*DSL*: string combining keys with & (AND), | (OR), ! (NOT), and parentheses.
 
-Field mapping: backend maps keys to actual entity/database fields.
+*Field mapping*: backend maps keys to actual entity/database fields.
 
-Query builder: dynamically builds query objects or criteria based on the parsed expression.
+*Query builder*: dynamically builds query objects or criteria based on the parsed expression.
 
 
 
@@ -130,54 +130,39 @@ flowchart TD
 
 8. **Return Filtered Results**: Send the filtered dataset back to the client.
 
-
-
-
 ---
 
 ## Portability
 
-This approach can be implemented in any backend framework or language:
+This approach is *framework-agnostic*:
 
-Concept	Java/Spring Boot	Other Examples
+- *Java / Spring Boot* → JPA Specifications or CriteriaBuilder.  
+- *.NET* → LINQ queries with Entity Framework.  
+- *Python* → SQLAlchemy filters or Django ORM Q objects.  
+- *Node.js* → Prisma, TypeORM, or raw query builders.  
+- *GraphQL* → Map filters directly into resolver arguments.  
 
-Filter map	Map<String, FilterValue>	JSON object → dict in Python, JS, C#
-Combine DSL	(NAME & AGE)	CITY
-Field mapping	Enum FilterField	Enum or dictionary in Python, TypeScript, C#
-Query builder	Specification<T>	SQLAlchemy, Django ORM, Prisma, LINQ
-Boolean parser	Recursive parser	Same logic implemented in target language
-
-
+Because filters are expressed in a *DSL + enum mapping*, the only backend-specific logic is the *final query builder*. Everything else (DSL parsing, enum safety, structure) can be reused across platforms.
 
 ---
 
 ## Advantages
 
-Secure: only predefined fields can be filtered.
-
-Flexible: supports arbitrary logical expressions.
-
-Frontend-friendly: simple JSON structure.
-
-Framework-agnostic: reusable across backend technologies.
-
-Maintainable: DSL is compact and easy to read.
-
-
+-   **Security**: Clients cannot exploit internal DB schema.
+-   **Flexibility**: Any combination of filters with DSL.
+-   **Portability**: Works with JPA, SQLAlchemy, Entity Framework,
+    Prisma, etc.
+-   **Maintainability**: Adding/removing filterable fields is as simple
+    as updating the enum.
 
 ---
 
-## Future Improvements
+## Future Enhancements
 
-Automatic type handling (String, Integer, Date, Boolean).
-
-Support for nested relationships (organisation.name, etc.).
-
-Additional operators: BETWEEN, IS NULL, NOT IN.
-
-Validation and auto-documentation of allowed filter keys.
-
-
+-   Support more operators (`between`, `in`, `isNull`, etc.).\
+-   Type-aware validation (dates, numbers, booleans).\
+-   Query optimization (merge redundant filters).\
+-   Integration with pagination + sorting.
 
 ---
 
