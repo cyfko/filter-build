@@ -69,7 +69,7 @@ classDiagram
     }
 
     class FilterExecutor {
-      +Result execute(Context context)
+      +Result execute(Predicate globalPredicate)
     }
 
     Parser --> FilterTree : produces
