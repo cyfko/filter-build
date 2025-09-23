@@ -1,8 +1,6 @@
 # Dynamic Filter Builder – Framework-Agnostic Solution
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/yourrepo/build.yml)]
-[![Coverage](https://img.shields.io/codecov/c/github/yourrepo)]
 
 ---
 
@@ -84,6 +82,7 @@ This library proposes a reusable, framework-agnostic solution that:
 ```sql
 (NAME LIKE 'Smith' AND STATUS = 'ACTIVE') OR (CREATED_DATE >= '2024-01-01' AND NOT(NAME LIKE 'John'))
 ```
+
 > That interpretation **IS NOT** an SQL syntax! It just help to understand the meaning behind the DSL constructed based on the filters and the combinator.
 
 
@@ -119,7 +118,7 @@ This library proposes a reusable, framework-agnostic solution that:
 
 ```mermaid
 flowchart TD
-A[Client JSON Request (filters + DSL string)] --> B[DSL Parser]
+A[Frontend JSON Request] --> B[DSL Parser]
 B --> C[Boolean Expression Tree]
 C --> D[Token to Property Reference Mapping]
 D --> E[Build Native Query/Filter]
