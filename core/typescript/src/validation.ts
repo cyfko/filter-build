@@ -19,43 +19,57 @@ export enum Operator {
   NOT_BETWEEN = 'NOT BETWEEN'
 }
 
-export interface PropertyRef {
-  name: string;
-  type: string;
-  nullable: boolean;
+/**
+ * Base class for property references.
+ * Developers should create their own enums extending this class to define
+ * the properties available for their entities.
+ * 
+ * Example usage:
+ * ```typescript
+ * enum UserPropertyRef extends PropertyRef {
+ *   USER_NAME = new PropertyRef("userName", "string", [Operator.LIKE, Operator.EQUALS]),
+ *   USER_AGE = new PropertyRef("age", "number", [Operator.EQUALS, Operator.GREATER_THAN]);
+ * }
+ * ```
+ */
+export abstract class PropertyRef {
+  constructor(
+    public readonly entityField: string,
+    public readonly type: string,
+    public readonly supportedOperators: Operator[]
+  ) {}
+
+  /**
+   * Checks if this property supports the given operator.
+   */
+  supportsOperator(operator: Operator): boolean {
+    return this.supportedOperators.includes(operator);
+  }
+
+  /**
+   * Validates that the given operator is supported by this property.
+   */
+  validateOperator(operator: Operator): void {
+    if (!this.supportsOperator(operator)) {
+      throw new Error(
+        `Operator '${operator}' is not supported for property '${this.entityField}'. ` +
+        `Supported operators: ${this.supportedOperators.join(', ')}`
+      );
+    }
+  }
+
+  /**
+   * Gets a human-readable description of this property reference.
+   */
+  getDescription(): string {
+    return `${this.constructor.name}.${this.entityField} (${this.type})`;
+  }
+
+  toString(): string {
+    return `PropertyRef{entityField='${this.entityField}', type=${this.type}, supportedOperators=[${this.supportedOperators.join(', ')}]}`;
+  }
 }
 
-export class PropertyRegistry {
-  private properties: Map<string, PropertyRef> = new Map();
-
-  registerProperty(name: string, type: string, nullable: boolean = true): void {
-    this.properties.set(name, { name, type, nullable });
-  }
-
-  getProperty(name: string): PropertyRef | null {
-    return this.properties.get(name) || null;
-  }
-
-  hasProperty(name: string): boolean {
-    return this.properties.has(name);
-  }
-
-  getPropertyNames(): string[] {
-    return Array.from(this.properties.keys());
-  }
-
-  getAllProperties(): Map<string, PropertyRef> {
-    return new Map(this.properties);
-  }
-
-  clear(): void {
-    this.properties.clear();
-  }
-
-  size(): number {
-    return this.properties.size;
-  }
-}
 
 export function parseOperator(value: string): Operator | null {
   if (!value) return null;

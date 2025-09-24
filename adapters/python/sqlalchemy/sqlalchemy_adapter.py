@@ -10,7 +10,6 @@ from sqlalchemy.sql import ClauseElement
 
 from dynamic_filter_core import (
     Condition, Context, FilterDefinition, FilterExecutor,
-    Operator, PropertyRegistry, parse_operator
 )
 
 T = TypeVar('T')
@@ -43,7 +42,6 @@ class SQLAlchemyCondition(Condition):
 class SQLAlchemyContextAdapter(Context):
     """SQLAlchemy implementation of the Context interface."""
     
-    def __init__(self, filters: Dict[str, FilterDefinition], property_registry: PropertyRegistry):
         self.filters = filters
         self.property_registry = property_registry
     
@@ -131,7 +129,6 @@ class SQLAlchemyFilterExecutor(FilterExecutor[T]):
 class SQLAlchemyFilterService:
     """Main service class for SQLAlchemy-based dynamic filtering."""
     
-    def __init__(self, parser, property_registry: PropertyRegistry, session: Session):
         self.parser = parser
         self.property_registry = property_registry
         self.session = session

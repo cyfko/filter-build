@@ -9,7 +9,7 @@ from django.db import models
 
 from dynamic_filter_core import (
     Condition, Context, FilterDefinition, FilterExecutor,
-    Operator, PropertyRegistry, parse_operator
+    Operator, parse_operator
 )
 
 T = TypeVar('T')
@@ -42,9 +42,8 @@ class DjangoCondition(Condition):
 class DjangoContextAdapter(Context):
     """Django implementation of the Context interface."""
     
-    def __init__(self, filters: Dict[str, FilterDefinition], property_registry: PropertyRegistry):
+    def __init__(self, filters: Dict[str, FilterDefinition]):
         self.filters = filters
-        self.property_registry = property_registry
     
     def get_condition(self, filter_key: str) -> Optional[Condition]:
         filter_def = self.filters.get(filter_key)
@@ -127,9 +126,8 @@ class DjangoFilterExecutor(FilterExecutor[T]):
 class DjangoFilterService:
     """Main service class for Django-based dynamic filtering."""
     
-    def __init__(self, parser, property_registry: PropertyRegistry, model_class: Type[models.Model]):
+    def __init__(self, parser, model_class: Type[models.Model]):
         self.parser = parser
-        self.property_registry = property_registry
         self.model_class = model_class
     
     def execute_filter(self, filter_request, entity_class: Type[T]) -> List[T]:

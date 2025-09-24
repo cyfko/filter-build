@@ -2,6 +2,7 @@ package io.github.cyfko.dynamicfilter.core.model;
 
 /**
  * Represents a single filter definition with property reference, operator, and value.
+ * The ref string is resolved by the adapter to find the appropriate PropertyRef enum.
  */
 public class FilterDefinition {
     

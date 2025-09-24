@@ -4,7 +4,7 @@ import io.github.cyfko.dynamicfilter.core.Condition;
 import io.github.cyfko.dynamicfilter.core.Context;
 import io.github.cyfko.dynamicfilter.core.model.FilterDefinition;
 import io.github.cyfko.dynamicfilter.core.validation.Operator;
-import io.github.cyfko.dynamicfilter.core.validation.PropertyRegistry;
+import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -24,14 +24,10 @@ public class SpringSpecificationAdapter implements Context {
     
     private final String filterKey;
     private final FilterDefinition filter;
-    private final PropertyRegistry propertyRegistry;
-    
     public SpringSpecificationAdapter(String filterKey, 
-                                    FilterDefinition filter,
-                                    PropertyRegistry propertyRegistry) {
+                                    FilterDefinition filter) {
         this.filterKey = filterKey;
         this.filter = filter;
-        this.propertyRegistry = propertyRegistry;
     }
     
     @Override
@@ -45,7 +41,7 @@ public class SpringSpecificationAdapter implements Context {
     
     private Condition createSpecificationCondition() {
         // Validate property reference
-        var propertyRef = propertyRegistry.getProperty(filter.getRef());
+        PropertyRef propertyRef = propertyRegistry.getProperty(filter.getRef());
         if (propertyRef == null) {
             throw new IllegalArgumentException("Property not found: " + filter.getRef());
         }
@@ -56,6 +52,9 @@ public class SpringSpecificationAdapter implements Context {
             throw new IllegalArgumentException("Invalid operator: " + filter.getOperator());
         }
         
+        // Validate that the property supports this operator
+        propertyRef.validateOperator(operator);
+        
         // Create specification
         Specification<?> specification = createSpecification(operator, propertyRef.getType());
         
@@ -64,13 +63,15 @@ public class SpringSpecificationAdapter implements Context {
     
     private Specification<?> createSpecification(Operator operator, Class<?> expectedType) {
         return (Root<?> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            Path<?> propertyPath = getPropertyPath(root, filter.getRef());
+            // Get the actual entity field name from PropertyRef
+            PropertyRef propertyRef = propertyRegistry.getProperty(filter.getRef());
+            Path<?> propertyPath = getPropertyPath(root, propertyRef.getEntityField());
             return createPredicate(propertyPath, operator, filter.getValue(), expectedType, cb);
         };
     }
     
-    private Path<?> getPropertyPath(Root<?> root, String propertyRef) {
-        String[] parts = propertyRef.split("\\.");
+    private Path<?> getPropertyPath(Root<?> root, String entityField) {
+        String[] parts = entityField.split("\\.");
         Path<?> path = root.get(parts[0]);
         
         for (int i = 1; i < parts.length; i++) {

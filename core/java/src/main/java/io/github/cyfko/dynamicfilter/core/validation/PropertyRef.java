@@ -1,53 +1,100 @@
 package io.github.cyfko.dynamicfilter.core.validation;
 
+import java.util.Set;
+
 /**
- * Represents a validated property reference that maps to an actual entity property.
- * This class ensures that only whitelisted properties can be used in filters.
+ * Base enum for property references.
+ * Developers should create their own enums extending this enum to define
+ * the properties available for their entities.
+ * 
+ * PropertyRef contains only the logical property definition (type, operators).
+ * Each adapter is responsible for interpreting PropertyRef and creating
+ * appropriate conditions. This allows maximum flexibility - a single PropertyRef
+ * can map to multiple entity fields or complex conditions.
+ * 
+ * Example usage:
+ * <pre>
+ * public enum UserPropertyRef extends PropertyRef {
+ *     USER_NAME(String.class, Set.of(LIKE, EQ, IN)),
+ *     USER_AGE(Integer.class, Set.of(EQ, GT, GTE, LT, LTE, BETWEEN)),
+ *     USER_STATUS(String.class, Set.of(EQ, NE, IN));
+ *     
+ *     UserPropertyRef(Class<?> type, Set<Operator> supportedOperators) {
+ *         super(type, supportedOperators);
+ *     }
+ * }
+ * </pre>
  */
-public class PropertyRef {
+public enum PropertyRef {
     
-    private final String name;
+    // This enum serves as a base class and should not be instantiated directly
+    // Developers will create their own enums extending this one
+    
+    // Base enum constant (not used directly)
+    BASE(Object.class, Set.of());
+    
     private final Class<?> type;
-    private final boolean nullable;
+    private final Set<Operator> supportedOperators;
     
-    public PropertyRef(String name, Class<?> type, boolean nullable) {
-        this.name = name;
+    PropertyRef(Class<?> type, Set<Operator> supportedOperators) {
         this.type = type;
-        this.nullable = nullable;
+        this.supportedOperators = supportedOperators;
     }
     
-    public PropertyRef(String name, Class<?> type) {
-        this(name, type, true);
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
+    /**
+     * Gets the type of this property.
+     * 
+     * @return The property type
+     */
     public Class<?> getType() {
         return type;
     }
     
-    public boolean isNullable() {
-        return nullable;
+    /**
+     * Checks if this property supports the given operator.
+     * 
+     * @param operator The operator to check
+     * @return true if the operator is supported, false otherwise
+     */
+    public boolean supportsOperator(Operator operator) {
+        return supportedOperators.contains(operator);
     }
     
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        PropertyRef that = (PropertyRef) obj;
-        return name.equals(that.name);
+    /**
+     * Gets all supported operators for this property.
+     * 
+     * @return A set of supported operators
+     */
+    public Set<Operator> getSupportedOperators() {
+        return Set.copyOf(supportedOperators);
     }
     
-    @Override
-    public int hashCode() {
-        return name.hashCode();
+    /**
+     * Validates that the given operator is supported by this property.
+     * 
+     * @param operator The operator to validate
+     * @throws IllegalArgumentException if the operator is not supported
+     */
+    public void validateOperator(Operator operator) {
+        if (!supportsOperator(operator)) {
+            throw new IllegalArgumentException(
+                String.format("Operator '%s' is not supported for property '%s'. Supported operators: %s", 
+                            operator, this, getSupportedOperators()));
+        }
+    }
+    
+    /**
+     * Gets a human-readable description of this property reference.
+     * 
+     * @return A description string
+     */
+    public String getDescription() {
+        return String.format("%s (%s)", this, getType().getSimpleName());
     }
     
     @Override
     public String toString() {
-        return String.format("PropertyRef{name='%s', type=%s, nullable=%s}", 
-                           name, type.getSimpleName(), nullable);
+        return String.format("PropertyRef{type=%s, supportedOperators=%s}", 
+                           getType().getSimpleName(), getSupportedOperators());
     }
 }

@@ -9,7 +9,7 @@ import javax.persistence.criteria.Predicate;
  * JPA implementation of the Condition interface using CriteriaBuilder.
  * This adapter translates core conditions into JPA Predicate objects.
  */
-public class JpaConditionAdapter implements Condition {
+public class JpaConditionAdapter<T> implements Condition {
     
     private final Predicate predicate;
     private final CriteriaBuilder criteriaBuilder;
@@ -34,9 +34,9 @@ public class JpaConditionAdapter implements Condition {
             throw new IllegalArgumentException("Cannot combine with non-JPA condition");
         }
         
-        JpaConditionAdapter otherJpa = (JpaConditionAdapter) other;
+        JpaConditionAdapter<T> otherJpa = (JpaConditionAdapter<T>) other;
         Predicate combinedPredicate = criteriaBuilder.and(predicate, otherJpa.predicate);
-        return new JpaConditionAdapter(combinedPredicate, criteriaBuilder);
+        return new JpaConditionAdapter<T>(combinedPredicate, criteriaBuilder);
     }
     
     @Override
@@ -45,14 +45,14 @@ public class JpaConditionAdapter implements Condition {
             throw new IllegalArgumentException("Cannot combine with non-JPA condition");
         }
         
-        JpaConditionAdapter otherJpa = (JpaConditionAdapter) other;
+        JpaConditionAdapter<T> otherJpa = (JpaConditionAdapter<T>) other;
         Predicate combinedPredicate = criteriaBuilder.or(predicate, otherJpa.predicate);
-        return new JpaConditionAdapter(combinedPredicate, criteriaBuilder);
+        return new JpaConditionAdapter<T>(combinedPredicate, criteriaBuilder);
     }
     
     @Override
     public Condition not() {
         Predicate negatedPredicate = criteriaBuilder.not(predicate);
-        return new JpaConditionAdapter(negatedPredicate, criteriaBuilder);
+        return new JpaConditionAdapter<T>(negatedPredicate, criteriaBuilder);
     }
 }

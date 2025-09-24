@@ -4,7 +4,6 @@
  */
 
 import { Condition, Context, FilterDefinition, FilterExecutor } from '@cyfko/dynamic-filter-core';
-import { Operator, PropertyRegistry, parseOperator } from '@cyfko/dynamic-filter-core';
 import { PrismaClient } from '@prisma/client';
 
 export interface PrismaCondition extends Condition {
@@ -48,7 +47,6 @@ export class PrismaConditionAdapter implements PrismaCondition {
 export class PrismaContextAdapter implements Context {
   constructor(
     private filters: Record<string, FilterDefinition>,
-    private propertyRegistry: PropertyRegistry
   ) {}
 
   getCondition(filterKey: string): Condition | null {
@@ -62,7 +60,6 @@ export class PrismaContextAdapter implements Context {
 
   private createCondition(filter: FilterDefinition): Condition {
     // Validate property reference
-    const propertyRef = this.propertyRegistry.getProperty(filter.ref);
     if (!propertyRef) {
       throw new Error(`Property not found: ${filter.ref}`);
     }
@@ -182,7 +179,6 @@ export class PrismaFilterExecutor<T> implements FilterExecutor<T> {
 export class PrismaFilterService<T> {
   constructor(
     private parser: any, // Parser from core
-    private propertyRegistry: PropertyRegistry,
     private prisma: PrismaClient,
     private modelName: string
   ) {}
@@ -192,7 +188,6 @@ export class PrismaFilterService<T> {
     const filterTree = this.parser.parse(filterRequest.combineWith);
 
     // Create Prisma context
-    const context = new PrismaContextAdapter(filterRequest.filters, this.propertyRegistry);
 
     // Generate global condition
     const globalCondition = filterTree.generate(context);
@@ -207,7 +202,6 @@ export class PrismaFilterService<T> {
     const filterTree = this.parser.parse(filterRequest.combineWith);
 
     // Create Prisma context
-    const context = new PrismaContextAdapter(filterRequest.filters, this.propertyRegistry);
 
     // Generate global condition
     const globalCondition = filterTree.generate(context);

@@ -4,7 +4,6 @@
  */
 
 import { Condition, Context, FilterDefinition, FilterExecutor } from '@cyfko/dynamic-filter-core';
-import { Operator, PropertyRegistry, parseOperator } from '@cyfko/dynamic-filter-core';
 import { SelectQueryBuilder, Repository } from 'typeorm';
 
 export interface TypeORMCondition extends Condition {
@@ -58,7 +57,6 @@ export class TypeORMConditionAdapter implements TypeORMCondition {
 export class TypeORMContextAdapter implements Context {
   constructor(
     private filters: Record<string, FilterDefinition>,
-    private propertyRegistry: PropertyRegistry
   ) {}
 
   getCondition(filterKey: string): Condition | null {
@@ -72,7 +70,6 @@ export class TypeORMContextAdapter implements Context {
 
   private createCondition(filter: FilterDefinition): Condition {
     // Validate property reference
-    const propertyRef = this.propertyRegistry.getProperty(filter.ref);
     if (!propertyRef) {
       throw new Error(`Property not found: ${filter.ref}`);
     }
@@ -177,7 +174,6 @@ export class TypeORMFilterExecutor<T> implements FilterExecutor<T> {
 export class TypeORMFilterService<T> {
   constructor(
     private parser: any, // Parser from core
-    private propertyRegistry: PropertyRegistry,
     private repository: Repository<T>
   ) {}
 
@@ -186,7 +182,6 @@ export class TypeORMFilterService<T> {
     const filterTree = this.parser.parse(filterRequest.combineWith);
 
     // Create TypeORM context
-    const context = new TypeORMContextAdapter(filterRequest.filters, this.propertyRegistry);
 
     // Generate global condition
     const globalCondition = filterTree.generate(context);
@@ -201,7 +196,6 @@ export class TypeORMFilterService<T> {
     const filterTree = this.parser.parse(filterRequest.combineWith);
 
     // Create TypeORM context
-    const context = new TypeORMContextAdapter(filterRequest.filters, this.propertyRegistry);
 
     // Generate global condition
     const globalCondition = filterTree.generate(context);
