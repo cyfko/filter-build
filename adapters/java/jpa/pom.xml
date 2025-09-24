@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.cyfko</groupId>
+        <artifactId>dynamic-filter-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>dynamic-filter-jpa</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Dynamic Filter JPA Adapter</name>
+    <description>JPA CriteriaBuilder adapter for dynamic filtering</description>
+
+    <dependencies>
+        <!-- Core module dependency -->
+        <dependency>
+            <groupId>io.github.cyfko</groupId>
+            <artifactId>dynamic-filter-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- JPA API -->
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
+        </dependency>
+        
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.6.15.Final</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
