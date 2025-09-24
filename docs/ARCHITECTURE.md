@@ -11,14 +11,14 @@
 
 2. **Constructing and validating filters**  
    Each filter condition is validated to confirm the referenced property supports the specified operator for the given type/value.  
-   The corresponding predicate is built, but filtering is not yet performed.  
-   > *An error is returned if a predicate cannot be built.*
+   The corresponding condition is built, but filtering is not yet performed.  
+   > *An error is returned if a condition cannot be built.*
 
-3. **Generating the global predicate**  
-   From the combination tree, generate the global predicate that will be used to filter data.
+3. **Generating the global condition**  
+   From the combination tree, generate the global condition that will be used to filter data.
 
 4. **Executing and returning results**  
-   The global predicate applies to the dataset to filter results, which are then returned.
+   The global condition applies to the dataset to filter results, which are then returned.
 
 ---
 
@@ -27,22 +27,22 @@
 | Interface / Contract | Required Methods       | Parameters             | Return Type        | Description                                                                                |
 |----------------------|-------------------------|-----------------------|--------------------|--------------------------------------------------------------------------------------------|
 | **Parser**           | parse                   | DSL expression (text) | `FilterTree`       | Parses the DSL expression and builds the logical combined filter tree.                     |
-| **FilterTree**       | generate                | `Context`             | `Predicate`        | Produces the global predicate for filtering based on the filter combination tree.          |
-| **Context**          | getPredicate            | Filter key (text)   | `Predicate`        | Retrieves the predicate associated with the filter key within the execution context.       |
-| **Predicate**        | and                     | `Predicate`           | `Predicate`        | Returns a new predicate representing the logical AND of the current and given predicate.   |
-|                      | or                      | `Predicate`           | `Predicate`        | Returns a new predicate representing the logical OR of the current and given predicate.    |
-|                      | not                     | *None*                | `Predicate`        | Returns a new predicate representing the logical negation of the current predicate.        |
-| **FilterExecutor**   | execute                 | `Predicate`             | *Filtered results* | Executes the filtering operation based on the global predicate and returns filtered results.  |
+| **FilterTree**       | generate                | `Context`             | `Condition`        | Produces the global condition for filtering based on the filter combination tree.          |
+| **Context**          | getPredicate            | Filter key (text)   | `Condition`        | Retrieves the condition associated with the filter key within the execution context.       |
+| **Condition**        | and                     | `Condition`           | `Condition`        | Returns a new condition representing the logical AND of the current and given condition.   |
+|                      | or                      | `Condition`           | `Condition`        | Returns a new condition representing the logical OR of the current and given condition.    |
+|                      | not                     | *None*                | `Condition`        | Returns a new condition representing the logical negation of the current condition.        |
+| **FilterExecutor**   | execute                 | `Condition`             | *Filtered results* | Executes the filtering operation based on the global condition and returns filtered results.  |
 
 ---
 
 ## Additional Explanations
 
 - **Parser**: Translates the DSL into an exploitable logical tree structure.  
-- **FilterTree**: Represents the logical structure combining filters to generate a global predicate.  
+- **FilterTree**: Represents the logical structure combining filters to generate a global condition.  
 - **Context**: Holds the set of valid filters and enables mapping of filter keys to concrete predicates.  
-- **Predicate**: Abstract entity representing a condition or logical combination of conditions on the data.  
-- **FilterExecutor**: Applies the global predicate to the data source and produces filtered results.
+- **Condition**: Abstract entity representing a condition or logical combination of conditions on the data.  
+- **FilterExecutor**: Applies the global condition to the data source and produces filtered results.
 
 ---
 
@@ -55,42 +55,42 @@ classDiagram
     }
 
     class FilterTree {
-      +Predicate generate(Context context)
+      +Condition generate(Context context)
     }
 
     class Context {
-      +Predicate getPredicate(String filterKey)
+      +Condition getPredicate(String filterKey)
     }
 
-    class Predicate {
-      +Predicate and(Predicate p)
-      +Predicate or(Predicate p)
-      +Predicate not()
+    class Condition {
+      +Condition and(Condition p)
+      +Condition or(Condition p)
+      +Condition not()
     }
 
     class FilterExecutor {
-      +Result execute(Predicate globalPredicate)
+      +Result execute(Condition globalCondition)
     }
 
     Parser --> FilterTree : produces
-    FilterTree --> Predicate : generates
-    Context --> Predicate : provides by key
-    Predicate --> Predicate : and
-    Predicate --> Predicate : or
-    Predicate --> Predicate : not
+    FilterTree --> Condition : generates
+    Context --> Condition : provides by key
+    Condition --> Condition : and
+    Condition --> Condition : or
+    Condition --> Condition : not
     FilterExecutor --> Result : produces
-    FilterExecutor --> Predicate : uses
+    FilterExecutor --> Condition : uses
 ```
 
 ### Explanation
 - **Parser** produces a FilterTree from a DSL expression string.
 
-- **FilterTree** generates a global Predicate from the combination tree.
+- **FilterTree** generates a global Condition from the combination tree.
 
 - **Context** manages filter predicates keyed by unique filter tokens.
 
-- **Predicate** supports logical combinators: and, or, not, returning new predicates.
+- **Condition** supports logical combinators: and, or, not, returning new predicates.
 
-- **FilterExecutor** uses the global predicate to execute the filtering and return results.
+- **FilterExecutor** uses the global condition to execute the filtering and return results.
 
 This diagram represents the main components and their method interactions at a high level in the dynamic filtering system, independently from any specific programming language.
