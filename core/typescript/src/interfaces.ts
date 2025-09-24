@@ -3,14 +3,16 @@
  * These interfaces define the contract that all implementations must follow.
  */
 
-export interface FilterDefinition {
-  ref: string;
+import { PropertyRef } from './validation';
+
+export interface FilterDefinition<T extends PropertyRef> {
+  ref: T;
   operator: string;
   value: any;
 }
 
-export interface FilterRequest {
-  filters: Record<string, FilterDefinition>;
+export interface FilterRequest<T extends PropertyRef> {
+  filters: Record<string, FilterDefinition<T>>;
   combineWith: string;
 }
 

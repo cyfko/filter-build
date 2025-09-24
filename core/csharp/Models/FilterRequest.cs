@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DynamicFilter.Core.Validation;
 
 namespace DynamicFilter.Core.Models
 {
@@ -6,12 +7,13 @@ namespace DynamicFilter.Core.Models
     /// Represents a complete filter request containing multiple filter definitions
     /// and a DSL expression for combining them.
     /// </summary>
-    public class FilterRequest
+    /// <typeparam name="T">The PropertyRef type</typeparam>
+    public class FilterRequest<T> where T : PropertyRef
     {
         /// <summary>
         /// Gets the filter definitions.
         /// </summary>
-        public IReadOnlyDictionary<string, FilterDefinition> Filters { get; }
+        public IReadOnlyDictionary<string, FilterDefinition<T>> Filters { get; }
 
         /// <summary>
         /// Gets the DSL expression for combining filters.
@@ -23,7 +25,7 @@ namespace DynamicFilter.Core.Models
         /// </summary>
         /// <param name="filters">The filter definitions</param>
         /// <param name="combineWith">The DSL expression for combining filters</param>
-        public FilterRequest(IReadOnlyDictionary<string, FilterDefinition> filters, string combineWith)
+        public FilterRequest(IReadOnlyDictionary<string, FilterDefinition<T>> filters, string combineWith)
         {
             Filters = filters ?? throw new ArgumentNullException(nameof(filters));
             CombineWith = combineWith ?? throw new ArgumentNullException(nameof(combineWith));

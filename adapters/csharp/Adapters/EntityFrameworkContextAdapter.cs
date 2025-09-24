@@ -10,19 +10,21 @@ namespace DynamicFilter.EntityFramework.Adapters
     /// Entity Framework implementation of the IContext interface using the correct pattern.
     /// This adapter uses EntityFrameworkConditionAdapterBuilder to create conditions.
     /// </summary>
-    /// <typeparam name="T">The entity type</typeparam>
-    public class EntityFrameworkContextAdapter<T> : IContext
+    /// <typeparam name="TEntity">The entity type</typeparam>
+    /// <typeparam name="TPropertyRef">The PropertyRef type</typeparam>
+    public class EntityFrameworkContextAdapter<TEntity, TPropertyRef> : IContext 
+        where TPropertyRef : PropertyRef
     {
-        private readonly Dictionary<string, EntityFrameworkConditionAdapter<T>> _filters;
-        private readonly IEntityFrameworkConditionAdapterBuilder<T> _conditionAdapterBuilder;
+        private readonly Dictionary<string, EntityFrameworkConditionAdapter<TEntity>> _filters;
+        private readonly IEntityFrameworkConditionAdapterBuilder<TEntity, TPropertyRef> _conditionAdapterBuilder;
 
         /// <summary>
         /// Initializes a new instance of the EntityFrameworkContextAdapter class.
         /// </summary>
         /// <param name="conditionAdapterBuilder">The condition adapter builder</param>
-        public EntityFrameworkContextAdapter(IEntityFrameworkConditionAdapterBuilder<T> conditionAdapterBuilder)
+        public EntityFrameworkContextAdapter(IEntityFrameworkConditionAdapterBuilder<TEntity, TPropertyRef> conditionAdapterBuilder)
         {
-            _filters = new Dictionary<string, EntityFrameworkConditionAdapter<T>>();
+            _filters = new Dictionary<string, EntityFrameworkConditionAdapter<TEntity>>();
             _conditionAdapterBuilder = conditionAdapterBuilder ?? throw new ArgumentNullException(nameof(conditionAdapterBuilder));
         }
 
@@ -31,14 +33,10 @@ namespace DynamicFilter.EntityFramework.Adapters
         /// </summary>
         /// <param name="filterKey">The filter key</param>
         /// <param name="definition">The filter definition</param>
-        public void AddCondition(string filterKey, FilterDefinition definition)
+        public void AddCondition(string filterKey, FilterDefinition<TPropertyRef> definition)
         {
-            // Resolve String ref to PropertyRef enum
-            var propertyRef = ResolvePropertyRef(definition.Ref);
-            if (propertyRef == null)
-            {
-                throw new ArgumentException($"Property not found: {definition.Ref}", nameof(definition));
-            }
+            // Get PropertyRef directly (type-safe, no resolution needed)
+            var propertyRef = definition.Ref;
 
             // Validate operator
             var operator = ParseOperator(definition.Operator);

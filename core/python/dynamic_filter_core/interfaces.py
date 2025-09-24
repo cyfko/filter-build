@@ -8,18 +8,19 @@ from typing import Any, Dict, List, Optional, TypeVar, Generic
 from dataclasses import dataclass
 
 T = TypeVar('T')
+P = TypeVar('P', bound='PropertyRef')
 
 @dataclass
-class FilterDefinition:
+class FilterDefinition(Generic[P]):
     """Represents a single filter definition with property reference, operator, and value."""
-    ref: str
+    ref: P
     operator: str
     value: Any
 
 @dataclass
-class FilterRequest:
+class FilterRequest(Generic[P]):
     """Represents a complete filter request containing multiple filter definitions and a DSL expression."""
-    filters: Dict[str, FilterDefinition]
+    filters: Dict[str, FilterDefinition[P]]
     combine_with: str
 
 class Condition(ABC):
