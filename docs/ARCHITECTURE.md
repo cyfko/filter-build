@@ -28,7 +28,7 @@
 |----------------------|-------------------------|-----------------------|--------------------|--------------------------------------------------------------------------------------------|
 | **Parser**           | parse                   | DSL expression (text) | `FilterTree`       | Parses the DSL expression and builds the logical combined filter tree.                     |
 | **FilterTree**       | generate                | `Context`             | `Condition`        | Produces the global condition for filtering based on the filter combination tree.          |
-| **Context**          | getPredicate            | Filter key (text)   | `Condition`        | Retrieves the condition associated with the filter key within the execution context.       |
+| **Context**          | getCondition            | Filter key (text)   | `Condition`        | Retrieves the condition associated with the filter key within the execution context.       |
 | **Condition**        | and                     | `Condition`           | `Condition`        | Returns a new condition representing the logical AND of the current and given condition.   |
 |                      | or                      | `Condition`           | `Condition`        | Returns a new condition representing the logical OR of the current and given condition.    |
 |                      | not                     | *None*                | `Condition`        | Returns a new condition representing the logical negation of the current condition.        |
@@ -59,7 +59,7 @@ classDiagram
     }
 
     class Context {
-      +Condition getPredicate(String filterKey)
+      +Condition getCondition(String filterKey)
     }
 
     class Condition {
