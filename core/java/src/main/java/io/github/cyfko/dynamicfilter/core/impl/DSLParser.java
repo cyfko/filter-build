@@ -1,5 +1,7 @@
 package io.github.cyfko.dynamicfilter.core.impl;
 
+import io.github.cyfko.dynamicfilter.core.Condition;
+import io.github.cyfko.dynamicfilter.core.Context;
 import io.github.cyfko.dynamicfilter.core.FilterTree;
 import io.github.cyfko.dynamicfilter.core.Parser;
 import io.github.cyfko.dynamicfilter.core.exception.DSLSyntaxException;
