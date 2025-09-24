@@ -21,13 +21,9 @@ class DjangoContextAdapter(Context, Generic[T, P]):
     
     def add_condition(self, filter_key: str, definition: FilterDefinition[P]) -> None:
         """Adds a condition using the builder pattern."""
-        # Get PropertyRef directly (type-safe, no resolution needed)
+        # Get PropertyRef and Operator directly (type-safe, no resolution needed)
         property_ref = definition.ref
-        
-        # Validate operator
-        operator = self._parse_operator(definition.operator)
-        if not operator:
-            raise ValueError(f"Invalid operator: {definition.operator}")
+        operator = definition.operator
         
         # Validate that the property supports this operator
         property_ref.validate_operator(operator)

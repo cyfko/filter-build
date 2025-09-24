@@ -1,18 +1,19 @@
 package io.github.cyfko.dynamicfilter.core.model;
 
+import io.github.cyfko.dynamicfilter.core.validation.Operator;
 import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
 
 /**
  * Represents a single filter definition with property reference, operator, and value.
- * The ref is now type-safe with a specific PropertyRef enum.
+ * The ref and operator are now type-safe with specific PropertyRef and Operator enums.
  */
 public class FilterDefinition<T extends PropertyRef> {
     
     private final T ref;
-    private final String operator;
+    private final Operator operator;
     private final Object value;
     
-    public FilterDefinition(T ref, String operator, Object value) {
+    public FilterDefinition(T ref, Operator operator, Object value) {
         this.ref = ref;
         this.operator = operator;
         this.value = value;
@@ -22,7 +23,7 @@ public class FilterDefinition<T extends PropertyRef> {
         return ref;
     }
     
-    public String getOperator() {
+    public Operator getOperator() {
         return operator;
     }
     
@@ -32,7 +33,7 @@ public class FilterDefinition<T extends PropertyRef> {
     
     @Override
     public String toString() {
-        return String.format("FilterDefinition{ref=%s, operator='%s', value=%s}", 
+        return String.format("FilterDefinition{ref=%s, operator=%s, value=%s}", 
                            ref, operator, value);
     }
 }

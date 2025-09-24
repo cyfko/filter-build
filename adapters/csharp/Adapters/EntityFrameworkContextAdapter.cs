@@ -35,15 +35,9 @@ namespace DynamicFilter.EntityFramework.Adapters
         /// <param name="definition">The filter definition</param>
         public void AddCondition(string filterKey, FilterDefinition<TPropertyRef> definition)
         {
-            // Get PropertyRef directly (type-safe, no resolution needed)
+            // Get PropertyRef and Operator directly (type-safe, no resolution needed)
             var propertyRef = definition.Ref;
-
-            // Validate operator
-            var operator = ParseOperator(definition.Operator);
-            if (operator == null)
-            {
-                throw new ArgumentException($"Invalid operator: {definition.Operator}", nameof(definition));
-            }
+            var operator = definition.Operator;
 
             // Validate that the property supports this operator
             propertyRef.ValidateOperator(operator);

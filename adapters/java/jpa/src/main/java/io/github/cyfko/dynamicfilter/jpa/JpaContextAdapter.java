@@ -24,14 +24,9 @@ public class JpaContextAdapter<T, P extends PropertyRef> implements Context {
     }
     
     public void addCondition(String filterKey, FilterDefinition<P> definition) {
-        // Get PropertyRef directly (type-safe, no resolution needed)
+        // Get PropertyRef and Operator directly (type-safe, no resolution needed)
         P propertyRef = definition.getRef();
-        
-        // Validate operator
-        Operator operator = Operator.fromString(definition.getOperator());
-        if (operator == null) {
-            throw new IllegalArgumentException("Invalid operator: " + definition.getOperator());
-        }
+        Operator operator = definition.getOperator();
         
         // Validate that the property supports this operator
         propertyRef.validateOperator(operator);

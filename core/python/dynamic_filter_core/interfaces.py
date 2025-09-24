@@ -14,7 +14,7 @@ P = TypeVar('P', bound='PropertyRef')
 class FilterDefinition(Generic[P]):
     """Represents a single filter definition with property reference, operator, and value."""
     ref: P
-    operator: str
+    operator: 'Operator'
     value: Any
 
 @dataclass

@@ -3,11 +3,11 @@
  * These interfaces define the contract that all implementations must follow.
  */
 
-import { PropertyRef } from './validation';
+import { PropertyRef, Operator } from './validation';
 
 export interface FilterDefinition<T extends PropertyRef> {
   ref: T;
-  operator: string;
+  operator: Operator;
   value: any;
 }
 

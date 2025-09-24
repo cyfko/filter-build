@@ -16,9 +16,9 @@ namespace DynamicFilter.Core.Models
         public T Ref { get; }
 
         /// <summary>
-        /// Gets the operator.
+        /// Gets the operator (type-safe).
         /// </summary>
-        public string Operator { get; }
+        public Operator Operator { get; }
 
         /// <summary>
         /// Gets the value.
@@ -29,12 +29,12 @@ namespace DynamicFilter.Core.Models
         /// Initializes a new instance of the FilterDefinition class.
         /// </summary>
         /// <param name="ref">The property reference (type-safe)</param>
-        /// <param name="operator">The operator</param>
+        /// <param name="operator">The operator (type-safe)</param>
         /// <param name="value">The value</param>
-        public FilterDefinition(T @ref, string @operator, object? value)
+        public FilterDefinition(T @ref, Operator @operator, object? value)
         {
             Ref = @ref ?? throw new ArgumentNullException(nameof(@ref));
-            Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
+            Operator = @operator;
             Value = value;
         }
 

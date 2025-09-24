@@ -18,14 +18,9 @@ export class TypeORMContextAdapter<T, P extends PropertyRef> implements Context 
     }
 
     addCondition(filterKey: string, definition: FilterDefinition<P>): void {
-        // Get PropertyRef directly (type-safe, no resolution needed)
+        // Get PropertyRef and Operator directly (type-safe, no resolution needed)
         const propertyRef = definition.ref;
-
-        // Validate operator
-        const operator = this.parseOperator(definition.operator);
-        if (!operator) {
-            throw new Error(`Invalid operator: ${definition.operator}`);
-        }
+        const operator = definition.operator;
 
         // Validate that the property supports this operator
         propertyRef.validateOperator(operator);
