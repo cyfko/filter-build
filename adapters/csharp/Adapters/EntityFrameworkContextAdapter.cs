@@ -61,33 +61,5 @@ namespace DynamicFilter.EntityFramework.Adapters
             return condition;
         }
 
-        /// <summary>
-        /// Resolves a String ref to the appropriate PropertyRef enum.
-        /// Each adapter can implement its own resolution logic.
-        /// This method should be overridden by concrete implementations to provide
-        /// the actual PropertyRef resolution strategy.
-        /// </summary>
-        /// <param name="ref">The property reference string</param>
-        /// <returns>The PropertyRef enum or null if not found</returns>
-        private PropertyRef? ResolvePropertyRef(string ref)
-        {
-            // This is a placeholder implementation.
-            // Concrete adapters should override this method to implement
-            // their own PropertyRef resolution strategy.
-            throw new NotImplementedException(
-                "PropertyRef resolution must be implemented by concrete adapter implementations");
-        }
-
-        /// <summary>
-        /// Parses operator string to Operator enum.
-        /// </summary>
-        /// <param name="operatorStr">The operator string</param>
-        /// <returns>The Operator enum or null if not found</returns>
-        private Operator? ParseOperator(string operatorStr)
-        {
-            // This should use the core ParseOperator function
-            // For now, return null to indicate it needs implementation
-            return null;
-        }
     }
 }

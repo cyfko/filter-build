@@ -39,21 +39,3 @@ class DjangoContextAdapter(Context, Generic[T, P]):
             raise ValueError(f"No condition found for key: {filter_key}")
         return condition
     
-    def _resolve_property_ref(self, ref: str) -> Optional[PropertyRef]:
-        """
-        Resolves a String ref to the appropriate PropertyRef enum.
-        Each adapter can implement its own resolution logic.
-        This method should be overridden by concrete implementations to provide
-        the actual PropertyRef resolution strategy.
-        """
-        # This is a placeholder implementation.
-        # Concrete adapters should override this method to implement
-        # their own PropertyRef resolution strategy.
-        raise NotImplementedError(
-            "PropertyRef resolution must be implemented by concrete adapter implementations")
-    
-    def _parse_operator(self, operator_str: str) -> Optional[Operator]:
-        """Parses operator string to Operator enum."""
-        # This should use the core parse_operator function
-        # For now, return None to indicate it needs implementation
-        return None

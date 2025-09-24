@@ -38,25 +38,4 @@ export class TypeORMContextAdapter<T, P extends PropertyRef> implements Context 
         return condition;
     }
 
-    /**
-     * Resolves a String ref to the appropriate PropertyRef enum.
-     * Each adapter can implement its own resolution logic.
-     * This method should be overridden by concrete implementations to provide
-     * the actual PropertyRef resolution strategy.
-     */
-    private resolvePropertyRef(ref: string): PropertyRef | null {
-        // This is a placeholder implementation.
-        // Concrete adapters should override this method to implement
-        // their own PropertyRef resolution strategy.
-        throw new Error('PropertyRef resolution must be implemented by concrete adapter implementations');
-    }
-
-    /**
-     * Parses operator string to Operator enum.
-     */
-    private parseOperator(operatorStr: string): Operator | null {
-        // This should use the core parseOperator function
-        // For now, return null to indicate it needs implementation
-        return null;
-    }
 }
