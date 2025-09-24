@@ -16,11 +16,7 @@ from .interfaces import (
 
 from .validation import (
     Operator,
-    PropertyRef,
-    PropertyRegistry,
-    parse_operator,
-    operator_requires_value,
-    operator_supports_multiple_values
+    PropertyRef
 )
 
 from .parser import DSLParser
@@ -44,10 +40,6 @@ __all__ = [
     # Validation
     "Operator",
     "PropertyRef",
-    "PropertyRegistry",
-    "parse_operator",
-    "operator_requires_value",
-    "operator_supports_multiple_values",
     
     # Parser
     "DSLParser"

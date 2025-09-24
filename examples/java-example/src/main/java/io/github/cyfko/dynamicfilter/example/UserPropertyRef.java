@@ -12,7 +12,7 @@ import java.util.Set;
  * They only need to call the parent constructor - all methods are inherited!
  * 
  * Note: PropertyRef only contains the logical definition (type, operators).
- * The actual entity field mapping is handled by PropertyRegistry per adapter.
+ * The actual entity field mapping is handled by each adapter implementation.
  */
 public enum UserPropertyRef extends PropertyRef {
     
@@ -27,43 +27,5 @@ public enum UserPropertyRef extends PropertyRef {
     
     UserPropertyRef(Class<?> type, Set<Operator> supportedOperators) {
         super(type, supportedOperators);
-    }
-    
-    /**
-     * Finds a UserPropertyRef by its entity field name.
-     * 
-     * @param entityField The entity field name to search for
-     * @return The matching UserPropertyRef, or null if not found
-     */
-    public static UserPropertyRef fromEntityField(String entityField) {
-        if (entityField == null) {
-            return null;
-        }
-        
-        for (UserPropertyRef propertyRef : values()) {
-            if (propertyRef.entityField.equals(entityField)) {
-                return propertyRef;
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Finds a UserPropertyRef by its name (enum name).
-     * 
-     * @param name The property reference name
-     * @return The matching UserPropertyRef, or null if not found
-     */
-    public static UserPropertyRef fromName(String name) {
-        if (name == null) {
-            return null;
-        }
-        
-        try {
-            return valueOf(name);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 }
