@@ -6,12 +6,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.cyfko</groupId>
-    <artifactId>dynamic-filter-core</artifactId>
+    <artifactId>filterql</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Dynamic Filter Core - Java</name>
-    <description>Framework-agnostic core module for dynamic filtering with DSL support</description>
+    <name>FilterQL</name>
+    <description>Framework-agnostic dynamic filtering with type-safe DSL (core module)</description>
 
     <developers>
         <developer>
