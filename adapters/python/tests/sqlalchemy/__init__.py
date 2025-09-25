@@ -1,0 +1,3 @@
+"""
+SQLAlchemy adapter tests package.
+"""

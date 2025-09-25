@@ -1,4 +1,4 @@
-# Dynamic Filter Builder – Framework-Agnostic Solution
+# Dynamic Filter Builder — Framework-Agnostic Condition Generator
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -12,7 +12,7 @@
 - [DSL Syntax](#dsl-syntax)
 - [Implementation Overview](#implementation-overview)
 - [Dynamic Filter Flow](#dynamic-filter-flow)
-- [Portability](#portability)
+- [Framework Integration](#framework-integration)
 - [Advantages](#advantages)
 - [Future Enhancements](#future-enhancements)
 - [License](#license)
@@ -24,10 +24,10 @@
 Modern web applications often need **dynamic, user-driven search and filtering**. Traditional approaches like static filters or exposing raw queries are inflexible or expose security risks.
 
 This library proposes a reusable, framework-agnostic solution that:
-- Allows clients to build complex filters dynamically combining multiple conditions with AND, OR, NOT.
+- Allows clients to build complex filter conditions dynamically combining multiple criteria with AND, OR, NOT.
 - Prevents direct exposure of database fields by using abstract tokens.
 - Supports multiple conditions on the same property by separating filter token from property reference.
-- Works seamlessly across different backend technologies.
+- **Generates framework-native conditions** that integrate seamlessly with existing ORM/query mechanisms.
 
 ---
 
@@ -37,8 +37,8 @@ This library proposes a reusable, framework-agnostic solution that:
 - Filter tokens uniquely identify conditions, with clear `ref` mapping to backend properties  
 - Complex boolean logic with `AND`, `OR`, `NOT`, and parentheses  
 - Secure enum or whitelist-based field mapping preventing access to sensitive data  
-- Fully framework-agnostic and reusable across diverse entities and data models  
-- Compatible with various query toolkits and ORMs  
+- **Framework-agnostic condition generation** - works with any ORM or query builder
+- **Preserves native framework capabilities** - pagination, sorting, caching, transactions, etc.
 
 ---
 
@@ -51,8 +51,9 @@ This library proposes a reusable, framework-agnostic solution that:
 2. The backend:
    - Maps tokens to validated properties via `ref`.
    - Parses the DSL into a boolean expression tree.
-   - Builds native queries or criteria filters accordingly.
-   - Executes the query and returns filtered results.
+   - **Generates a framework-agnostic condition object**.
+   - **Converts the condition to native framework queries** (JPA Criteria, Prisma where, Django Q, etc.).
+   - **Executes using framework's native mechanisms** for optimal performance and feature support.
 
 ---
 
@@ -72,19 +73,11 @@ This library proposes a reusable, framework-agnostic solution that:
 }
 ```
 
-- Each token (`filter1`, `filter2`, etc.) uniquely identifies a filter condition.
-- The token’s `ref` points to the backend property it targets.
-- This enables multiple filters targeting the same property (`NAME` here) without JSON key duplication issues.
-- The `combineWith` DSL combines these tokens with logical operators.
-
-**Interpreted as:**
+**Generated Condition Logic:**
 
 ```sql
 (NAME LIKE 'Smith' AND STATUS = 'ACTIVE') OR (CREATED_DATE >= '2024-01-01' AND NOT(NAME LIKE 'John'))
 ```
-
-> That interpretation **IS NOT** an SQL syntax! It just help to understand the meaning behind the DSL constructed based on the filters and the combinator.
-
 
 ---
 
@@ -109,8 +102,9 @@ This library proposes a reusable, framework-agnostic solution that:
 
 - **Filter Map:** JSON object with unique tokens → filter conditions including `ref`, operator, and value.  
 - **DSL Expression:** String combining filter tokens via `&`, `|`, `!`, and parentheses.  
-- **Mapping:** Tokens map to allowed properties defined in a backend whitelist or enum.  
-- **Query Builder:** The DSL parser generates a boolean expression tree, which is translated into native query objects or ORM filters in a framework-neutral manner.
+- **Secure Mapping:** Tokens map to allowed properties defined in a backend whitelist or enum.  
+- **Condition Generator:** The DSL parser generates a boolean expression tree, which produces framework-agnostic conditions.
+- **Framework Adapters:** Convert conditions to native query constructs (JPA Criteria, Prisma JSON, Django Q, etc.).
 
 ---
 
@@ -121,37 +115,46 @@ flowchart TD
 A[Frontend JSON Request] --> B[DSL Parser]
 B --> C[Boolean Expression Tree]
 C --> D[Token to Property Reference Mapping]
-D --> E[Build Native Query/Filter]
-E --> F[Execute Query]
-F --> G[Return Results]
-```
+D --> E[Framework-Agnostic Condition]
+E --> F[Framework Adapter]
+F --> G[Native Query Construct]
+G --> H[Framework Native Execution]
+H --> I[Paginated/Sorted/Cached Results]
 
+style E fill:#e1f5fe
+style F fill:#f3e5f5
+style G fill:#e8f5e8
+style H fill:#fff3e0
+```
 
 ---
 
-## Portability
+## Framework Integration
 
-This library’s core is **framework-agnostic**:  
+This library's core is **framework-agnostic** and focuses solely on **condition generation**:  
 - Parsing and token-to-property mapping are shared and standalone.  
-- Only the last step, query building, needs adaptation to the backend language and ORM.
+- Each framework adapter converts conditions to native constructs.
+- **Query execution remains 100% framework-native** for optimal performance and feature support.
 
-| Language / Stack              | Integration Approach                                      | Notes                              |
-|------------------------------|-----------------------------------------------------------|-----------------------------------|
-| Java/Spring Boot              | Translate tree into JPA `CriteriaQuery` or Specifications | Map tokens to entity attributes   |
-| .NET / Entity Framework       | Use LINQ expressions                                       | Use controlled predicate builders |
-| Python / Django ORM           | Use `Q` object composition                                | Map DSL to Q filters              |
-| Node.js / Prisma              | Build nested JSON `where`                                  | Map tokens to Prisma filters      |
-| Node.js / TypeORM             | Chain query builder conditions                             | Maintain whitelist of tokens      |
+| Language / Stack              | Integration Approach                                      | Native Features Preserved                    |
+|------------------------------|-----------------------------------------------------------|---------------------------------------------|
+| Java/Spring Boot              | Convert to JPA `CriteriaQuery` predicates              | Pagination, JPA caching, lazy loading, transactions |
+| .NET / Entity Framework       | Convert to LINQ expressions                             | Entity tracking, change detection, migrations |
+| Python / Django ORM           | Convert to `Q` object composition                       | QuerySet chaining, prefetch_related, select_related |
+| Node.js / Prisma              | Convert to nested JSON `where` clauses                 | Connection pooling, middleware, schema validation |
+| Node.js / TypeORM             | Convert to query builder conditions                     | Migrations, decorators, relations |
 
 ---
 
 ## Advantages
 
 - **Security:** Fields exposed only through controlled mappings.  
-- **Flexibility:** Arbitrary complex filters expressed via DSL.  
-- **Framework neutrality:** Use in any backend stack with minimal adaptation.  
+- **Flexibility:** Arbitrary complex filter conditions expressed via DSL.  
+- **Framework neutrality:** Generate conditions for any backend stack.
+- **Native performance:** Leverages each framework's optimized query execution.
+- **Feature preservation:** Pagination, sorting, caching, transactions work normally.
 - **Maintainability:** Centralized token-to-property mapping.  
-- **Extensibility:** Add operators, predicates, and DSL improvements independently.
+- **Extensibility:** Add operators and DSL improvements independently.
 
 ---
 
@@ -159,9 +162,10 @@ This library’s core is **framework-agnostic**:
 
 - Support additional operators (`IN`, `BETWEEN`, `IS NULL`, etc.).  
 - Type-aware value validation (dates, enums, numbers).  
-- Optimize query plans by merging overlapping filters.  
-- Pagination and sorting integrated with filters.  
-- Improved tooling for DSL syntax validation and debugging.
+- Query optimization by merging overlapping conditions.
+- Advanced DSL features (subqueries, aggregations).
+- Visual query builder UI components.
+- Performance monitoring and query analysis tools.
 
 ---
 
@@ -170,4 +174,3 @@ This library’s core is **framework-agnostic**:
 MIT License
 
 ---
-
