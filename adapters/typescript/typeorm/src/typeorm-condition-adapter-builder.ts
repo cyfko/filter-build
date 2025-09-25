@@ -6,7 +6,8 @@
  * @template P The PropertyRef enum for this entity
  */
 
-import { Operator, PropertyRefEnum } from '@cyfko/dynamic-filter-core';
+import { PropertyRefEnum } from '../../../../core/typescript/src/interfaces';
+import { Operator } from '../../../../core/typescript/src/validation';
 import { TypeORMConditionAdapter } from './typeorm-condition-adapter';
 
 export interface TypeORMConditionAdapterBuilder<T, P extends PropertyRefEnum> {

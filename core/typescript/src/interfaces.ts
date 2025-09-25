@@ -8,7 +8,7 @@ import { PropertyRef, Operator } from './validation';
 /**
  * Type constraint for PropertyRef enums
  */
-export type PropertyRefEnum<T = PropertyRef> = T;
+export type PropertyRefEnum<T = any> = Record<string, PropertyRef> & T;
 
 export interface FilterDefinition<P extends PropertyRefEnum> {
   ref: string;
@@ -87,3 +87,4 @@ export class FilterValidationException extends Error {
     }
   }
 }
+

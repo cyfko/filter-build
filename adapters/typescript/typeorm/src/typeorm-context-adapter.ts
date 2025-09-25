@@ -6,8 +6,8 @@
  * @template P The PropertyRef enum for this entity
  */
 
-import { Condition, ContextAdapter, FilterDefinition, PropertyRefEnum } from '@cyfko/dynamic-filter-core';
-import { PropertyRefUtils } from '@cyfko/dynamic-filter-core';
+import { Condition, ContextAdapter, FilterDefinition, PropertyRefEnum } from '../../../../core/typescript/src/interfaces';
+import { PropertyRefUtils } from '../../../../core/typescript/src/validation';
 import { TypeORMConditionAdapter } from './typeorm-condition-adapter';
 import { TypeORMConditionAdapterBuilder } from './typeorm-condition-adapter-builder';
 
@@ -28,7 +28,7 @@ export class TypeORMContextAdapter<T, P extends PropertyRefEnum> implements Cont
         const operator = definition.operator;
         
         // Get the PropertyRef implementation
-        const propertyRef = this.propertyRefImpl[propertyRefKey];
+        const propertyRef = (this.propertyRefImpl as any)[propertyRefKey];
         if (!propertyRef || typeof propertyRef !== 'object' || !('supportedOperators' in propertyRef)) {
             throw new Error(`Invalid PropertyRef: ${String(propertyRefKey)}`);
         }
@@ -37,7 +37,7 @@ export class TypeORMContextAdapter<T, P extends PropertyRefEnum> implements Cont
         PropertyRefUtils.validateOperator(propertyRef, operator);
 
         // Build condition using the builder and store it
-        const condition = this.conditionAdapterBuilder.build(propertyRefKey, operator, definition.value);
+        const condition = this.conditionAdapterBuilder.build(propertyRefKey as any, operator, definition.value);
         this.filters.set(filterKey, condition);
     }
 

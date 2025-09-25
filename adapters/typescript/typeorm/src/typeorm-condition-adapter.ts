@@ -3,7 +3,7 @@
  * This adapter wraps TypeORM query builder conditions.
  */
 
-import { Condition } from '@cyfko/dynamic-filter-core';
+import { Condition } from '../../../../core/typescript/src/interfaces';
 import { SelectQueryBuilder } from 'typeorm';
 
 export class TypeORMConditionAdapter<T> implements Condition {
