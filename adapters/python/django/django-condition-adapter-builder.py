@@ -5,12 +5,15 @@ Each implementation defines how to build a Django condition from PropertyRef, Op
 
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar, Generic
-from enum import Enum
-from dynamic_filter_core import Operator
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'core', 'python', 'src'))
+from interfaces import PropertyRefEnum
+from validation import Operator
 from .django-condition-adapter import DjangoConditionAdapter
 
 T = TypeVar('T')
-P = TypeVar('P', bound=Enum)
+P = TypeVar('P', bound=PropertyRefEnum)
 
 
 class DjangoConditionAdapterBuilder(ABC, Generic[T, P]):
@@ -20,12 +23,12 @@ class DjangoConditionAdapterBuilder(ABC, Generic[T, P]):
     """
     
     @abstractmethod
-    def build(self, ref: P, op: Operator, value: Any) -> DjangoConditionAdapter[T]:
+    def build(self, ref: str, op: Operator, value: Any) -> DjangoConditionAdapter[T]:
         """
         Builds a Django condition adapter from the given parameters.
         
         Args:
-            ref: The property reference key (type-safe enum key)
+            ref: The property reference key (string)
             op: The operator
             value: The value as object
             

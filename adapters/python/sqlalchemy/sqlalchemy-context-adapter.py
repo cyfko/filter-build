@@ -1,6 +1,6 @@
 """
-Django Context Adapter implementing the correct pattern.
-This adapter uses DjangoConditionAdapterBuilder to create conditions.
+SQLAlchemy Context Adapter implementing the correct pattern.
+This adapter uses SQLAlchemyConditionAdapterBuilder to create conditions.
 """
 
 from typing import Dict, Optional, TypeVar, Generic, Any
@@ -10,18 +10,18 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'core', 'python', 'src'))
 from interfaces import Condition, ContextAdapter, FilterDefinition, PropertyRefEnum
 from validation import Operator, PropertyRefUtils
-from .django-condition-adapter import DjangoConditionAdapter
-from .django-condition-adapter-builder import DjangoConditionAdapterBuilder
+from .sqlalchemy-condition-adapter import SQLAlchemyConditionAdapter
+from .sqlalchemy-condition-adapter-builder import SQLAlchemyConditionAdapterBuilder
 
 T = TypeVar('T')
 P = TypeVar('P', bound=PropertyRefEnum)
 
 
-class DjangoContextAdapter(ContextAdapter[T, P]):
-    """Django implementation of the ContextAdapter interface using the correct pattern."""
+class SQLAlchemyContextAdapter(ContextAdapter[T, P]):
+    """SQLAlchemy implementation of the ContextAdapter interface using the correct pattern."""
     
-    def __init__(self, condition_adapter_builder: DjangoConditionAdapterBuilder[T, P], property_ref_impl: Any):
-        self.filters: Dict[str, DjangoConditionAdapter[T]] = {}
+    def __init__(self, condition_adapter_builder: SQLAlchemyConditionAdapterBuilder[T, P], property_ref_impl: Any):
+        self.filters: Dict[str, SQLAlchemyConditionAdapter[T]] = {}
         self.condition_adapter_builder = condition_adapter_builder
         self.property_ref_impl = property_ref_impl
     
@@ -46,4 +46,4 @@ class DjangoContextAdapter(ContextAdapter[T, P]):
     def get_condition(self, filter_key: str) -> Optional[Condition]:
         """Retrieves the condition associated with the given filter key."""
         return self.filters.get(filter_key)
-    
+

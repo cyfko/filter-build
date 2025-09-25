@@ -7,7 +7,7 @@ from typing import List, Optional
 from enum import Enum
 from dataclasses import dataclass
 
-from .interfaces import FilterTree, Context, Condition, DSLSyntaxException
+from interfaces import FilterTree, Context, Condition, DSLSyntaxException
 
 class TokenType(Enum):
     IDENTIFIER = "IDENTIFIER"

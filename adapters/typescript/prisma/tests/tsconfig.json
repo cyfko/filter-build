@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@cyfko/dynamic-filter-core": ["../../../../core/typescript/src"]
+    }
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}
+
