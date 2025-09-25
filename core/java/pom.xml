@@ -30,9 +30,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/cyfko/dynamic-filter.git</connection>
-        <developerConnection>scm:git:ssh://github.com:cyfko/dynamic-filter.git</developerConnection>
-        <url>https://github.com/cyfko/dynamic-filter/tree/main</url>
+        <connection>scm:git:git://github.com/cyfko/filter-build</connection>
+        <developerConnection>scm:git:ssh://github.com:cyfko/filter-build.git</developerConnection>
+        <url>https://github.com/cyfko/filter-build/tree/main/core/java</url>
     </scm>
 
     <properties>

@@ -13,6 +13,28 @@
     <name>FilterQL JPA Adapter</name>
     <description>JPA dynamic filtering composer for FilterQL</description>
 
+    <developers>
+        <developer>
+            <name>Frank KOSSI</name>
+            <email>frank.kossi@kunrin.com</email>
+            <organization>Kunrin SA</organization>
+            <organizationUrl>https://www.kunrin.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/cyfko/filter-build</connection>
+        <developerConnection>scm:git:ssh://github.com:cyfko/filter-build.git</developerConnection>
+        <url>https://github.com/cyfko/filter-build/tree/main/adapters/java/jpa</url>
+    </scm>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
