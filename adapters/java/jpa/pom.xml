@@ -6,12 +6,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.cyfko</groupId>
-    <artifactId>dynamic-filter-jpa</artifactId>
+    <artifactId>filterql-adapter-jpa</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Dynamic Filter JPA Adapter</name>
-    <description>JPA CriteriaBuilder adapter for dynamic filtering</description>
+    <name>FilterQL JPA Adapter</name>
+    <description>JPA dynamic filtering composer for FilterQL</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -25,7 +25,7 @@
         <!-- Core module dependency -->
         <dependency>
             <groupId>io.github.cyfko</groupId>
-            <artifactId>dynamic-filter-core</artifactId>
+            <artifactId>filterql-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         

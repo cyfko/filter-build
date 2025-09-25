@@ -1,4 +1,4 @@
-package io.github.cyfko.dynamicfilter.jpa;
+package io.github.cyfko.filterql.adapter.jpa;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

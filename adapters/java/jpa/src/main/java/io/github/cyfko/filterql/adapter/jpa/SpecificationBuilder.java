@@ -1,4 +1,4 @@
-package io.github.cyfko.dynamicfilter.jpa;
+package io.github.cyfko.filterql.adapter.jpa;
 
 import io.github.cyfko.dynamicfilter.core.validation.Operator;
 import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
