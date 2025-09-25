@@ -18,7 +18,7 @@ public interface SpecificationBuilder<T, P extends Enum<P> & PropertyRef> {
      * @param ref The property reference (type-safe)
      * @param op The operator
      * @param value The value as object
-     * @return A JPA condition adapter
+     * @return A JPA specification
      */
     Specification<T> build(P ref, Operator op, Object value);
 }

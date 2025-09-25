@@ -22,15 +22,20 @@ import java.util.Map;
  * @param <P> The PropertyRef enum for this entity
  */
 public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Context {
-    private final EntityManager entityManager;
     private final Root<T> root;
     private final CriteriaQuery<T> query;
     private final CriteriaBuilder criteriaBuilder;
     private final Map<String, JpaConditionAdapter<T>> filters;
     private final SpecificationBuilder<T, P> specificationBuilder;
     
+    /**
+     * Constructs a new JPA context adapter.
+     * 
+     * @param entityClass The entity class to query
+     * @param entityManager The JPA entity manager
+     * @param specificationBuilder The specification builder for this entity type
+     */
     public JpaContextAdapter(Class<T> entityClass, EntityManager entityManager, SpecificationBuilder<T, P> specificationBuilder) {
-        this.entityManager = entityManager;
         this.criteriaBuilder = entityManager.getCriteriaBuilder();
         this.query = criteriaBuilder.createQuery(entityClass);
         this.root = query.from(entityClass);
@@ -38,6 +43,13 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
         this.specificationBuilder = specificationBuilder;
     }
     
+    /**
+     * Adds a condition to the context.
+     * 
+     * @param filterKey The key to identify this condition
+     * @param definition The filter definition containing property, operator, and value
+     * @throws IllegalArgumentException if the operator is not supported for the property
+     */
     public void addCondition(String filterKey, FilterDefinition<P> definition) {
         // Get PropertyRef and Operator directly (type-safe, no resolution needed)
         P propertyRef = definition.getRef();
@@ -54,6 +66,13 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
         filters.put(filterKey, condition);
     }
     
+    /**
+     * {@inheritDoc}
+     * 
+     * @param filterKey The key to identify the condition
+     * @return The condition for the given key
+     * @throws IllegalArgumentException if no condition is found for the key
+     */
     @Override
     public Condition getCondition(String filterKey) {
         JpaConditionAdapter<T> condition = filters.get(filterKey);
@@ -63,11 +82,13 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
         return condition;
     }
 
+    /**
+     * Gets the JPA criteria query.
+     * 
+     * @return The criteria query for this context
+     */
     public CriteriaQuery<T> getQuery() {
         return query;
     }
 
-    public EntityManager getEntityManager(){
-        return entityManager;
-    }
 }
