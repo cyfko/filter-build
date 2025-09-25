@@ -108,4 +108,12 @@ namespace DynamicFilter.Core.Validation
             return HashCode.Combine(Type);
         }
     }
+
+    /// <summary>
+    /// Type constraint for PropertyRef enums.
+    /// This ensures that only enums implementing IPropertyRef can be used as PropertyRef types.
+    /// </summary>
+    public interface IPropertyRefEnum : IPropertyRef
+    {
+    }
 }

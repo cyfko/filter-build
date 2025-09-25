@@ -19,25 +19,25 @@ namespace DynamicFilter.Core
         {
             // Example 1: Creating a FilterDefinition
             var nameFilter = new FilterDefinition<TestPropertyRef>(
-                ref: TestPropertyRef.UserName,
-                @operator: Operator.Like,
-                value: "John%"
+                TestPropertyRef.UserName,
+                Operator.Like,
+                "John%"
             );
 
             var ageFilter = new FilterDefinition<TestPropertyRef>(
-                ref: TestPropertyRef.UserAge,
-                @operator: Operator.GreaterThan,
-                value: 18
+                TestPropertyRef.UserAge,
+                Operator.GreaterThan,
+                18
             );
 
             // Example 2: Creating a FilterRequest
             var filterRequest = new FilterRequest<TestPropertyRef>(
-                filters: new Dictionary<string, FilterDefinition<TestPropertyRef>>
+                new Dictionary<string, FilterDefinition<TestPropertyRef>>
                 {
                     { "nameFilter", nameFilter },
                     { "ageFilter", ageFilter }
                 },
-                combineWith: "AND"
+                "AND"
             );
 
             // Example 3: Type safety validation
@@ -53,7 +53,15 @@ namespace DynamicFilter.Core
         /// <param name="definition">The filter definition to validate</param>
         private static void ValidateFilter(FilterDefinition<TestPropertyRef> definition)
         {
-            var propertyRef = TestPropertyRefImpl.GetPropertyRef(definition.Ref);
+            // Get the property ref implementation based on the enum value
+            IPropertyRef propertyRef = definition.Ref switch
+            {
+                TestPropertyRef.UserName => TestPropertyRefImpl.UserName,
+                TestPropertyRef.UserAge => TestPropertyRefImpl.UserAge,
+                TestPropertyRef.UserEmail => TestPropertyRefImpl.UserEmail,
+                TestPropertyRef.UserStatus => TestPropertyRefImpl.UserStatus,
+                _ => throw new ArgumentException($"Unknown property: {definition.Ref}")
+            };
             
             if (!propertyRef.SupportsOperator(definition.Operator))
             {

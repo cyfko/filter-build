@@ -14,25 +14,23 @@ import java.util.List;
  * JPA implementation of the FilterExecutor interface.
  * This adapter executes filter conditions using JPA CriteriaQuery.
  */
-public class JpaFilterExecutor implements FilterExecutor {
+public class JpaFilterExecutor<T> implements FilterExecutor {
     
-    private final EntityManager entityManager;
+    private final JpaContextAdapter<T,?> context;
     
-    public JpaFilterExecutor(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public JpaFilterExecutor(JpaContextAdapter<T,?> context) {
+        this.context = context;
     }
     
     @Override
-    public <T> List<T> execute(Condition globalCondition, Class<T> entityClass) {
+    public <T> List<T> execute(Condition globalCondition) {
         if (!(globalCondition instanceof JpaConditionAdapter)) {
             throw new IllegalArgumentException("Condition must be a JpaConditionAdapter");
         }
         
         JpaConditionAdapter jpaCondition = (JpaConditionAdapter) globalCondition;
         
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> query = cb.createQuery(entityClass);
-        Root<T> root = query.from(entityClass);
+
         
         query.where(jpaCondition.getPredicate());
         

@@ -8,7 +8,7 @@ namespace DynamicFilter.Core.Models
     /// The ref must be an enum implementing IPropertyRef for type safety and performance.
     /// </summary>
     /// <typeparam name="P">The PropertyRef enum type</typeparam>
-    public class FilterDefinition<P> where P : struct, Enum
+    public class FilterDefinition<P> where P : struct, Enum, IPropertyRef
     {
         /// <summary>
         /// Gets the property reference (type-safe enum).

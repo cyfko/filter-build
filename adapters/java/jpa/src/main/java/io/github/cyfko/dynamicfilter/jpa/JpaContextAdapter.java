@@ -6,6 +6,11 @@ import io.github.cyfko.dynamicfilter.core.model.FilterDefinition;
 import io.github.cyfko.dynamicfilter.core.validation.Operator;
 import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,13 +22,18 @@ import java.util.Map;
  * @param <P> The PropertyRef enum for this entity
  */
 public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Context {
-    
+    private final Root<T> root;
+    private final CriteriaQuery<T> query;
+    private final CriteriaBuilder criteriaBuilder;
     private final Map<String, JpaConditionAdapter<T>> filters;
-    private final JpaConditionAdapterBuilder<T, P> conditionAdapterBuilder;
+    private final SpecificationBuilder<T, P> specificationBuilder;
     
-    public JpaContextAdapter(JpaConditionAdapterBuilder<T, P> conditionAdapterBuilder) {
+    public JpaContextAdapter(Class<T> entityClass, EntityManager entityManager, SpecificationBuilder<T, P> specificationBuilder) {
+        this.criteriaBuilder = entityManager.getCriteriaBuilder();
+        this.query = criteriaBuilder.createQuery(entityClass);
+        this.root = query.from(entityClass);
         this.filters = new HashMap<>();
-        this.conditionAdapterBuilder = conditionAdapterBuilder;
+        this.specificationBuilder = specificationBuilder;
     }
     
     public void addCondition(String filterKey, FilterDefinition<P> definition) {
@@ -35,7 +45,10 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
         propertyRef.validateOperator(operator);
         
         // Build condition using the builder and store it
-        JpaConditionAdapter<T> condition = conditionAdapterBuilder.build(propertyRef, operator, definition.getValue());
+        Predicate predicate = specificationBuilder.build(propertyRef, operator, definition.getValue())
+                .toPredicate(root,query, criteriaBuilder);
+
+        JpaConditionAdapter<T> condition = new JpaConditionAdapter<>(predicate, criteriaBuilder);
         filters.put(filterKey, condition);
     }
     

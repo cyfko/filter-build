@@ -11,7 +11,7 @@ public interface Parser {
     /**
      * Parses a DSL expression string into a FilterTree.
      * 
-     * @param dslExpression The DSL expression to parse (e.g., "(f1 & f2) | !f3")
+     * @param dslExpression The DSL expression to parse (e.g., "(f1 &amp; f2) | !f3")
      * @return A FilterTree representing the parsed expression
      * @throws DSLSyntaxException if the DSL expression is invalid
      */

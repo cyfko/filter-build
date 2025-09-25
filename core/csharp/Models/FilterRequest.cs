@@ -9,7 +9,7 @@ namespace DynamicFilter.Core.Models
     /// and a DSL expression for combining them.
     /// </summary>
     /// <typeparam name="P">The PropertyRef enum type</typeparam>
-    public class FilterRequest<P> where P : struct, Enum
+    public class FilterRequest<P> where P : struct, Enum, IPropertyRef
     {
         /// <summary>
         /// Gets the filter definitions.

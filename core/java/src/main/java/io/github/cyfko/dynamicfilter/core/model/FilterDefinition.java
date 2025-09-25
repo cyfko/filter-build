@@ -6,6 +6,8 @@ import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
 /**
  * Represents a single filter definition with property reference, operator, and value.
  * The ref must be an enum implementing PropertyRef for type safety and performance.
+ *
+ * @param <P> type de la propriété de référence (enum implémentant {@link PropertyRef})
  */
 public class FilterDefinition<P extends Enum<P> & PropertyRef> {
     

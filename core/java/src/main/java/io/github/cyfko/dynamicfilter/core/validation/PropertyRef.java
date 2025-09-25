@@ -4,37 +4,38 @@ import java.util.Set;
 
 /**
  * Interface for property references in dynamic filtering.
- * 
+ * <p>
  * Developers should create their own enums implementing this interface to define
  * the properties available for their entities.
- * 
+ * </p>
+ * <p>
  * PropertyRef contains only the logical property definition (type, operators).
  * Each adapter is responsible for interpreting PropertyRef and creating
  * appropriate conditions. This allows maximum flexibility - a single PropertyRef
  * can map to multiple entity fields or complex conditions.
- * 
+ * </p>
  * Example usage:
- * <pre>
+ * <pre>{@code
  * public enum UserPropertyRef implements PropertyRef {
  *     USER_NAME(String.class, Set.of(LIKE, EQ, IN)),
  *     USER_AGE(Integer.class, Set.of(EQ, GT, GTE, LT, LTE, BETWEEN)),
  *     USER_STATUS(String.class, Set.of(EQ, NE, IN));
  *     
- *     private final Class<?> type;
+ *     private final Class&lt;?&gt; type;
  *     private final Set<Operator> supportedOperators;
  *     
- *     UserPropertyRef(Class<?> type, Set<Operator> supportedOperators) {
+ *     UserPropertyRef(Class&lt;?&gt; type, Set&lt;Operator&gt; supportedOperators) {
  *         this.type = type;
  *         this.supportedOperators = Set.copyOf(supportedOperators);
  *     }
  *     
  *     @Override
- *     public Class<?> getType() { return type; }
+ *     public Class&lt;?&gt; getType() { return type; }
  *     
  *     @Override
  *     public Set<Operator> getSupportedOperators() { return supportedOperators; }
  * }
- * </pre>
+ * }</pre>
  */
 public interface PropertyRef {
     

@@ -13,6 +13,28 @@
     <name>Dynamic Filter Core - Java</name>
     <description>Framework-agnostic core module for dynamic filtering with DSL support</description>
 
+    <developers>
+        <developer>
+            <name>Frank KOSSI</name>
+            <email>frank.kossi@kunrin.com</email>
+            <organization>Kunrin SA</organization>
+            <organizationUrl>https://www.kunrin.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/cyfko/dynamic-filter.git</connection>
+        <developerConnection>scm:git:ssh://github.com:cyfko/dynamic-filter.git</developerConnection>
+        <url>https://github.com/cyfko/dynamic-filter/tree/main</url>
+    </scm>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -73,16 +95,48 @@
                     <execution>
                         <id>attach-sources</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-            
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
+
+            <!-- GPG signing  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Javadoc and source attachement  -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.3</version>
+                <configuration>
+                    <additionalJOption>-tag apiNote:a:"API Note:"</additionalJOption>
+                    <additionalJOption>-tag implSpec:a:"Implementation Requirements:"</additionalJOption>
+                    <additionalJOption>-tag implNote:a:"Implementation Note:"</additionalJOption>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -95,25 +149,4 @@
         </plugins>
     </build>
 
-    <developers>
-        <developer>
-            <name>Frank KOSSI</name>
-            <email>frank.kossi@kunrin.com</email>
-            <organization>Kunrin SA</organization>
-            <organizationUrl>https://www.kunrin.com</organizationUrl>
-        </developer>
-    </developers>
-
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-        </license>
-    </licenses>
-
-    <scm>
-        <connection>scm:git:git://github.com/cyfko/dynamic-filter.git</connection>
-        <developerConnection>scm:git:ssh://github.com:cyfko/dynamic-filter.git</developerConnection>
-        <url>https://github.com/cyfko/dynamic-filter/tree/main</url>
-    </scm>
 </project>

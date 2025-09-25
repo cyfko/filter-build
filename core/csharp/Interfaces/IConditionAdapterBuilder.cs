@@ -10,7 +10,7 @@ namespace DynamicFilter.Core.Interfaces
     /// </summary>
     /// <typeparam name="T">The entity type (e.g., User, Product)</typeparam>
     /// <typeparam name="P">The PropertyRef enum for this entity</typeparam>
-    public interface IConditionAdapterBuilder<T, P> where P : struct, Enum
+    public interface IConditionAdapterBuilder<T, P> where P : struct, Enum, IPropertyRef
     {
         /// <summary>
         /// Builds a condition adapter from the given parameters.

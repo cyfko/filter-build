@@ -10,7 +10,7 @@ import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
  * @param <T> The entity type (e.g., User, Product)
  * @param <P> The PropertyRef enum for this entity
  */
-public interface JpaConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef> {
+public interface SpecificationBuilder<T, P extends Enum<P> & PropertyRef> {
     
     /**
      * Builds a JPA condition adapter from the given parameters.
@@ -20,5 +20,5 @@ public interface JpaConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef> 
      * @param value The value as object
      * @return A JPA condition adapter
      */
-    JpaConditionAdapter<T> build(P ref, Operator op, Object value);
+    Specification<T> build(P ref, Operator op, Object value);
 }

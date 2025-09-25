@@ -6,6 +6,8 @@ import java.util.Map;
 /**
  * Represents a complete filter request containing multiple filter definitions
  * and a DSL expression for combining them.
+ *
+ * @param <P> type de la propriété de référence (enum implémentant {@link PropertyRef})
  */
 public class FilterRequest<P extends Enum<P> & PropertyRef> {
     

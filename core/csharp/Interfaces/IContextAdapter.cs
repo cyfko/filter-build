@@ -8,7 +8,7 @@ namespace DynamicFilter.Core.Interfaces
     /// </summary>
     /// <typeparam name="T">The entity type (e.g., User, Product)</typeparam>
     /// <typeparam name="P">The PropertyRef enum for this entity</typeparam>
-    public interface IContextAdapter<T, P> : IContext where P : struct, Enum
+    public interface IContextAdapter<T, P> : IContext where P : struct, Enum, IPropertyRef
     {
         /// <summary>
         /// Adds a condition for the given filter key.

@@ -13,7 +13,7 @@ import java.util.Stack;
 /**
  * Implementation of the DSL parser that converts string expressions into FilterTree structures.
  * 
- * Supports operators: & (AND), | (OR), ! (NOT)
+ * Supports operators: &amp; (AND), | (OR), ! (NOT)
  * Supports parentheses for grouping
  * Token identifiers must be alphanumeric
  */
