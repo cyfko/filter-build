@@ -51,11 +51,11 @@
             <version>${project.version}</version>
         </dependency>
         
-        <!-- JPA API -->
+        <!-- Jakarta Persistence API -->
         <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
-            <version>2.2</version>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
         </dependency>
         
         <!-- Test dependencies -->
@@ -81,9 +81,9 @@
         </dependency>
         
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.6.15.Final</version>
+            <version>6.4.4.Final</version>
             <scope>test</scope>
         </dependency>
         
@@ -95,13 +95,6 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- Hibernate EntityManager for JPA -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>5.6.15.Final</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

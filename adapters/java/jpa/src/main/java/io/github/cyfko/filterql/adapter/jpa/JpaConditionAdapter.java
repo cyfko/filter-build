@@ -1,9 +1,9 @@
 package io.github.cyfko.filterql.adapter.jpa;
 
-import io.github.cyfko.dynamicfilter.core.Condition;
+import io.github.cyfko.filterql.core.Condition;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
 
 /**
  * JPA implementation of the Condition interface using CriteriaBuilder.

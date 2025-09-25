@@ -1,7 +1,7 @@
 package io.github.cyfko.filterql.adapter.jpa;
 
-import io.github.cyfko.dynamicfilter.core.validation.Operator;
-import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.PropertyRef;
 
 /**
  * Builder interface for creating JPA condition adapters.

@@ -1,16 +1,16 @@
 package io.github.cyfko.filterql.adapter.jpa;
 
-import io.github.cyfko.dynamicfilter.core.Condition;
-import io.github.cyfko.dynamicfilter.core.Context;
-import io.github.cyfko.dynamicfilter.core.model.FilterDefinition;
-import io.github.cyfko.dynamicfilter.core.validation.Operator;
-import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.Condition;
+import io.github.cyfko.filterql.core.Context;
+import io.github.cyfko.filterql.core.model.FilterDefinition;
+import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.PropertyRef;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.util.HashMap;
 import java.util.Map;
 
