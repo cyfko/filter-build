@@ -7,17 +7,17 @@ import java.util.Map;
  * Represents a complete filter request containing multiple filter definitions
  * and a DSL expression for combining them.
  */
-public class FilterRequest<T extends PropertyRef> {
+public class FilterRequest<P extends Enum<P> & PropertyRef> {
     
-    private final Map<String, FilterDefinition<T>> filters;
+    private final Map<String, FilterDefinition<P>> filters;
     private final String combineWith;
     
-    public FilterRequest(Map<String, FilterDefinition<T>> filters, String combineWith) {
+    public FilterRequest(Map<String, FilterDefinition<P>> filters, String combineWith) {
         this.filters = filters;
         this.combineWith = combineWith;
     }
     
-    public Map<String, FilterDefinition<T>> getFilters() {
+    public Map<String, FilterDefinition<P>> getFilters() {
         return filters;
     }
     

@@ -5,21 +5,21 @@ import io.github.cyfko.dynamicfilter.core.validation.PropertyRef;
 
 /**
  * Represents a single filter definition with property reference, operator, and value.
- * The ref and operator are now type-safe with specific PropertyRef and Operator enums.
+ * The ref must be an enum implementing PropertyRef for type safety and performance.
  */
-public class FilterDefinition<T extends PropertyRef> {
+public class FilterDefinition<P extends Enum<P> & PropertyRef> {
     
-    private final T ref;
+    private final P ref;
     private final Operator operator;
     private final Object value;
     
-    public FilterDefinition(T ref, Operator operator, Object value) {
+    public FilterDefinition(P ref, Operator operator, Object value) {
         this.ref = ref;
         this.operator = operator;
         this.value = value;
     }
     
-    public T getRef() {
+    public P getRef() {
         return ref;
     }
     

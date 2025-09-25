@@ -31,7 +31,9 @@ class OperatorTest {
     
     @Test
     void testFromStringWithWhitespace() {
+        // Test avec des espaces autour des codes/symboles valides
         assertEquals(Operator.EQUALS, Operator.fromString(" = "));
+        assertEquals(Operator.EQUALS, Operator.fromString(" EQ "));
         assertEquals(Operator.LIKE, Operator.fromString(" LIKE "));
     }
     

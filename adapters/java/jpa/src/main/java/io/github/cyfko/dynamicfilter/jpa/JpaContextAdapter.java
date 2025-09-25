@@ -12,8 +12,11 @@ import java.util.Map;
 /**
  * JPA implementation of the Context interface.
  * This adapter uses JpaConditionAdapterBuilder to create conditions.
+ * 
+ * @param <T> The entity type (e.g., User, Product)
+ * @param <P> The PropertyRef enum for this entity
  */
-public class JpaContextAdapter<T, P extends PropertyRef> implements Context {
+public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Context {
     
     private final Map<String, JpaConditionAdapter<T>> filters;
     private final JpaConditionAdapterBuilder<T, P> conditionAdapterBuilder;

@@ -49,7 +49,7 @@ public enum Operator {
         String trimmed = value.trim().toUpperCase();
         
         for (Operator op : values()) {
-            if (op.symbol.equalsIgnoreCase(value) || 
+            if (op.symbol.equalsIgnoreCase(trimmed) || 
                 op.code.equalsIgnoreCase(trimmed)) {
                 return op;
             }
