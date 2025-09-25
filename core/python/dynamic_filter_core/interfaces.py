@@ -4,11 +4,16 @@ These interfaces define the contract that all implementations must follow.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Dict, List, Optional, TypeVar, Generic, Union
 from dataclasses import dataclass
+from enum import Enum
 
 T = TypeVar('T')
-P = TypeVar('P', bound='PropertyRef')
+P = TypeVar('P', bound=Enum)
+
+class PropertyRefEnum(Enum):
+    """Base enum for PropertyRef implementations."""
+    pass
 
 @dataclass
 class FilterDefinition(Generic[P]):
@@ -47,6 +52,39 @@ class Context(ABC):
     @abstractmethod
     def get_condition(self, filter_key: str) -> Optional[Condition]:
         """Retrieves the condition associated with the given filter key."""
+        pass
+
+class ContextAdapter(ABC, Generic[T, P]):
+    """Context adapter interface for type-safe filter building.
+    
+    Args:
+        T: The entity type (e.g., User, Product)
+        P: The PropertyRef enum for this entity
+    """
+    
+    @abstractmethod
+    def add_condition(self, filter_key: str, definition: FilterDefinition[P]) -> None:
+        """Adds a condition for the given filter key."""
+        pass
+    
+    @abstractmethod
+    def get_condition(self, filter_key: str) -> Optional[Condition]:
+        """Retrieves the condition associated with the given filter key."""
+        pass
+
+class ConditionAdapterBuilder(ABC, Generic[T, P]):
+    """Builder interface for creating condition adapters.
+    
+    Each implementation defines how to build a condition from PropertyRef, Operator, and value.
+    
+    Args:
+        T: The entity type (e.g., User, Product)
+        P: The PropertyRef enum for this entity
+    """
+    
+    @abstractmethod
+    def build(self, ref: P, operator: 'Operator', value: Any) -> Condition:
+        """Builds a condition adapter from the given parameters."""
         pass
 
 class FilterTree(ABC):

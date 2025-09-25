@@ -20,40 +20,56 @@ export enum Operator {
 }
 
 /**
- * Base class for property references.
- * Developers should create their own enums extending this class to define
+ * Interface for property references in dynamic filtering.
+ * 
+ * Developers should create their own enums implementing this interface to define
  * the properties available for their entities.
  * 
  * Example usage:
  * ```typescript
- * enum UserPropertyRef extends PropertyRef {
- *   USER_NAME = new PropertyRef("userName", "string", [Operator.LIKE, Operator.EQUALS]),
- *   USER_AGE = new PropertyRef("age", "number", [Operator.EQUALS, Operator.GREATER_THAN]);
+ * enum UserPropertyRef implements PropertyRef {
+ *   USER_NAME = "USER_NAME",
+ *   USER_AGE = "USER_AGE",
+ *   USER_EMAIL = "USER_EMAIL"
  * }
+ * 
+ * // Enum values implement PropertyRef interface
+ * Object.assign(UserPropertyRef, {
+ *   [UserPropertyRef.USER_NAME]: {
+ *     type: "string",
+ *     supportedOperators: [Operator.LIKE, Operator.EQUALS]
+ *   },
+ *   [UserPropertyRef.USER_AGE]: {
+ *     type: "number", 
+ *     supportedOperators: [Operator.EQUALS, Operator.GREATER_THAN]
+ *   }
+ * });
  * ```
  */
-export abstract class PropertyRef {
-  constructor(
-    public readonly entityField: string,
-    public readonly type: string,
-    public readonly supportedOperators: Operator[]
-  ) {}
+export interface PropertyRef {
+  readonly type: string;
+  readonly supportedOperators: readonly Operator[];
+}
 
+/**
+ * Utility functions for PropertyRef
+ */
+export namespace PropertyRefUtils {
   /**
    * Checks if this property supports the given operator.
    */
-  supportsOperator(operator: Operator): boolean {
-    return this.supportedOperators.includes(operator);
+  export function supportsOperator(propertyRef: PropertyRef, operator: Operator): boolean {
+    return propertyRef.supportedOperators.includes(operator);
   }
 
   /**
    * Validates that the given operator is supported by this property.
    */
-  validateOperator(operator: Operator): void {
-    if (!this.supportsOperator(operator)) {
+  export function validateOperator(propertyRef: PropertyRef, operator: Operator): void {
+    if (!supportsOperator(propertyRef, operator)) {
       throw new Error(
-        `Operator '${operator}' is not supported for property '${this.entityField}'. ` +
-        `Supported operators: ${this.supportedOperators.join(', ')}`
+        `Operator '${operator}' is not supported for this property. ` +
+        `Supported operators: ${propertyRef.supportedOperators.join(', ')}`
       );
     }
   }
@@ -61,12 +77,8 @@ export abstract class PropertyRef {
   /**
    * Gets a human-readable description of this property reference.
    */
-  getDescription(): string {
-    return `${this.constructor.name}.${this.entityField} (${this.type})`;
-  }
-
-  toString(): string {
-    return `PropertyRef{entityField='${this.entityField}', type=${this.type}, supportedOperators=[${this.supportedOperators.join(', ')}]}`;
+  export function getDescription(propertyRef: PropertyRef, name: string): string {
+    return `${name} (${propertyRef.type})`;
   }
 }
 

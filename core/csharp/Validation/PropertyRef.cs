@@ -5,96 +5,107 @@ using System.Linq;
 namespace DynamicFilter.Core.Validation
 {
     /// <summary>
-    /// Base class for property references.
-    /// Developers should create their own enums extending this class to define
+    /// Interface for property references in dynamic filtering.
+    /// 
+    /// Developers should create their own enums implementing this interface to define
     /// the properties available for their entities.
     /// 
     /// Example usage:
     /// <code>
-    /// public class UserPropertyRef : PropertyRef
+    /// public enum UserPropertyRef : IPropertyRef
     /// {
-    ///     public static readonly UserPropertyRef UserName = new UserPropertyRef("userName", "string", new[] { Operator.Like, Operator.Equals });
-    ///     public static readonly UserPropertyRef UserAge = new UserPropertyRef("age", "int", new[] { Operator.Equals, Operator.GreaterThan });
+    ///     UserName,
+    ///     UserAge,
+    ///     UserEmail
+    /// }
+    /// 
+    /// // PropertyRef implementation
+    /// public class UserPropertyRefImpl
+    /// {
+    ///     public static readonly IPropertyRef UserName = new PropertyRefImpl("string", new[] { Operator.Like, Operator.Equals });
+    ///     public static readonly IPropertyRef UserAge = new PropertyRefImpl("int", new[] { Operator.Equals, Operator.GreaterThan });
+    ///     public static readonly IPropertyRef UserEmail = new PropertyRefImpl("string", new[] { Operator.Equals, Operator.Like });
     /// }
     /// </code>
     /// </summary>
-    public abstract class PropertyRef
+    public interface IPropertyRef
     {
-        public string EntityField { get; }
-        public string Type { get; }
-        public IReadOnlyList<Operator> SupportedOperators { get; }
+        /// <summary>
+        /// Gets the type of this property.
+        /// </summary>
+        string Type { get; }
 
-        protected PropertyRef(string entityField, string type, Operator[] supportedOperators)
-        {
-            EntityField = entityField ?? throw new ArgumentNullException(nameof(entityField));
-            Type = type ?? throw new ArgumentNullException(nameof(type));
-            SupportedOperators = supportedOperators?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(supportedOperators));
-        }
+        /// <summary>
+        /// Gets the set of operators supported by this property.
+        /// </summary>
+        IReadOnlyList<Operator> SupportedOperators { get; }
 
         /// <summary>
         /// Checks if this property supports the given operator.
         /// </summary>
         /// <param name="operator">The operator to check</param>
         /// <returns>True if the operator is supported, false otherwise</returns>
-        public bool SupportsOperator(Operator @operator)
-        {
-            return SupportedOperators.Contains(@operator);
-        }
+        bool SupportsOperator(Operator @operator);
 
         /// <summary>
         /// Validates that the given operator is supported by this property.
         /// </summary>
         /// <param name="operator">The operator to validate</param>
         /// <exception cref="ArgumentException">Thrown if the operator is not supported</exception>
+        void ValidateOperator(Operator @operator);
+    }
+
+    /// <summary>
+    /// Implementation of IPropertyRef interface for enum values.
+    /// </summary>
+    public class PropertyRefImpl : IPropertyRef
+    {
+        public string Type { get; }
+        public IReadOnlyList<Operator> SupportedOperators { get; }
+
+        public PropertyRefImpl(string type, Operator[] supportedOperators)
+        {
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            SupportedOperators = supportedOperators?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(supportedOperators));
+        }
+
+        public bool SupportsOperator(Operator @operator)
+        {
+            return SupportedOperators.Contains(@operator);
+        }
+
         public void ValidateOperator(Operator @operator)
         {
             if (!SupportsOperator(@operator))
             {
                 throw new ArgumentException(
-                    $"Operator '{@operator}' is not supported for property '{EntityField}'. " +
+                    $"Operator '{@operator}' is not supported for this property. " +
                     $"Supported operators: {string.Join(", ", SupportedOperators)}");
             }
         }
 
-        /// <summary>
-        /// Gets a human-readable description of this property reference.
-        /// </summary>
-        /// <returns>A description string</returns>
         public string GetDescription()
         {
-            return $"{GetType().Name}.{EntityField} ({Type})";
+            return $"PropertyRef({Type})";
         }
 
-        /// <summary>
-        /// Returns a string representation of this property reference.
-        /// </summary>
-        /// <returns>A string representation</returns>
         public override string ToString()
         {
-            return $"PropertyRef{{EntityField='{EntityField}', Type={Type}, SupportedOperators=[{string.Join(", ", SupportedOperators)}]}}";
+            return $"PropertyRef{{Type={Type}, SupportedOperators=[{string.Join(", ", SupportedOperators)}]}}";
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to this property reference.
-        /// </summary>
-        /// <param name="obj">The object to compare</param>
-        /// <returns>True if the objects are equal, false otherwise</returns>
         public override bool Equals(object obj)
         {
-            if (obj is PropertyRef other)
+            if (obj is PropertyRefImpl other)
             {
-                return EntityField == other.EntityField && Type == other.Type;
+                return Type == other.Type;
             }
             return false;
         }
 
-        /// <summary>
-        /// Returns a hash code for this property reference.
-        /// </summary>
-        /// <returns>A hash code</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(EntityField, Type);
+            return HashCode.Combine(Type);
         }
     }
 }

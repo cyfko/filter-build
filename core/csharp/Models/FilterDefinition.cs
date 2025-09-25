@@ -5,15 +5,15 @@ namespace DynamicFilter.Core.Models
 {
     /// <summary>
     /// Represents a single filter definition with property reference, operator, and value.
-    /// The ref is now type-safe with a specific PropertyRef enum.
+    /// The ref must be an enum implementing IPropertyRef for type safety and performance.
     /// </summary>
-    /// <typeparam name="T">The PropertyRef type</typeparam>
-    public class FilterDefinition<T> where T : PropertyRef
+    /// <typeparam name="P">The PropertyRef enum type</typeparam>
+    public class FilterDefinition<P> where P : struct, Enum
     {
         /// <summary>
-        /// Gets the property reference (type-safe).
+        /// Gets the property reference (type-safe enum).
         /// </summary>
-        public T Ref { get; }
+        public P Ref { get; }
 
         /// <summary>
         /// Gets the operator (type-safe).
@@ -28,12 +28,12 @@ namespace DynamicFilter.Core.Models
         /// <summary>
         /// Initializes a new instance of the FilterDefinition class.
         /// </summary>
-        /// <param name="ref">The property reference (type-safe)</param>
+        /// <param name="ref">The property reference (type-safe enum)</param>
         /// <param name="operator">The operator (type-safe)</param>
         /// <param name="value">The value</param>
-        public FilterDefinition(T @ref, Operator @operator, object? value)
+        public FilterDefinition(P @ref, Operator @operator, object? value)
         {
-            Ref = @ref ?? throw new ArgumentNullException(nameof(@ref));
+            Ref = @ref;
             Operator = @operator;
             Value = value;
         }
