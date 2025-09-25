@@ -11,6 +11,8 @@ public interface Context {
      * 
      * @param filterKey The unique identifier for the filter
      * @return The condition associated with the filter key, or null if not found
+     *
+     * @throws IllegalArgumentException If no condition is associated with the given filter key.
      */
     Condition getCondition(String filterKey);
 }

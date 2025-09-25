@@ -22,6 +22,7 @@ import java.util.Map;
  * @param <P> The PropertyRef enum for this entity
  */
 public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Context {
+    private final EntityManager entityManager;
     private final Root<T> root;
     private final CriteriaQuery<T> query;
     private final CriteriaBuilder criteriaBuilder;
@@ -29,6 +30,7 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
     private final SpecificationBuilder<T, P> specificationBuilder;
     
     public JpaContextAdapter(Class<T> entityClass, EntityManager entityManager, SpecificationBuilder<T, P> specificationBuilder) {
+        this.entityManager = entityManager;
         this.criteriaBuilder = entityManager.getCriteriaBuilder();
         this.query = criteriaBuilder.createQuery(entityClass);
         this.root = query.from(entityClass);
@@ -59,5 +61,13 @@ public class JpaContextAdapter<T, P extends Enum<P> & PropertyRef> implements Co
             throw new IllegalArgumentException("No condition found for key: " + filterKey);
         }
         return condition;
+    }
+
+    public CriteriaQuery<T> getQuery() {
+        return query;
+    }
+
+    public EntityManager getEntityManager(){
+        return entityManager;
     }
 }
