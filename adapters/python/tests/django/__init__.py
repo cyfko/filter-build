@@ -1,3 +1,0 @@
-"""
-Django adapter tests package.
-"""

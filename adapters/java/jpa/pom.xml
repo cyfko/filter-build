@@ -7,11 +7,12 @@
 
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-adapter-jpa</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>FilterQL JPA Adapter</name>
     <description>JPA dynamic filtering composer for FilterQL</description>
+    <url>https://github.com/cyfko/filter-build</url>
 
     <developers>
         <developer>
@@ -48,7 +49,7 @@
         <dependency>
             <groupId>io.github.cyfko</groupId>
             <artifactId>filterql-core</artifactId>
-            <version>${project.version}</version>
+            <version>1.2.0</version>
         </dependency>
         
         <!-- Jakarta Persistence API -->
@@ -107,6 +108,72 @@
                     <source>11</source>
                     <target>11</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
+
+            <!-- GPG signing  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Javadoc and source attachement  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <additionalJOption>-tag apiNote:a:"API Note:"</additionalJOption>
+                    <additionalJOption>-tag implSpec:a:"Implementation Requirements:"</additionalJOption>
+                    <additionalJOption>-tag implNote:a:"Implementation Note:"</additionalJOption>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
