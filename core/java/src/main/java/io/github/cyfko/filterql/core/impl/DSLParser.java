@@ -423,12 +423,12 @@ public class DSLParser implements Parser {
         }
 
         @Override
-        public Condition generate(Context context) {
-            Condition condition = context.getCondition(identifier);
-            if (condition == null) {
-                throw new IllegalArgumentException("No condition found for identifier: " + identifier);
+        public Condition generate(Context context) throws DSLSyntaxException {
+            try {
+                return context.getCondition(identifier);
+            } catch (IllegalArgumentException e) {
+                throw new DSLSyntaxException(String.format("Filter <%s> referenced in the combination expression does not exist.", identifier));
             }
-            return condition;
         }
 
         @Override

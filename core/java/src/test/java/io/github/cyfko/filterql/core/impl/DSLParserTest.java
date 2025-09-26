@@ -435,29 +435,29 @@ public class DSLParserTest {
         @Test
         @DisplayName("Identifiant non trouvé dans le contexte")
         void testIdentifierNotFoundInContext() throws DSLSyntaxException {
-            when(mockContext.getCondition("UNKNOWN")).thenReturn(null);
+            when(mockContext.getCondition("UNKNOWN")).thenThrow(IllegalArgumentException.class);
 
             FilterTree tree = parser.parse("UNKNOWN");
 
-            IllegalArgumentException exception = assertThrows(
-                    IllegalArgumentException.class,
+            DSLSyntaxException exception = assertThrows(
+                    DSLSyntaxException.class,
                     () -> tree.generate(mockContext)
             );
-            assertTrue(exception.getMessage().contains("No condition found for identifier: UNKNOWN"));
+            assertTrue(exception.getMessage().contains("Filter <UNKNOWN> referenced in the combination expression does not exist."));
         }
 
         @Test
         @DisplayName("Identifiant non trouvé dans expression complexe")
         void testIdentifierNotFoundInComplexExpression() throws DSLSyntaxException {
-            when(mockContext.getCondition("UNKNOWN")).thenReturn(null);
+            when(mockContext.getCondition("UNKNOWN")).thenThrow(IllegalArgumentException.class);
 
             FilterTree tree = parser.parse("A & UNKNOWN");
 
-            IllegalArgumentException exception = assertThrows(
-                    IllegalArgumentException.class,
+            DSLSyntaxException exception = assertThrows(
+                    DSLSyntaxException.class,
                     () -> tree.generate(mockContext)
             );
-            assertTrue(exception.getMessage().contains("No condition found for identifier: UNKNOWN"));
+            assertTrue(exception.getMessage().contains("Filter <UNKNOWN> referenced in the combination expression does not exist."));
         }
     }
 

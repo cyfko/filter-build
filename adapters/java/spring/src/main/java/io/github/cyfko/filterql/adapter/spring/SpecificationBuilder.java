@@ -3,6 +3,7 @@ package io.github.cyfko.filterql.adapter.spring;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.FilterTree;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.impl.DSLParser;
 import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
@@ -36,7 +37,7 @@ public class SpecificationBuilder {
      * @return une {@link Specification} traduisant la requête de filtrage
      * @throws DSLSyntaxException en cas de syntaxe invalide dans l'expression DSL
      */
-    public static <T, P extends Enum<P> & PropertyRef & PathShape> Specification<T> toSpecification(FilterRequest<P> filterRequest) throws DSLSyntaxException {
+    public static <T, P extends Enum<P> & PropertyRef & PathShape> Specification<T> toSpecification(FilterRequest<P> filterRequest) throws DSLSyntaxException, FilterValidationException {
         // Parse the filter DSL
         DSLParser dslParser = new DSLParser();
         FilterTree filterTree = dslParser.parse(filterRequest.getCombineWith());
