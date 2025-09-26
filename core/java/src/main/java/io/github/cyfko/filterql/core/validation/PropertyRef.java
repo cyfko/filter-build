@@ -330,29 +330,72 @@ public interface PropertyRef {
     }
 
     /**
-     * Classe interne représentant le résultat d'une validation.
+     * Classe représentant le résultat d'une opération de validation.
+     * <p>
+     * Le résultat peut indiquer soit une validation réussie, soit un échec avec un message d'erreur associé.
+     * Cette classe est utilisée pour transmettre de manière simple et claire l'état de la validation.
+     * </p>
+     *
+     * <p>Instances sont immuables et créées via les méthodes statiques
+     * {@link #success()} et {@link #failure(String)}.</p>
+     *
+     * <p>Exemple d'utilisation :</p>
+     * <pre>{@code
+     * ValidationResult result = validateInput(value);
+     * if (!result.isValid()) {
+     *     System.out.println("Erreur de validation : " + result.getErrorMessage());
+     * }
+     * }</pre>
      */
     class ValidationResult {
+
         private final boolean valid;
         private final String errorMessage;
 
+        /**
+         * Constructeur privé - utilisation via les méthodes statiques de création.
+         *
+         * @param valid        true si validation réussie, false sinon
+         * @param errorMessage message d'erreur en cas d'échec, ou null si valide
+         */
         private ValidationResult(boolean valid, String errorMessage) {
             this.valid = valid;
             this.errorMessage = errorMessage;
         }
 
+        /**
+         * Crée une instance indiquant une validation réussie.
+         *
+         * @return un résultat valide sans message d'erreur
+         */
         public static ValidationResult success() {
             return new ValidationResult(true, null);
         }
 
+        /**
+         * Crée une instance indiquant une validation échouée avec un message d'erreur.
+         *
+         * @param errorMessage message expliquant la raison de l'échec
+         * @return un résultat invalide contenant le message d'erreur fourni
+         */
         public static ValidationResult failure(String errorMessage) {
             return new ValidationResult(false, errorMessage);
         }
 
+        /**
+         * Indique si la validation a réussi.
+         *
+         * @return true si valide, false sinon
+         */
         public boolean isValid() {
             return valid;
         }
 
+        /**
+         * Retourne le message d'erreur associé à une validation échouée.
+         *
+         * @return message d'erreur si invalide, ou null si valide
+         */
         public String getErrorMessage() {
             return errorMessage;
         }
