@@ -5,16 +5,19 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Utilitaires avancés pour la réflexion Java et la manipulation dynamique de types, notamment dans le cadre
- * de l'introspection et l'analyse des collections et des hiérarchies de classes.
- *
+ * Utilitaires avancés pour la réflexion Java et la manipulation dynamique de types,
+ * notamment dans le cadre de l'introspection et de l'analyse des collections et
+ * des hiérarchies de classes.
  * <p>
- * Propose des fonctions de recherche de champ à travers la hiérarchie des classes, d'extraction du type générique
- * d'une collection, de détermination du type commun à une collection d'objets, ainsi qu'un outil de capture
- * de type générique à l'exécution.
- * </p>
+ * Cette classe propose des fonctions pour :
+ * <ul>
+ *   <li>rechercher un champ dans une hiérarchie de classes,</li>
+ *   <li>extraire le type générique d'une collection,</li>
+ *   <li>déterminer la classe commune la plus haute dans une collection d'objets,</li>
+ *   <li>capturer dynamiquement le type générique d'un paramètre à l'exécution.</li>
+ * </ul>
  *
- * <h3>Exemple d'utilisation</h3>
+ * <h2>Exemple d'utilisation</h2>
  * <pre>{@code
  * // Recherche du champ "id" dans une classe ou ses superclasses
  * Optional<Field> idField = ClassUtils.getAnyField(MyClass.class, "id");

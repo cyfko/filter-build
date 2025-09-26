@@ -11,11 +11,39 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- * Implementation of the DSL parser that converts string expressions into FilterTree structures.
- * 
- * Supports operators: &amp; (AND), | (OR), ! (NOT)
- * Supports parentheses for grouping
- * Token identifiers must be alphanumeric
+ * Implémentation d'un parser pour un langage spécialisé (DSL) permettant de convertir
+ * des expressions textuelles en structures d'arbre de filtres {@link FilterTree}.
+ * <p>
+ * Le parser supporte les opérateurs logiques suivants :
+ * <ul>
+ *   <li>&amp; (AND)</li>
+ *   <li>| (OR)</li>
+ *   <li>! (NOT)</li>
+ * </ul>
+ * ainsi que les parenthèses pour la gestion des priorités.
+ *
+ * <p>Les identifiants des tokens doivent être alphanumériques ou inclure des underscores.
+ * <p>Le parser utilise l'algorithme de Shunting Yard pour la conversion des expressions infixées en postfixées
+ * avant de générer un arbre d'expression représentant la logique booléenne.
+ *
+ * <h2>Comportement et erreurs</h2>
+ * <ul>
+ *   <li>Rejette les expressions vides ou nulles via {@link DSLSyntaxException}.</li>
+ *   <li>Signale les caractères invalides dans la chaîne source avec position précise.</li>
+ *   <li>Détecte et rejette les parenthèses déséquilibrées.</li>
+ *   <li>Valide la structure des opérandes selon les opérateurs (nombre d'opérandes requis).</li>
+ *   <li>Vérifie la validité des identifiants et leur correspondance avec le contexte via {@link Context}.</li>
+ * </ul>
+ *
+ * <h2>Exemple d'utilisation</h2>
+ * <pre>{@code
+ * DSLParser parser = new DSLParser();
+ * FilterTree tree = parser.parse("!(A & B) | C");
+ * Condition condition = tree.generate(context);
+ * }</pre>
+ *
+ * @author Franck
+ * @since 1.0
  */
 public class DSLParser implements Parser {
     
