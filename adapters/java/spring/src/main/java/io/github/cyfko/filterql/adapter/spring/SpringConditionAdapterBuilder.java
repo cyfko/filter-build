@@ -1,0 +1,89 @@
+package io.github.cyfko.filterql.adapter.spring;
+
+import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtil;
+import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.PropertyRef;
+import jakarta.persistence.criteria.*;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
+
+/**
+ * Builder interface for creating Spring condition adapters.
+ * Each implementation defines how to build a Spring condition from PropertyRef, Operator, and value.
+ * 
+ * @param <T> The entity type (e.g., User, Product)
+ * @param <P> The PropertyRef enum for this entity
+ */
+public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef & PathShape> {
+
+    /**
+     * Builds a Spring condition adapter from the given parameters.
+     *
+     * @param ref   The property reference (type-safe)
+     * @param op    The operator
+     * @param value The value as object
+     * @return A Spring condition adapter
+     */
+    default SpringConditionAdapter<T> build(P ref, Operator op, Object value) {
+        Specification<T> specification = (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+
+            // Ensure operation is supported
+            if (! ref.supportsOperator(op)) {
+                throw new IllegalArgumentException("Unsupported operator: " + op);
+            }
+
+            // Ensure value is of expected type
+            if (! ref.getType().isAssignableFrom(value.getClass())) {
+                throw new IllegalArgumentException("Unsupported type: " + value.getClass());
+            }
+
+            // Ensure FieldShape match
+            Path<?> path = PathResolverUtil.resolvePath(root, ref.getPath());
+
+            switch (op) {
+                case EQUALS:
+                    return cb.equal(path, value);
+                case NOT_EQUALS:
+                    return cb.notEqual(path, value);
+                case GREATER_THAN:
+                    return cb.gt((Path<Number>) path, (Number) value);
+                case GREATER_THAN_OR_EQUAL:
+                    return cb.ge((Path<Number>) path, (Number) value);
+                case LESS_THAN:
+                    return cb.lt((Path<Number>) path, (Number) value);
+                case LESS_THAN_OR_EQUAL:
+                    return cb.le((Path<Number>) path, (Number) value);
+                case LIKE:
+                    return cb.like((Path<String>) path, (String) value);
+                case NOT_LIKE:
+                    return cb.notLike((Path<String>) path, (String) value);
+                case IN:
+                    return path.in((List<?>) value);
+                case NOT_IN:
+                    return cb.not(path.in((List<?>) value));
+                case IS_NULL:
+                    return cb.isNull(path);
+                case IS_NOT_NULL:
+                    return cb.isNotNull(path);
+//                case BETWEEN:
+//                    List<?> betweenValues = (List<?>) value;
+//                    if (betweenValues.size() != 2) {
+//                        throw new IllegalArgumentException("BETWEEN operator requires exactly 2 values");
+//                    }
+//                    return cb.between(path, (Comparable) betweenValues.get(0), (Comparable) betweenValues.get(1));
+//                case NOT_BETWEEN:
+//                    List<?> notBetweenValues = (List<?>) value;
+//                    if (notBetweenValues.size() != 2) {
+//                        throw new IllegalArgumentException("NOT_BETWEEN operator requires exactly 2 values");
+//                    }
+//                    return cb.not(cb.between(path, (Comparable) notBetweenValues.get(0), (Comparable) notBetweenValues.get(1)));
+                default:
+                    throw new IllegalArgumentException("Unsupported operator: " + op);
+            }
+        };
+        
+        return new SpringConditionAdapter<>(specification);
+    }
+
+}

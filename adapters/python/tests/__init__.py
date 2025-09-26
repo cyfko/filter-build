@@ -1,3 +1,1 @@
-"""
-Tests package for Python adapters.
-"""
+# Tests package for FilterQL Python adapters

@@ -7,17 +7,17 @@
  */
 
 import { PropertyRefEnum } from '../../../../core/typescript/src/interfaces';
-import { Operator } from '../../../../core/typescript/src/validation';
+import { Operator, PropertyRef } from '../../../../core/typescript/src/validation';
 import { TypeORMConditionAdapter } from './typeorm-condition-adapter';
 
 export interface TypeORMConditionAdapterBuilder<T, P extends PropertyRefEnum> {
     /**
      * Builds a TypeORM condition adapter from the given parameters.
      * 
-     * @param ref The property reference key (type-safe enum key)
+     * @param ref The property reference object
      * @param op The operator
      * @param value The value as object
      * @return A TypeORM condition adapter
      */
-    build(ref: keyof P, op: Operator, value: any): TypeORMConditionAdapter<T>;
+    build(ref: PropertyRef, op: Operator, value: any): TypeORMConditionAdapter<T>;
 }

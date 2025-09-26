@@ -49,6 +49,7 @@ export enum Operator {
 export interface PropertyRef {
   readonly type: string;
   readonly supportedOperators: readonly Operator[];
+  validateOperator(operator: Operator): void;
 }
 
 /**

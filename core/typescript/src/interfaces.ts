@@ -11,7 +11,7 @@ import { PropertyRef, Operator } from './validation';
 export type PropertyRefEnum<T = any> = Record<string, PropertyRef> & T;
 
 export interface FilterDefinition<P extends PropertyRefEnum> {
-  ref: string;
+  ref: PropertyRef;
   operator: Operator;
   value: any;
 }
@@ -49,7 +49,7 @@ export interface ContextAdapter<T, P extends PropertyRefEnum> extends Context {
  * @template P The PropertyRef enum for this entity
  */
 export interface ConditionAdapterBuilder<T, P extends PropertyRefEnum> {
-  build(ref: string, operator: Operator, value: any): Condition;
+  build(ref: PropertyRef, operator: Operator, value: any): Condition;
 }
 
 export interface FilterTree {

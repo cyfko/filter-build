@@ -6,11 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.cyfko</groupId>
-    <artifactId>dynamic-filter-spring</artifactId>
+    <artifactId>filterql-spring</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Dynamic Filter Spring Adapter</name>
+    <name>FilterQL Spring Adapter</name>
     <description>Spring Data JPA Specification adapter for dynamic filtering</description>
 
     <properties>
@@ -25,15 +25,22 @@
         <!-- Core module dependency -->
         <dependency>
             <groupId>io.github.cyfko</groupId>
-            <artifactId>dynamic-filter-core</artifactId>
-            <version>${project.version}</version>
+            <artifactId>filterql-core</artifactId>
+            <version>1.0.0</version>
         </dependency>
         
         <!-- Spring Data JPA -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
-            <version>2.7.5</version>
+            <version>3.4.3</version>
+        </dependency>
+        
+        <!-- Jakarta Persistence API -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.0.0</version>
         </dependency>
         
         <!-- Test dependencies -->
@@ -52,9 +59,24 @@
         </dependency>
         
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>5.3.23</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Hibernate for JPA Criteria API support in tests -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.4.4.Final</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

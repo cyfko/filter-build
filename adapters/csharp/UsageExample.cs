@@ -87,10 +87,7 @@ namespace DynamicFilter.EntityFramework
 
             // Entity Framework adapter usage
             var efBuilder = new ExampleEntityFrameworkConditionAdapterBuilder();
-            var efAdapter = new EntityFrameworkContextAdapter<User, TestPropertyRef>(
-                efBuilder,
-                typeof(TestPropertyRefImpl) // PropertyRef implementation type
-            );
+            var efAdapter = new EntityFrameworkContextAdapter<User, TestPropertyRef>(efBuilder);
 
             efAdapter.AddCondition("nameFilter", nameFilter);
             efAdapter.AddCondition("ageFilter", ageFilter);

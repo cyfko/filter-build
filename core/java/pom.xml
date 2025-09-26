@@ -12,6 +12,7 @@
 
     <name>FilterQL</name>
     <description>Framework-agnostic dynamic filtering with type-safe DSL (core module)</description>
+    <url>https://github.com/cyfko/filter-build</url>
 
     <developers>
         <developer>

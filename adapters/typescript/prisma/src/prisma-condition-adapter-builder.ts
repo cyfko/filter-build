@@ -6,7 +6,7 @@
  * @template P The PropertyRef enum for this entity
  */
 
-import { Operator } from '../../../../core/typescript/src/validation';
+import { Operator, PropertyRef } from '../../../../core/typescript/src/validation';
 import { PropertyRefEnum } from '../../../../core/typescript/src/interfaces';
 import { PrismaConditionAdapter } from './prisma-condition-adapter';
 
@@ -14,10 +14,10 @@ export interface PrismaConditionAdapterBuilder<T, P extends PropertyRefEnum> {
     /**
      * Builds a Prisma condition adapter from the given parameters.
      * 
-     * @param ref The property reference key (type-safe enum key)
+     * @param ref The property reference object
      * @param op The operator
      * @param value The value as object
      * @return A Prisma condition adapter
      */
-    build(ref: keyof P, op: Operator, value: any): PrismaConditionAdapter<T>;
+    build(ref: PropertyRef, op: Operator, value: any): PrismaConditionAdapter<T>;
 }

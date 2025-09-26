@@ -10,12 +10,12 @@ namespace DynamicFilter.EntityFramework.Adapters
     /// <typeparam name="TEntity">The entity type</typeparam>
     /// <typeparam name="TPropertyRef">The PropertyRef enum type</typeparam>
     public interface IEntityFrameworkConditionAdapterBuilder<TEntity, TPropertyRef> 
-        where TPropertyRef : struct, Enum
+        where TPropertyRef : struct, Enum, IPropertyRef
     {
         /// <summary>
         /// Builds an Entity Framework condition adapter from the given parameters.
         /// </summary>
-        /// <param name="ref">The property reference key (type-safe enum key)</param>
+        /// <param name="ref">The property reference (type-safe)</param>
         /// <param name="op">The operator</param>
         /// <param name="value">The value as object</param>
         /// <returns>An Entity Framework condition adapter</returns>
