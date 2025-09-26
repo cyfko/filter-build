@@ -1,6 +1,5 @@
 package io.github.cyfko.filterql.adapter.spring;
 
-import io.github.cyfko.filterql.adapter.spring.utils.ClassUtils;
 import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtils;
 import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
@@ -9,8 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.NonNull;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Builder interface for creating Spring condition adapters.
@@ -32,11 +29,8 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
     default SpringConditionAdapter<T> build(@NonNull P ref, @NonNull Operator op, Object value) {
         Specification<T> specification = (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 
-            // Ensure operation is supported
-            ref.validateOperator(op);
-
             // Ensure value is of expected type for the given operator
-
+            ref.validateOperatorForValue(op, value);
 
             // Ensure FieldShape match
             Path<?> path = PathResolverUtils.resolvePath(root, ref.getPath());
@@ -66,18 +60,14 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
                     return cb.isNull(path);
                 case IS_NOT_NULL:
                     return cb.isNotNull(path);
-//                case BETWEEN:
-//                    List<?> betweenValues = (List<?>) value;
-//                    if (betweenValues.size() != 2) {
-//                        throw new IllegalArgumentException("BETWEEN operator requires exactly 2 values");
-//                    }
-//                    return cb.between(path, (Comparable) betweenValues.get(0), (Comparable) betweenValues.get(1));
-//                case NOT_BETWEEN:
-//                    List<?> notBetweenValues = (List<?>) value;
-//                    if (notBetweenValues.size() != 2) {
-//                        throw new IllegalArgumentException("NOT_BETWEEN operator requires exactly 2 values");
-//                    }
-//                    return cb.not(cb.between(path, (Comparable) notBetweenValues.get(0), (Comparable) notBetweenValues.get(1)));
+                case BETWEEN: {
+                    Object[] valuesToCompare = ((Collection<?>) value).toArray();
+                    return cb.between((Path<Comparable>) path, (Comparable) valuesToCompare[0], (Comparable) valuesToCompare[1]);
+                }
+                case NOT_BETWEEN:{
+                    Object[] valuesToCompare = ((Collection<?>) value).toArray();
+                    return cb.not(cb.between((Path<Comparable>) path, (Comparable) valuesToCompare[0], (Comparable) valuesToCompare[1]));
+                }
                 default:
                     throw new IllegalArgumentException("Unsupported operator: " + op);
             }

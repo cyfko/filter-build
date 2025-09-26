@@ -91,3 +91,4 @@ public class SpringConditionAdapter<T> implements Condition {
         return specification.toPredicate(root, query, cb);
     }
 }
+

@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring.utils;
 
+import io.github.cyfko.filterql.core.utils.ClassUtils;
 import jakarta.persistence.criteria.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -72,7 +73,8 @@ public class PathResolverUtils {
                 if (isCollection) {
                     current = current.join(part, JoinType.LEFT);
                     currentClass = ClassUtils.getCollectionGenericType(field,0)
-                            .orElseThrow(() -> new IllegalArgumentException("Field not found: " + part));
+                            .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part))
+                            .getClass();
                 } else {
                     current = current.join(part, JoinType.LEFT);
                     currentClass = field.getType();
@@ -84,8 +86,6 @@ public class PathResolverUtils {
         }
         throw new IllegalArgumentException("Invalid path: " + path);
     }
-
-
 
 }
 

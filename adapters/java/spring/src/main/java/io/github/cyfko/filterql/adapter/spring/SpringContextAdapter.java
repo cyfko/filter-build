@@ -71,3 +71,4 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
         return condition != null ? condition.getSpecification() : null;
     }
 }
+
