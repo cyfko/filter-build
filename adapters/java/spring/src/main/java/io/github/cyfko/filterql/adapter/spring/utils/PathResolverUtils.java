@@ -30,7 +30,7 @@ import java.util.*;
  * query.where(predicate);
  * }</pre>
  */
-public class PathResolverUtil {
+public class PathResolverUtils {
 
     /**
      * Résout le chemin fourni en une {@link Path} JPA à partir du root d'entité donné.
@@ -54,14 +54,14 @@ public class PathResolverUtil {
     public static <T> Path<?> resolvePath(Root<T> root, String path) {
         String[] parts = path.split("\\.");
         From<?, ?> current = root;
-        Class<?> currentClass = (new TypeReference<T>() {}).getTypeClass();
+        Class<?> currentClass = (new ClassUtils.TypeReference<T>() {}).getTypeClass();
 
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
 
             Field field;
             try {
-                field = currentClass.getDeclaredField(part);
+                field = currentClass.getField(part);
             } catch (NoSuchFieldException e) {
                 throw new IllegalArgumentException("Field not found: " + part + " in " + currentClass.getName(), e);
             }
@@ -71,7 +71,8 @@ public class PathResolverUtil {
             if (i < parts.length - 1) {
                 if (isCollection) {
                     current = current.join(part, JoinType.LEFT);
-                    currentClass = getCollectionGenericType(field);
+                    currentClass = ClassUtils.getCollectionGenericType(field,0)
+                            .orElseThrow(() -> new IllegalArgumentException("Field not found: " + part));
                 } else {
                     current = current.join(part, JoinType.LEFT);
                     currentClass = field.getType();
@@ -84,55 +85,7 @@ public class PathResolverUtil {
         throw new IllegalArgumentException("Invalid path: " + path);
     }
 
-    /**
-     * Détermine dynamiquement la classe du type générique d'une collection à partir du champ.
-     *
-     * @param field champ représentant une collection
-     * @return la classe correspondant au type générique de la collection
-     * @throws IllegalStateException si le type générique ne peut être déterminé
-     */
-    private static Class<?> getCollectionGenericType(Field field) {
-        Type type = field.getGenericType();
-        if (type instanceof ParameterizedType) {
-            Type arg = ((ParameterizedType) type).getActualTypeArguments()[0];
-            if (arg instanceof Class<?>) {
-                return (Class<?>) arg;
-            }
-        }
-        throw new IllegalStateException("Cannot determine generic type of collection " + field.getName());
-    }
 
-    /**
-     * Classe abstraite utilisée pour capturer le type générique effectif lors de l'instanciation pour déterminer la classe type.
-     *
-     * @param <T> Type à capturer.
-     */
-    private static abstract class TypeReference<T> {
-        private final Class<T> typeClass;
 
-        @SuppressWarnings("unchecked")
-        protected TypeReference() {
-            Type superClass = getClass().getGenericSuperclass();
-            if (superClass instanceof ParameterizedType) {
-                Type actualType = ((ParameterizedType) superClass).getActualTypeArguments()[0];
-                if (actualType instanceof Class<?>) {
-                    this.typeClass = (Class<T>) actualType;
-                } else {
-                    throw new IllegalArgumentException("Type générique n'est pas une classe simple");
-                }
-            } else {
-                throw new IllegalArgumentException("TypeReference doit être instancié avec un type générique");
-            }
-        }
-
-        /**
-         * Retourne la classe capturée correspondant au type générique T.
-         *
-         * @return la classe de type T
-         */
-        public Class<T> getTypeClass() {
-            return this.typeClass;
-        }
-    }
 }
 

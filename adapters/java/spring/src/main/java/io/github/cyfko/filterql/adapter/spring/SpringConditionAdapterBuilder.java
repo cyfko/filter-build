@@ -1,11 +1,15 @@
 package io.github.cyfko.filterql.adapter.spring;
 
-import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtil;
+import io.github.cyfko.filterql.adapter.spring.utils.ClassUtils;
+import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtils;
 import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.lang.NonNull;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,21 +29,17 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
      * @param value The value as object
      * @return A Spring condition adapter
      */
-    default SpringConditionAdapter<T> build(P ref, Operator op, Object value) {
+    default SpringConditionAdapter<T> build(@NonNull P ref, @NonNull Operator op, Object value) {
         Specification<T> specification = (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 
             // Ensure operation is supported
-            if (! ref.supportsOperator(op)) {
-                throw new IllegalArgumentException("Unsupported operator: " + op);
-            }
+            ref.validateOperator(op);
 
-            // Ensure value is of expected type
-            if (! ref.getType().isAssignableFrom(value.getClass())) {
-                throw new IllegalArgumentException("Unsupported type: " + value.getClass());
-            }
+            // Ensure value is of expected type for the given operator
+
 
             // Ensure FieldShape match
-            Path<?> path = PathResolverUtil.resolvePath(root, ref.getPath());
+            Path<?> path = PathResolverUtils.resolvePath(root, ref.getPath());
 
             switch (op) {
                 case EQUALS:
@@ -59,9 +59,9 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
                 case NOT_LIKE:
                     return cb.notLike((Path<String>) path, (String) value);
                 case IN:
-                    return path.in((List<?>) value);
+                    return path.in((Collection<?>) value);
                 case NOT_IN:
-                    return cb.not(path.in((List<?>) value));
+                    return cb.not(path.in((Collection<?>) value));
                 case IS_NULL:
                     return cb.isNull(path);
                 case IS_NOT_NULL:
