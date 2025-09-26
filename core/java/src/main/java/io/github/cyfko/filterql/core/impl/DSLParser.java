@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.*;
 
 /**
  * Implémentation robuste d'un parser pour un langage spécialisé (DSL) permettant de convertir
@@ -47,7 +48,7 @@ import java.util.regex.Pattern;
  * Condition condition = tree.generate(context);
  * }</pre>
  *
- * @author Frank KOSSI
+ * @author Franck
  * @since 1.0
  */
 public class DSLParser implements Parser {
@@ -291,9 +292,9 @@ public class DSLParser implements Parser {
                     // Gestion de l'associativité gauche pour AND et OR
                     while (!operators.isEmpty() &&
                             operators.peek().getType() != TokenType.LEFT_PAREN &&
-                            getPrecedence(operators.peek().getType()) > getPrecedence(token.getType()) ||
-                            (getPrecedence(operators.peek().getType()) == getPrecedence(token.getType()) &&
-                                    isLeftAssociative(token.getType()))) {
+                            (getPrecedence(operators.peek().getType()) > getPrecedence(token.getType()) ||
+                                    (getPrecedence(operators.peek().getType()) == getPrecedence(token.getType()) &&
+                                            isLeftAssociative(token.getType())))) {
                         output.add(operators.pop());
                     }
                     operators.push(token);
