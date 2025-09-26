@@ -1,3 +1,0 @@
-"""
-Django adapters package.
-"""
