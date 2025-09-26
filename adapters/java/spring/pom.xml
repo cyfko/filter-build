@@ -14,8 +14,8 @@
     <description>Spring Data JPA Specification adapter for dynamic filtering</description>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.1</junit.version>
         <mockito.version>5.8.0</mockito.version>
@@ -79,6 +79,38 @@
             <version>6.4.4.Final</version>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Spring Boot Test Starter for @DataJpaTest -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>3.2.5</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Spring Boot Data JPA Starter for @DataJpaTest -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>3.2.5</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- H2 Database for in-memory testing -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Spring Boot Autoconfigure for test configuration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>3.2.5</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -92,6 +124,27 @@
                     <target>11</target>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>test</id>
+            <properties>
+                <spring.profiles.active>test</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -72,3 +72,4 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
     }
 }
 
+
