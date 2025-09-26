@@ -57,7 +57,11 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
      */
     @Override
     public Condition getCondition(String filterKey) {
-        return filters.get(filterKey);
+        SpringConditionAdapter<T> condition = filters.get(filterKey);
+        if (condition == null) {
+            throw new IllegalArgumentException(filterKey + " not found");
+        }
+        return condition;
     }
 
     /**

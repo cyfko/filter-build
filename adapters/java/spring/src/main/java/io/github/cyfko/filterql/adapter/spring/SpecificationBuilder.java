@@ -36,6 +36,7 @@ public class SpecificationBuilder {
      * @param <P>           type d'enum des propriétés supportées (implémentant {@link PropertyRef} et {@link PathShape})
      * @return une {@link Specification} traduisant la requête de filtrage
      * @throws DSLSyntaxException en cas de syntaxe invalide dans l'expression DSL
+     * @throws FilterValidationException en cas de syntaxe invalide dans l'expression DSL
      */
     public static <T, P extends Enum<P> & PropertyRef & PathShape> Specification<T> toSpecification(FilterRequest<P> filterRequest) throws DSLSyntaxException, FilterValidationException {
         // Parse the filter DSL
