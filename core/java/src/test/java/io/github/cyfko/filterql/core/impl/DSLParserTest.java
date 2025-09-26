@@ -4,6 +4,7 @@ import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.Context;
 import io.github.cyfko.filterql.core.FilterTree;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Identifiant simple")
-        void testSingleIdentifier() throws DSLSyntaxException {
+        void testSingleIdentifier() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("A");
             assertNotNull(tree);
 
@@ -78,7 +79,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression AND simple")
-        void testSimpleAnd() throws DSLSyntaxException {
+        void testSimpleAnd() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("A & B");
             assertNotNull(tree);
 
@@ -90,7 +91,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression OR simple")
-        void testSimpleOr() throws DSLSyntaxException {
+        void testSimpleOr() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("A | B");
             assertNotNull(tree);
 
@@ -102,7 +103,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression NOT simple")
-        void testSimpleNot() throws DSLSyntaxException {
+        void testSimpleNot() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("!A");
             assertNotNull(tree);
 
@@ -113,7 +114,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Parenthèses simples")
-        void testSimpleParentheses() throws DSLSyntaxException {
+        void testSimpleParentheses() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("(A)");
             assertNotNull(tree);
 
@@ -123,7 +124,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression complexe avec priorités")
-        void testComplexWithPrecedence() throws DSLSyntaxException {
+        void testComplexWithPrecedence() throws DSLSyntaxException, FilterValidationException {
             // A | B & C devrait être interprété comme A | (B & C)
             FilterTree tree = parser.parse("A | B & C");
             assertNotNull(tree);
@@ -136,7 +137,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression avec parenthèses complexes")
-        void testComplexParentheses() throws DSLSyntaxException {
+        void testComplexParentheses() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("!(A & B) | C");
             assertNotNull(tree);
 
@@ -148,7 +149,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Associativité gauche pour AND")
-        void testLeftAssociativityAnd() throws DSLSyntaxException {
+        void testLeftAssociativityAnd() throws DSLSyntaxException, FilterValidationException {
             // A & B & C devrait être (A & B) & C
             FilterTree tree = parser.parse("A & B & C");
             assertNotNull(tree);
@@ -161,7 +162,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Associativité gauche pour OR")
-        void testLeftAssociativityOr() throws DSLSyntaxException {
+        void testLeftAssociativityOr() throws DSLSyntaxException, FilterValidationException {
             // A | B | C devrait être (A | B) | C
             FilterTree tree = parser.parse("A | B | C");
             assertNotNull(tree);
@@ -174,7 +175,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Double négation")
-        void testDoubleNegation() throws DSLSyntaxException {
+        void testDoubleNegation() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("!!A");
             assertNotNull(tree);
 
@@ -189,7 +190,7 @@ public class DSLParserTest {
                 "_test", "test_", "test123", "Test", "TEST",
                 "camelCase", "snake_case", "_123", "a", "_"
         })
-        void testValidIdentifiers(String identifier) throws DSLSyntaxException {
+        void testValidIdentifiers(String identifier) throws DSLSyntaxException, FilterValidationException {
             when(mockContext.getCondition(identifier)).thenReturn(mockConditionA);
 
             FilterTree tree = parser.parse(identifier);
@@ -201,7 +202,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Expression avec espaces multiples")
-        void testMultipleWhitespaces() throws DSLSyntaxException {
+        void testMultipleWhitespaces() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("  A   &   B  ");
             assertNotNull(tree);
 
@@ -212,7 +213,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Parenthèses imbriquées")
-        void testNestedParentheses() throws DSLSyntaxException {
+        void testNestedParentheses() throws DSLSyntaxException, FilterValidationException {
             FilterTree tree = parser.parse("((A & B) | (C))");
             assertNotNull(tree);
 
@@ -522,7 +523,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Parenthèses profondément imbriquées")
-        void testDeeplyNestedParentheses() throws DSLSyntaxException {
+        void testDeeplyNestedParentheses() throws DSLSyntaxException, FilterValidationException {
             String expr = "((((A))))";
             FilterTree tree = parser.parse(expr);
             assertNotNull(tree);
@@ -533,7 +534,7 @@ public class DSLParserTest {
 
         @Test
         @DisplayName("Tous les types de tokens dans une expression")
-        void testAllTokenTypesInExpression() throws DSLSyntaxException {
+        void testAllTokenTypesInExpression() throws DSLSyntaxException, FilterValidationException {
             String expr = "!(A & B) | (C)";
             FilterTree tree = parser.parse(expr);
             assertNotNull(tree);

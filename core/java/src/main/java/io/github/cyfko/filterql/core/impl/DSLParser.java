@@ -5,6 +5,7 @@ import io.github.cyfko.filterql.core.Context;
 import io.github.cyfko.filterql.core.FilterTree;
 import io.github.cyfko.filterql.core.Parser;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -444,7 +445,7 @@ public class DSLParser implements Parser {
         }
 
         @Override
-        public Condition generate(Context context) {
+        public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return operand.generate(context).not();
         }
 
@@ -464,7 +465,7 @@ public class DSLParser implements Parser {
         }
 
         @Override
-        public Condition generate(Context context) {
+        public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return left.generate(context).and(right.generate(context));
         }
 
@@ -484,7 +485,7 @@ public class DSLParser implements Parser {
         }
 
         @Override
-        public Condition generate(Context context) {
+        public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return left.generate(context).or(right.generate(context));
         }
 
