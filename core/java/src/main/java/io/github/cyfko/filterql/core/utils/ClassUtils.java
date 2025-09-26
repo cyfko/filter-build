@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Frank KOSSI
  * @since 1.1.0
  */
-public class ClassUtils {
+public final class ClassUtils {
 
     // Cache pour améliorer les performances des recherches répétitives
     private static final Map<String, Optional<Field>> FIELD_CACHE = new ConcurrentHashMap<>();

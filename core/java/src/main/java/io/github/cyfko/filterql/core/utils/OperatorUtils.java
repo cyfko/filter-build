@@ -17,7 +17,7 @@ import java.util.Set;
  * </p>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 1.2
  */
 public final class OperatorUtils {
 
