@@ -43,7 +43,7 @@ import java.util.*;
  * to store path name specification builders safely across multiple threads.
  * </p>
  *
- * <h3>Usage Example:</h3>
+ * <h2>Usage Example:</h2>
  * <pre>{@code
  * // Setup
  * BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);

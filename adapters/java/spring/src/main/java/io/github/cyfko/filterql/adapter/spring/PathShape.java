@@ -13,8 +13,6 @@ package io.github.cyfko.filterql.adapter.spring;
  *
  * @author Frank KOSSI
  * @since 1.0
- *
- * @return the full path as a string, for example: "fieldA.fieldB.fieldC"
  */
 public interface PathShape {
 

@@ -84,7 +84,7 @@ public class ConditionAdapter<T> implements Condition {
      *
      * @param root The root entity
      * @param query The criteria query
-     * @param criteriaBuilder The criteria builder
+     * @param cb The criteria builder
      * @return The JPA predicate
      */
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
