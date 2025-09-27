@@ -111,9 +111,14 @@ FilterRequest<UserProperty> request = FilterRequest.<UserProperty>builder()
     .combineWith("name-filter AND age-filter")
     .build();
 
-// Generate Spring Specification
+// Spring Data approach
 Specification<User> spec = SpecificationBuilder.toSpecification(request);
 List<User> users = userRepository.findAll(spec);
+
+// JPA EntityManager approach  
+BasicFilterExecutor<User, UserProperty> executor = 
+    new BasicFilterExecutor<>(entityManager, User.class);
+List<User> users = executor.executeFilter(request);
 ```
 
 ## 🎯 Key Features
