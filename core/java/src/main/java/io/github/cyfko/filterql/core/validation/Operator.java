@@ -1,19 +1,19 @@
 package io.github.cyfko.filterql.core.validation;
 
 /**
- * Enumération des opérateurs de filtre supportés.
+ * Enumeration of supported filter operators.
  * <p>
- * Chaque opérateur définit son propre symbole, code, ainsi que ses règles
- * de validation et les types d'opérations supportées.
+ * Each operator defines its own symbol, code, as well as its validation rules
+ * and the types of operations it supports.
  * </p>
  *
- * <p>Cette enum est utilisée pour représenter de manière typée les opérateurs
- * logiques ou comparatifs dans un système de filtrage dynamique.</p>
+ * <p>This enum is used to represent, in a type-safe way, logical or comparison operators
+ * in a dynamic filtering system.</p>
  *
  * <pre>{@code
  * Operator op = Operator.fromString("=");
  * if (op != null && op.requiresValue()) {
- *     // traitement pour opérateurs nécessitant une valeur
+ *     // handle operators that require a value
  * }
  * }</pre>
  *
@@ -22,46 +22,46 @@ package io.github.cyfko.filterql.core.validation;
  */
 public enum Operator {
 
-    /** Égalité : "=" */
+    /** Equality: "=" */
     EQUALS("=", "EQ"),
 
-    /** Différent : "!=" */
+    /** Not equal: "!=" */
     NOT_EQUALS("!=", "NE"),
 
-    /** Supérieur à : "&gt;" */
+    /** Greater than: ">" */
     GREATER_THAN(">", "GT"),
 
-    /** Supérieur ou égal à : "&gt;=" */
+    /** Greater than or equal: ">=" */
     GREATER_THAN_OR_EQUAL(">=", "GTE"),
 
-    /** Inférieur à : "&lt;" */
+    /** Less than: "<" */
     LESS_THAN("<", "LT"),
 
-    /** Inférieur ou égal à : "&lt;=" */
+    /** Less than or equal: "<=" */
     LESS_THAN_OR_EQUAL("<=", "LTE"),
 
-    /** Comme (poids) : "LIKE" */
+    /** Like (pattern): "LIKE" */
     LIKE("LIKE", "LIKE"),
 
-    /** Pas comme : "NOT LIKE" */
+    /** Not like: "NOT LIKE" */
     NOT_LIKE("NOT LIKE", "NOT_LIKE"),
 
-    /** Inclus dans la collection : "IN" */
+    /** Included in collection: "IN" */
     IN("IN", "IN"),
 
-    /** Non inclus dans la collection : "NOT IN" */
+    /** Not included in collection: "NOT IN" */
     NOT_IN("NOT IN", "NOT_IN"),
 
-    /** Est nul : "IS NULL" */
+    /** Is null: "IS NULL" */
     IS_NULL("IS NULL", "IS_NULL"),
 
-    /** N'est pas nul : "IS NOT NULL" */
+    /** Is not null: "IS NOT NULL" */
     IS_NOT_NULL("IS NOT NULL", "IS_NOT_NULL"),
 
-    /** Entre deux valeurs : "BETWEEN" */
+    /** Between two values: "BETWEEN" */
     BETWEEN("BETWEEN", "BETWEEN"),
 
-    /** Pas entre deux valeurs : "NOT BETWEEN" */
+    /** Not between two values: "NOT BETWEEN" */
     NOT_BETWEEN("NOT BETWEEN", "NOT_BETWEEN");
 
     private final String symbol;
@@ -73,28 +73,28 @@ public enum Operator {
     }
 
     /**
-     * Retourne le symbole textuel de l'opérateur.
+     * Returns the textual symbol of the operator.
      *
-     * @return le symbole (ex. "=", "LIKE")
+     * @return the symbol (e.g., "=", "LIKE")
      */
     public String getSymbol() {
         return symbol;
     }
 
     /**
-     * Retourne le code court servant d'identifiant de l'opérateur.
+     * Returns the short code used as the operator's identifier.
      *
-     * @return le code court (ex. "EQ", "LIKE")
+     * @return the short code (e.g., "EQ", "LIKE")
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * Recherche un opérateur par son symbole ou son code.
+     * Finds an operator by its symbol or code.
      *
-     * @param value symbole ou code à rechercher (non sensible à la casse)
-     * @return l'opérateur correspondant, ou {@code null} si non trouvé
+     * @param value symbol or code to search for (case-insensitive)
+     * @return the corresponding operator, or {@code null} if not found
      */
     public static Operator fromString(String value) {
         if (value == null) return null;
@@ -111,19 +111,19 @@ public enum Operator {
     }
 
     /**
-     * Indique si l'opérateur nécessite impérativement une valeur d'entrée.
+     * Indicates whether the operator strictly requires an input value.
      *
-     * @return {@code true} si l'opérateur prend une valeur (ex. =, >, IN),
-     *         {@code false} s'il s'agit d'un prédicat sans valeur (ex. IS NULL)
+     * @return {@code true} if the operator takes a value (e.g., =, >, IN),
+     *         {@code false} if it is a predicate without a value (e.g., IS NULL)
      */
     public boolean requiresValue() {
         return this != IS_NULL && this != IS_NOT_NULL;
     }
 
     /**
-     * Indique si l'opérateur supporte plusieurs valeurs (collection ou intervalle).
+     * Indicates whether the operator supports multiple values (collection or range).
      *
-     * @return {@code true} pour IN, NOT_IN, BETWEEN, NOT_BETWEEN; {@code false} sinon
+     * @return {@code true} for IN, NOT_IN, BETWEEN, NOT_BETWEEN; {@code false} otherwise
      */
     public boolean supportsMultipleValues() {
         return this == IN || this == NOT_IN || this == BETWEEN || this == NOT_BETWEEN;

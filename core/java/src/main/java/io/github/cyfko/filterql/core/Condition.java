@@ -6,6 +6,9 @@ package io.github.cyfko.filterql.core;
  * 
  * This interface follows the Composite pattern, allowing conditions to be nested
  * and combined to form complex boolean expressions.
+ *
+ * @author Frank KOSSI
+ * @since 1.0
  */
 public interface Condition {
     

@@ -10,52 +10,57 @@ import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.*;
 import java.util.regex.Pattern;
-import java.util.*;
 
 /**
- * Implémentation robuste d'un parser pour un langage spécialisé (DSL) permettant de convertir
- * des expressions textuelles en structures d'arbre de filtres {@link FilterTree}.
+ * Robust implementation of a parser for a specialized language (DSL) that converts
+ * textual expressions into filter tree structures {@link FilterTree}.
  * <p>
- * Le parser supporte les opérateurs logiques suivants :
+ * The parser supports the following logical operators:
  * <ul>
- *   <li>&amp; (AND) - précédence: 2, associativité: gauche</li>
- *   <li>| (OR) - précédence: 1, associativité: gauche</li>
- *   <li>! (NOT) - précédence: 3, associativité: droite</li>
+ *   <li>&amp; (AND) - precedence: 2, associativity: left</li>
+ *   <li>| (OR) - precedence: 1, associativity: left</li>
+ *   <li>! (NOT) - precedence: 3, associativity: right</li>
  * </ul>
- * ainsi que les parenthèses pour la gestion des priorités.
+ * as well as parentheses for managing priorities.
  *
- * <p>Les identifiants des tokens doivent être alphanumériques ou inclure des underscores,
- * et doivent commencer par une lettre ou un underscore.
+ * <p>Token identifiers must be alphanumeric or include underscores,
+ * and must start with a letter or an underscore.
  *
- * <p>Le parser utilise l'algorithme de Shunting Yard pour la conversion des expressions infixées en postfixées
- * avant de générer un arbre d'expression représentant la logique booléenne.
+ * <p>The parser uses the Shunting Yard algorithm to convert infix expressions to postfix
+ * before generating an expression tree representing the boolean logic.
  *
- * <h2>Validation syntaxique renforcée</h2>
+ * <h2>Enhanced syntax validation</h2>
  * <ul>
- *   <li>Rejette les expressions vides ou nulles via {@link DSLSyntaxException}.</li>
- *   <li>Signale les caractères invalides avec position précise dans l'expression originale.</li>
- *   <li>Détecte et rejette les parenthèses déséquilibrées avec position d'erreur.</li>
- *   <li>Valide la structure des opérandes selon les opérateurs avec messages d'erreur contextuels.</li>
- *   <li>Vérifie la validité des identifiants selon les règles de nommage.</li>
- *   <li>Détecte les opérateurs consécutifs invalides et les expressions malformées.</li>
+ *   <li>Rejects empty or null expressions via {@link DSLSyntaxException}.</li>
+ *   <li>Reports invalid characters with precise position in the original expression.</li>
+ *   <li>Detects and rejects unbalanced parentheses with error position.</li>
+ *   <li>Validates operand structure according to operators with contextual error messages.</li>
+ *   <li>Checks identifier validity according to naming rules.</li>
+ *   <li>Detects invalid consecutive operators and malformed expressions.</li>
  * </ul>
  *
- * <h2>Exemple d'utilisation</h2>
+ * <h2>Usage example</h2>
  * <pre>{@code
  * DSLParser parser = new DSLParser();
  * FilterTree tree = parser.parse("!(A & B) | C");
  * Condition condition = tree.generate(context);
  * }</pre>
  *
- * @author Franck
+ * @author Frank KOSSI
  * @since 1.0
  */
 public class DSLParser implements Parser {
 
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
 
+    /**
+     * Parses a DSL expression string and returns the corresponding {@link FilterTree}.
+     *
+     * @param dslExpression the DSL expression to parse
+     * @return the parsed filter tree
+     * @throws DSLSyntaxException if the expression is null, empty, or contains syntax errors
+     */
     @Override
     public FilterTree parse(String dslExpression) throws DSLSyntaxException {
         if (dslExpression == null || dslExpression.trim().isEmpty()) {
@@ -66,12 +71,26 @@ public class DSLParser implements Parser {
         return parseExpression(trimmed);
     }
 
+    /**
+     * Parses the given expression string into a {@link FilterTree}.
+     *
+     * @param expression the expression to parse
+     * @return the parsed filter tree
+     * @throws DSLSyntaxException if the expression contains syntax errors
+     */
     private FilterTree parseExpression(String expression) throws DSLSyntaxException {
         List<Token> tokens = tokenize(expression);
         validateSyntax(tokens);
         return parseTokens(tokens);
     }
 
+    /**
+     * Tokenizes the input expression string into a list of tokens.
+     *
+     * @param expression the expression to tokenize
+     * @return the list of tokens
+     * @throws DSLSyntaxException if invalid characters or identifiers are found
+     */
     private List<Token> tokenize(String expression) throws DSLSyntaxException {
         List<Token> tokens = new ArrayList<>();
         StringBuilder currentToken = new StringBuilder();
@@ -125,10 +144,23 @@ public class DSLParser implements Parser {
         return tokens;
     }
 
+    /**
+     * Checks if the given character is a recognized operator or parenthesis.
+     *
+     * @param c the character to check
+     * @return true if the character is an operator or parenthesis, false otherwise
+     */
     private boolean isOperatorChar(char c) {
         return c == '&' || c == '|' || c == '!' || c == '(' || c == ')';
     }
 
+    /**
+     * Validates that the identifier is non-empty and matches the allowed pattern.
+     *
+     * @param identifier the identifier to validate
+     * @param position the position in the expression
+     * @throws DSLSyntaxException if the identifier is invalid
+     */
     private void validateIdentifier(String identifier, int position) throws DSLSyntaxException {
         if (identifier.isEmpty()) {
             throw new DSLSyntaxException("Empty identifier at position " + position);
@@ -141,6 +173,13 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Returns the token type for the given operator character.
+     *
+     * @param c the operator character
+     * @return the corresponding TokenType
+     * @throws IllegalArgumentException if the character is not a recognized operator
+     */
     private TokenType getTokenType(char c) {
         switch (c) {
             case '&': return TokenType.AND;
@@ -153,14 +192,17 @@ public class DSLParser implements Parser {
     }
 
     /**
-     * Valide la syntaxe de la séquence de tokens avant le parsing.
+     * Validates the syntax of the token sequence before parsing.
+     *
+     * @param tokens the list of tokens to validate
+     * @throws DSLSyntaxException if the syntax is invalid
      */
     private void validateSyntax(List<Token> tokens) throws DSLSyntaxException {
         if (tokens.isEmpty()) {
             throw new DSLSyntaxException("Empty expression");
         }
 
-        // Vérifier les transitions valides entre tokens
+    // Check valid transitions between tokens
         for (int i = 0; i < tokens.size(); i++) {
             Token current = tokens.get(i);
             Token previous = i > 0 ? tokens.get(i - 1) : null;
@@ -169,7 +211,7 @@ public class DSLParser implements Parser {
             validateTokenTransition(previous, current, next, i);
         }
 
-        // Vérifier que l'expression ne commence/finit pas par un opérateur binaire
+    // Check that the expression does not start/end with a binary operator
         Token first = tokens.get(0);
         Token last = tokens.get(tokens.size() - 1);
 
@@ -184,6 +226,15 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Validates the transition between tokens in the expression.
+     *
+     * @param previous the previous token
+     * @param current the current token
+     * @param next the next token
+     * @param index the index of the current token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateTokenTransition(Token previous, Token current, Token next, int index) throws DSLSyntaxException {
         TokenType currentType = current.getType();
 
@@ -207,29 +258,45 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Validates transitions for identifier tokens.
+     *
+     * @param previous the previous token
+     * @param current the current identifier token
+     * @param next the next token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateIdentifierTransition(Token previous, Token current, Token next) throws DSLSyntaxException {
-        // Un identifiant ne peut pas être suivi d'un autre identifiant ou d'un NOT
+    // An identifier cannot be followed by another identifier or a NOT
         if (next != null && (next.getType() == TokenType.IDENTIFIER || next.getType() == TokenType.NOT)) {
             throw new DSLSyntaxException("Invalid syntax: identifier '" + current.getValue() +
                     "' cannot be followed by '" + next.getValue() +
                     "' at position " + next.getPosition());
         }
 
-        // Un identifiant ne peut pas suivre une parenthèse fermante
+    // An identifier cannot follow a closing parenthesis
         if (previous != null && previous.getType() == TokenType.RIGHT_PAREN) {
             throw new DSLSyntaxException("Invalid syntax: identifier '" + current.getValue() +
                     "' cannot follow ')' at position " + current.getPosition());
         }
     }
 
+    /**
+     * Validates transitions for binary operator tokens.
+     *
+     * @param previous the previous token
+     * @param current the current operator token
+     * @param next the next token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateBinaryOperatorTransition(Token previous, Token current, Token next) throws DSLSyntaxException {
-        // Un opérateur binaire doit avoir un opérande avant
+    // A binary operator must have an operand before
         if (previous == null || (previous.getType() != TokenType.IDENTIFIER && previous.getType() != TokenType.RIGHT_PAREN)) {
             throw new DSLSyntaxException("Binary operator '" + current.getValue() +
                     "' requires a left operand at position " + current.getPosition());
         }
 
-        // Un opérateur binaire ne peut pas être suivi d'un autre opérateur binaire
+    // A binary operator cannot be followed by another binary operator
         if (next != null && (next.getType() == TokenType.AND || next.getType() == TokenType.OR)) {
             throw new DSLSyntaxException("Invalid syntax: binary operator '" + current.getValue() +
                     "' cannot be followed by '" + next.getValue() +
@@ -237,30 +304,54 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Validates transitions for NOT operator tokens.
+     *
+     * @param previous the previous token
+     * @param current the current NOT token
+     * @param next the next token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateNotOperatorTransition(Token previous, Token current, Token next) throws DSLSyntaxException {
-        // NOT ne peut pas être suivi d'un opérateur binaire
+    // NOT cannot be followed by a binary operator
         if (next != null && (next.getType() == TokenType.AND || next.getType() == TokenType.OR)) {
             throw new DSLSyntaxException("NOT operator cannot be followed by binary operator '" +
                     next.getValue() + "' at position " + next.getPosition());
         }
 
-        // NOT ne peut pas suivre un identifiant ou une parenthèse fermante
+    // NOT cannot follow an identifier or a closing parenthesis
         if (previous != null && (previous.getType() == TokenType.IDENTIFIER || previous.getType() == TokenType.RIGHT_PAREN)) {
             throw new DSLSyntaxException("NOT operator cannot follow '" + previous.getValue() +
                     "' at position " + current.getPosition());
         }
     }
 
+    /**
+     * Validates transitions for left parenthesis tokens.
+     *
+     * @param previous the previous token
+     * @param current the current left parenthesis token
+     * @param next the next token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateLeftParenTransition(Token previous, Token current, Token next) throws DSLSyntaxException {
-        // ( ne peut pas suivre un identifiant ou )
+    // ( cannot follow an identifier or )
         if (previous != null && (previous.getType() == TokenType.IDENTIFIER || previous.getType() == TokenType.RIGHT_PAREN)) {
             throw new DSLSyntaxException("Left parenthesis cannot follow '" + previous.getValue() +
                     "' at position " + current.getPosition());
         }
     }
 
+    /**
+     * Validates transitions for right parenthesis tokens.
+     *
+     * @param previous the previous token
+     * @param current the current right parenthesis token
+     * @param next the next token
+     * @throws DSLSyntaxException if the transition is invalid
+     */
     private void validateRightParenTransition(Token previous, Token current, Token next) throws DSLSyntaxException {
-        // ) ne peut pas suivre un opérateur ou (
+    // ) cannot follow an operator or (
         if (previous != null && (previous.getType() == TokenType.AND || previous.getType() == TokenType.OR ||
                 previous.getType() == TokenType.NOT || previous.getType() == TokenType.LEFT_PAREN)) {
             throw new DSLSyntaxException("Right parenthesis cannot follow '" + previous.getValue() +
@@ -268,6 +359,14 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Parses the list of tokens into a {@link FilterTree} by first converting to postfix notation
+     * and then building the expression tree.
+     *
+     * @param tokens the list of tokens
+     * @return the parsed filter tree
+     * @throws DSLSyntaxException if the expression is malformed
+     */
     private FilterTree parseTokens(List<Token> tokens) throws DSLSyntaxException {
         // Convert to postfix notation using Shunting Yard algorithm
         List<Token> postfix = infixToPostfix(tokens);
@@ -276,6 +375,13 @@ public class DSLParser implements Parser {
         return buildExpressionTree(postfix);
     }
 
+    /**
+     * Converts infix token list to postfix notation using the Shunting Yard algorithm.
+     *
+     * @param tokens the infix token list
+     * @return the postfix token list
+     * @throws DSLSyntaxException if parentheses are mismatched
+     */
     private List<Token> infixToPostfix(List<Token> tokens) throws DSLSyntaxException {
         List<Token> output = new ArrayList<>();
         Stack<Token> operators = new Stack<>();
@@ -290,7 +396,7 @@ public class DSLParser implements Parser {
                     break;
                 case AND:
                 case OR:
-                    // Gestion de l'associativité gauche pour AND et OR
+                    // Handle left associativity for AND and OR
                     while (!operators.isEmpty() &&
                             operators.peek().getType() != TokenType.LEFT_PAREN &&
                             (getPrecedence(operators.peek().getType()) > getPrecedence(token.getType()) ||
@@ -326,6 +432,12 @@ public class DSLParser implements Parser {
         return output;
     }
 
+    /**
+     * Returns the precedence of the given token type.
+     *
+     * @param type the token type
+     * @return the precedence value (higher means higher precedence)
+     */
     private int getPrecedence(TokenType type) {
         switch (type) {
             case NOT: return 3;
@@ -335,11 +447,24 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Checks if the given token type is left-associative.
+     *
+     * @param type the token type
+     * @return true if left-associative, false if right-associative
+     */
     private boolean isLeftAssociative(TokenType type) {
-        // NOT est associatif à droite, AND et OR à gauche
+        // NOT is right-associative, AND and OR are left-associative
         return type != TokenType.NOT;
     }
 
+    /**
+     * Builds an expression tree from the postfix token list.
+     *
+     * @param postfix the postfix token list
+     * @return the root of the expression tree
+     * @throws DSLSyntaxException if the expression is malformed
+     */
     private FilterTree buildExpressionTree(List<Token> postfix) throws DSLSyntaxException {
         Stack<FilterTree> stack = new Stack<>();
 
@@ -380,26 +505,47 @@ public class DSLParser implements Parser {
         return stack.pop();
     }
 
-    // Enhanced Token class with position tracking
+    /**
+     * Represents a token in the DSL expression, with type, value, and position.
+     */
     private static class Token {
         private final TokenType type;
         private final String value;
         private final int position;
 
+        /**
+         * Constructs a new Token.
+         *
+         * @param type the token type
+         * @param value the token value
+         * @param position the position in the expression
+         */
         public Token(TokenType type, String value, int position) {
             this.type = type;
             this.value = value;
             this.position = position;
         }
 
+        /**
+         * Gets the token type.
+         * @return the token type
+         */
         public TokenType getType() {
             return type;
         }
 
+        /**
+         * Gets the token value.
+         * @return the token value
+         */
         public String getValue() {
             return value;
         }
 
+        /**
+         * Gets the position of the token in the expression.
+         * @return the position
+         */
         public int getPosition() {
             return position;
         }
@@ -410,18 +556,33 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Enumerates the types of tokens in the DSL expression.
+     */
     private enum TokenType {
         IDENTIFIER, AND, OR, NOT, LEFT_PAREN, RIGHT_PAREN
     }
 
-    // Node classes for the expression tree - unchanged
+    /**
+     * Node representing an identifier in the expression tree.
+     */
     private static class IdentifierNode implements FilterTree {
         private final String identifier;
 
+        /**
+         * Constructs an IdentifierNode.
+         * @param identifier the identifier name
+         */
         public IdentifierNode(String identifier) {
             this.identifier = identifier;
         }
 
+        /**
+         * Generates the condition for this identifier using the provided context.
+         * @param context the context
+         * @return the condition
+         * @throws DSLSyntaxException if the identifier is not found in the context
+         */
         @Override
         public Condition generate(Context context) throws DSLSyntaxException {
             try {
@@ -437,13 +598,27 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Node representing a NOT operation in the expression tree.
+     */
     private static class NotNode implements FilterTree {
         private final FilterTree operand;
 
+        /**
+         * Constructs a NotNode.
+         * @param operand the operand to negate
+         */
         public NotNode(FilterTree operand) {
             this.operand = operand;
         }
 
+        /**
+         * Generates the negated condition.
+         * @param context the context
+         * @return the negated condition
+         * @throws FilterValidationException if validation fails
+         * @throws DSLSyntaxException if syntax is invalid
+         */
         @Override
         public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return operand.generate(context).not();
@@ -455,15 +630,30 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Node representing an AND operation in the expression tree.
+     */
     private static class AndNode implements FilterTree {
         private final FilterTree left;
         private final FilterTree right;
 
+        /**
+         * Constructs an AndNode.
+         * @param left the left operand
+         * @param right the right operand
+         */
         public AndNode(FilterTree left, FilterTree right) {
             this.left = left;
             this.right = right;
         }
 
+        /**
+         * Generates the AND condition.
+         * @param context the context
+         * @return the ANDed condition
+         * @throws FilterValidationException if validation fails
+         * @throws DSLSyntaxException if syntax is invalid
+         */
         @Override
         public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return left.generate(context).and(right.generate(context));
@@ -475,15 +665,30 @@ public class DSLParser implements Parser {
         }
     }
 
+    /**
+     * Node representing an OR operation in the expression tree.
+     */
     private static class OrNode implements FilterTree {
         private final FilterTree left;
         private final FilterTree right;
 
+        /**
+         * Constructs an OrNode.
+         * @param left the left operand
+         * @param right the right operand
+         */
         public OrNode(FilterTree left, FilterTree right) {
             this.left = left;
             this.right = right;
         }
 
+        /**
+         * Generates the OR condition.
+         * @param context the context
+         * @return the ORed condition
+         * @throws FilterValidationException if validation fails
+         * @throws DSLSyntaxException if syntax is invalid
+         */
         @Override
         public Condition generate(Context context) throws FilterValidationException, DSLSyntaxException {
             return left.generate(context).or(right.generate(context));

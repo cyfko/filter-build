@@ -8,6 +8,9 @@ import jakarta.persistence.criteria.Predicate;
 /**
  * JPA implementation of the Condition interface using CriteriaBuilder.
  * This adapter translates core conditions into JPA Predicate objects.
+ *
+ * @author Frank KOSSI
+ * @since 1.0
  */
 public class JpaConditionAdapter<T> implements Condition {
     

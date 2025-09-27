@@ -11,8 +11,11 @@ import jakarta.persistence.criteria.Root;
 /**
  * Spring Data JPA Condition Adapter implementing the Condition interface.
  * This adapter wraps Spring JPA Specifications.
- * 
- * @param <T> The entity type
+ *
+ * @author Frank KOSSI
+ * @since 1.0
+ *
+ * @param &lt;T&gt; The entity type
  */
 public class ConditionAdapter<T> implements Condition {
     private final Specification<T> specification;

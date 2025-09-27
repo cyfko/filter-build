@@ -4,14 +4,14 @@ import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
 
 /**
- * Représente une définition de filtre unique avec une référence de propriété,
- * un opérateur, et une valeur.
+ * Represents a single filter definition with a property reference,
+ * an operator, and a value.
  * <p>
- * La propriété de référence {@code ref} doit être un enum qui implémente {@link PropertyRef}
- * afin d'assurer la sécurité des types et la performance.
+ * The reference property {@code ref} must be an enum implementing {@link PropertyRef}
+ * to ensure type safety and performance.
  * </p>
  *
- * @param <P> type de la propriété de référence (enum implémentant {@link PropertyRef})
+ * @param <P> type of the reference property (enum implementing {@link PropertyRef})
  * @author Frank KOSSI
  * @since 1.0
  */
@@ -22,11 +22,11 @@ public class FilterDefinition<P extends Enum<P> & PropertyRef> {
     private final Object value;
 
     /**
-     * Crée une définition de filtre avec la propriété, l'opérateur et la valeur donnés.
+     * Creates a filter definition with the given property, operator, and value.
      *
-     * @param ref       la référence de propriété (enum {@link PropertyRef})
-     * @param operator  l'opérateur de comparaison ou logique
-     * @param value     la valeur à utiliser dans le filtre (peut être une collection selon l'opérateur)
+     * @param ref       the property reference (enum {@link PropertyRef})
+     * @param operator  the comparison or logical operator
+     * @param value     the value to use in the filter (may be a collection depending on the operator)
      */
     public FilterDefinition(P ref, Operator operator, Object value) {
         this.ref = ref;
@@ -35,30 +35,30 @@ public class FilterDefinition<P extends Enum<P> & PropertyRef> {
     }
 
     /**
-     * Retourne la référence de propriété utilisée dans ce filtre.
+     * Returns the property reference used in this filter.
      *
-     * @return la propriété de référence
+     * @return the reference property
      */
     public P getRef() {
         return ref;
     }
 
     /**
-     * Retourne l'opérateur associé à cette définition de filtre.
+     * Returns the operator associated with this filter definition.
      *
-     * @return l'opérateur
+     * @return the operator
      */
     public Operator getOperator() {
         return operator;
     }
 
     /**
-     * Retourne la valeur appliquée dans ce filtre.
+     * Returns the value applied in this filter.
      * <p>
-     * Cette valeur peut être un objet simple ou une collection, dépendant de l'opérateur.
+     * This value may be a simple object or a collection, depending on the operator.
      * </p>
      *
-     * @return la valeur du filtre
+     * @return the filter value
      */
     public Object getValue() {
         return value;

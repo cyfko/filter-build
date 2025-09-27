@@ -5,6 +5,9 @@ import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 /**
  * Interface for parsing DSL expressions into FilterTree structures.
  * This is the core parsing contract that all implementations must follow.
+ *
+ * @author Frank KOSSI
+ * @since 1.0
  */
 public interface Parser {
     

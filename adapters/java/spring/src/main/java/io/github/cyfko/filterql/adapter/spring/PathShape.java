@@ -2,27 +2,30 @@ package io.github.cyfko.filterql.adapter.spring;
 
 
 /**
- * Interface représentant un accès à un chemin d'une propriété imbriquée dans une structure de données.
+ * Interface representing access to a path of a nested property in a data structure.
  * <p>
- * Le chemin utilise la syntaxe classique des propriétés imbriquées, similaire à celle utilisée
- * par Spring pour définir des prédicats sur des champs dans les spécifications.
+ * The path uses the classic syntax for nested properties, similar to that used
+ * by Spring to define predicates on fields in specifications.
  * </p>
  *
- * <p>Ce type est utile pour décrire et manipuler dynamiquement les chemins d'accès aux champs dans
- * des objets complexes ou des graphes d'entités.</p>
+ * <p>This type is useful for describing and dynamically manipulating field access paths in
+ * complex objects or entity graphs.</p>
  *
- * @return le chemin complet sous forme de chaîne, par exemple : "fieldA.fieldB.fieldC"
+ * @author Frank KOSSI
+ * @since 1.0
+ *
+ * @return the full path as a string, for example: "fieldA.fieldB.fieldC"
  */
 public interface PathShape {
 
     /**
-     * Retourne le chemin d'accès complet du champ dans la structure de données.
+     * Returns the full access path of the field in the data structure.
      * <p>
-     * Le chemin décrit la navigation dans l'objet, segmentée par des points,
-     * permettant de cibler précisément une propriété imbriquée.
+     * The path describes navigation in the object, segmented by dots,
+     * allowing precise targeting of a nested property.
      * </p>
      *
-     * @return le chemin sous forme de chaîne (exemple : "fieldA.fieldB.fieldC")
+     * @return the path as a string (example: "fieldA.fieldB.fieldC")
      */
     String getPath();
 }

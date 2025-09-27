@@ -4,15 +4,15 @@ import io.github.cyfko.filterql.core.validation.PropertyRef;
 import java.util.Map;
 
 /**
- * Représente une requête de filtrage complète contenant plusieurs définitions de filtres
- * et une expression DSL pour leur combinaison.
+ * Represents a complete filter request containing multiple filter definitions
+ * and a DSL expression for their combination.
  * <p>
- * Chaque définition de filtre associe une propriété, un opérateur, et une valeur,
- * tandis que l'expression DSL {@code combineWith} définit la manière dont ces filtres sont combinés
- * logiquement (par exemple, à l'aide d'opérateurs AND, OR).
+ * Each filter definition associates a property, an operator, and a value,
+ * while the DSL expression {@code combineWith} defines how these filters are logically combined
+ * (for example, using AND, OR operators).
  * </p>
  *
- * @param <P> type de la propriété de référence, un enum implémentant {@link PropertyRef}
+ * @param <P> type of the reference property, an enum implementing {@link PropertyRef}
  *
  * @author Frank KOSSI
  * @since 1.0
@@ -23,10 +23,10 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
     private final String combineWith;
 
     /**
-     * Construit une nouvelle requête de filtrage.
+     * Constructs a new filter request.
      *
-     * @param filters     une map des définitions de filtres identifiées par leurs clés
-     * @param combineWith une expression DSL combinant les filtres
+     * @param filters     a map of filter definitions identified by their keys
+     * @param combineWith a DSL expression combining the filters
      */
     public FilterRequest(Map<String, FilterDefinition<P>> filters, String combineWith) {
         this.filters = filters;
@@ -34,18 +34,18 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
     }
 
     /**
-     * Retourne la map des définitions de filtres.
+     * Returns the map of filter definitions.
      *
-     * @return la map immuable ou mutable des filtres
+     * @return the immutable or mutable map of filters
      */
     public Map<String, FilterDefinition<P>> getFilters() {
         return filters;
     }
 
     /**
-     * Retourne l'expression DSL définissant la combinaison logique des filtres.
+     * Returns the DSL expression defining the logical combination of filters.
      *
-     * @return l'expression DSL de combinaison (exemple : "(f1 &amp; f2) | f3")
+     * @return the combination DSL expression (example: "(f1 & f2) | f3")
      */
     public String getCombineWith() {
         return combineWith;

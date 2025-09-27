@@ -5,27 +5,26 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Utilitaires avancés pour la réflexion Java et la manipulation dynamique de types,
- * notamment dans le cadre de l'introspection et de l'analyse des collections et
- * des hiérarchies de classes.
+ * Advanced utilities for Java reflection and dynamic type manipulation,
+ * especially for introspection and analysis of collections and class hierarchies.
  * <p>
- * Cette classe propose des fonctions pour :
+ * This class provides functions for:
  * <ul>
- *   <li>rechercher un champ dans une hiérarchie de classes,</li>
- *   <li>extraire le type générique d'une collection,</li>
- *   <li>déterminer la classe commune la plus haute dans une collection d'objets,</li>
- *   <li>capturer dynamiquement le type générique d'un paramètre à l'exécution.</li>
+ *   <li>searching for a field in a class hierarchy,</li>
+ *   <li>extracting the generic type of a collection,</li>
+ *   <li>determining the highest common superclass in a collection of objects,</li>
+ *   <li>dynamically capturing the generic type of a parameter at runtime.</li>
  * </ul>
  *
- * <h2>Exemple d'utilisation</h2>
+ * <h2>Usage example</h2>
  * <pre>{@code
- * // Recherche du champ "id" dans une classe ou ses superclasses
+ * // Search for the "id" field in a class or its superclasses
  * Optional<Field> idField = ClassUtils.getAnyField(MyClass.class, "id");
  *
- * // Extraction du type générique d'une collection
+ * // Extract the generic type of a collection
  * Optional<Type> itemType = idField.flatMap(f -> ClassUtils.getCollectionGenericType(f, 0));
  *
- * // Déterminer la plus haute classe commune d'une collection
+ * // Determine the highest common superclass in a collection
  * Class<?> superClass = ClassUtils.getCommonSuperclass(List.of("abc", "def", "ghi")); // -> String.class
  * }</pre>
  *
@@ -39,14 +38,14 @@ public final class ClassUtils {
     private static final Map<String, Class<?>> SUPERCLASS_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Recherche récursive d'un champ nommé dans la classe et ses superclasses.
-     * Le champ retourné est utilisable pour l'introspection (getType, getGenericType, getName, etc.)
-     * mais pas pour la manipulation des valeurs.
+     * Recursively searches for a named field in the class and its superclasses.
+     * The returned field can be used for introspection (getType, getGenericType, getName, etc.)
+     * but not for value manipulation.
      *
-     * @param clazz la classe de départ pour la recherche, non nulle
-     * @param name  le nom du champ recherché, non nul
-     * @return un {@link Optional} contenant le champ, ou vide si aucun champ nommé n'est trouvé
-     * @throws NullPointerException si clazz ou name est nul
+     * @param clazz the starting class for the search, not null
+     * @param name  the name of the field to search for, not null
+     * @return an {@link Optional} containing the field, or empty if no field with that name is found
+     * @throws NullPointerException if clazz or name is null
      */
     public static Optional<Field> getAnyField(Class<?> clazz, String name) {
         Objects.requireNonNull(clazz, "Class must not be null");
@@ -68,14 +67,14 @@ public final class ClassUtils {
     }
 
     /**
-     * Extrait dynamiquement le type générique d'une collection à partir d'un champ déclaré.
-     * Gère les types complexes incluant les wildcards, les types paramétrés imbriqués et les tableaux génériques.
+     * Dynamically extracts the generic type of a collection from a declared field.
+     * Handles complex types including wildcards, nested parameterized types, and generic arrays.
      *
-     * @param field      champ représentant une collection générique, non nul
-     * @param paramIndex index du paramètre générique ({@code 0} pour List&lt;T&gt;, {@code 0} ou {@code 1} pour Map&lt;K,V&gt;)
-     * @return un {@link Optional} contenant le type du paramètre générique, ou vide si indéterminé
-     * @throws NullPointerException si field est nul
-     * @throws IndexOutOfBoundsException si paramIndex est invalide
+     * @param field      field representing a generic collection, not null
+     * @param paramIndex index of the generic parameter ({@code 0} for List&lt;T&gt;, {@code 0} or {@code 1} for Map&lt;K,V&gt;)
+     * @return an {@link Optional} containing the generic parameter type, or empty if undetermined
+     * @throws NullPointerException if field is null
+     * @throws IndexOutOfBoundsException if paramIndex is invalid
      */
     public static Optional<Type> getCollectionGenericType(Field field, int paramIndex) {
         Objects.requireNonNull(field, "Field must not be null");
@@ -85,11 +84,11 @@ public final class ClassUtils {
     }
 
     /**
-     * Extrait le type générique à un index donné depuis un type générique.
+     * Extracts the generic type at a given index from a generic type.
      *
-     * @param genericType le type générique à analyser
-     * @param paramIndex l'index du paramètre à extraire
-     * @return le type extrait ou empty si impossible
+     * @param genericType the generic type to analyze
+     * @param paramIndex the index of the parameter to extract
+     * @return the extracted type or empty if not possible
      */
     private static Optional<Type> extractGenericTypeAt(Type genericType, int paramIndex) {
         if (!(genericType instanceof ParameterizedType)) {
@@ -118,7 +117,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Gère les types wildcard (? extends Type, ? super Type).
+     * Handles wildcard types (? extends Type, ? super Type).
      */
     private static Optional<Type> handleWildcardType(WildcardType wildcardType) {
         Type[] upperBounds = wildcardType.getUpperBounds();
@@ -139,7 +138,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Gère les tableaux génériques (T[], List<String>[]).
+     * Handles generic arrays (T[], List<String>[]).
      */
     private static Optional<Type> handleGenericArrayType(GenericArrayType arrayType) {
         Type componentType = arrayType.getGenericComponentType();
@@ -147,7 +146,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Gère les variables de type (T, K, V, etc.).
+     * Handles type variables (T, K, V, etc.).
      */
     private static Optional<Type> handleTypeVariable(TypeVariable<?> typeVar) {
         Type[] bounds = typeVar.getBounds();
@@ -156,15 +155,15 @@ public final class ClassUtils {
     }
 
     /**
-     * Détermine la classe la plus haute (la plus commune) dans la hiérarchie des éléments d'une collection.
-     * Ignore les éléments nuls. Retourne {@code Object.class} si tous sont nuls.
-     * Version optimisée avec cache pour améliorer les performances.
+     * Determines the highest (most common) class in the hierarchy of elements in a collection.
+     * Ignores null elements. Returns {@code Object.class} if all are null.
+     * Optimized version with cache for better performance.
      *
-     * @param collection collection de référence, non nulle et non vide
-     * @param <T>        type des éléments de la collection
-     * @return la classe ancêtre commune ou {@code Object.class} si tous les éléments sont nuls
-     * @throws NullPointerException     si la collection est nulle
-     * @throws IllegalArgumentException si la collection est vide
+     * @param collection reference collection, not null and not empty
+     * @param <T>        type of the collection elements
+     * @return the common ancestor class or {@code Object.class} if all elements are null
+     * @throws NullPointerException     if the collection is null
+     * @throws IllegalArgumentException if the collection is empty
      */
     public static <T> Class<? super T> getCommonSuperclass(Collection<T> collection) {
         Objects.requireNonNull(collection, "Collection must not be null");
@@ -201,7 +200,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Calcule la classe commune entre plusieurs types.
+     * Computes the common class among several types.
      */
     private static Class<?> computeCommonSuperclass(Set<Class<?>> types) {
         Class<?> result = null;
@@ -218,7 +217,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Trouve la classe commune entre deux types spécifiques.
+     * Finds the common class between two specific types.
      */
     private static Class<?> findCommonSuperclass(Class<?> class1, Class<?> class2) {
         if (class1.isAssignableFrom(class2)) {
@@ -241,11 +240,11 @@ public final class ClassUtils {
     }
 
     /**
-     * Vérifie si tous les éléments non nuls d'une collection sont strictement du même type concret.
+     * Checks if all non-null elements in a collection are strictly of the same concrete type.
      *
-     * @param collection collection à tester, non nulle
-     * @return un {@link Optional} contenant la classe commune, ou vide si types différents ou tous nuls
-     * @throws NullPointerException si la collection est nulle
+     * @param collection collection to test, not null
+     * @return an {@link Optional} containing the common class, or empty if types differ or all are null
+     * @throws NullPointerException if the collection is null
      */
     public static Optional<Class<?>> getCommonClass(Collection<?> collection) {
         Objects.requireNonNull(collection, "Collection must not be null");
@@ -270,28 +269,28 @@ public final class ClassUtils {
     }
 
     /**
-     * Vérifie que tous les éléments non nuls d'une collection sont compatibles entre eux
-     * par rapport à une classe de base donnée.
+     * Checks that all non-null elements in a collection are compatible with each other
+     * with respect to a given base class.
      * <p>
-     * La compatibilité signifie qu'il existe une relation de sous-classe ou de super-classe
-     * entre la {@code baseClass} et la classe de chaque élément non nul de la collection.
-     * Autrement dit, chaque élément doit être une instance de {@code baseClass} ou une classe parente,
-     * ou inversement {@code baseClass} doit pouvoir être affectée à une variable du type de l'élément.
+     * Compatibility means there is a subclass or superclass relationship
+     * between {@code baseClass} and the class of each non-null element in the collection.
+     * In other words, each element must be an instance of {@code baseClass} or a parent class,
+     * or conversely {@code baseClass} must be assignable to a variable of the element's type.
      * </p>
      *
-     * <p>Les éléments nuls sont ignorés dans la vérification.
-     * Si la collection est vide, la méthode lève une {@link IllegalStateException}.</p>
+     * <p>Null elements are ignored in the check.
+     * If the collection is empty, the method throws an {@link IllegalStateException}.</p>
      *
-     * @param baseClass  la classe de référence pour la compatibilité, non nulle
-     * @param collection la collection d'éléments à vérifier, non nulle et non vide
-     * @param <T>        le type des éléments dans la collection
-     * @return {@code true} si tous les éléments (non nuls) sont compatibles avec {@code baseClass}, {@code false} sinon
-     * @throws NullPointerException     si {@code baseClass} ou {@code collection} est {@code null}
-     * @throws IllegalStateException    si la collection est vide
+     * @param baseClass  the reference class for compatibility, not null
+     * @param collection the collection of elements to check, not null and not empty
+     * @param <T>        the type of elements in the collection
+     * @return {@code true} if all (non-null) elements are compatible with {@code baseClass}, {@code false} otherwise
+     * @throws NullPointerException     if {@code baseClass} or {@code collection} is {@code null}
+     * @throws IllegalStateException    if the collection is empty
      *
      * @implNote
-     * Cette méthode utilise {@link Class#isAssignableFrom(Class)} pour tester la compatibilité de type,
-     * en considérant les relations d'héritage et d'implémentation.
+     * This method uses {@link Class#isAssignableFrom(Class)} to test type compatibility,
+     * considering inheritance and implementation relationships.
      */
     public static <T> boolean allCompatible(Class<?> baseClass, Collection<T> collection) {
         Objects.requireNonNull(baseClass, "Base class must not be null");
@@ -314,7 +313,7 @@ public final class ClassUtils {
     }
 
     /**
-     * Vide les caches internes. Utile pour les tests ou la gestion mémoire dans des applications long-running.
+     * Clears internal caches. Useful for tests or memory management in long-running applications.
      */
     public static void clearCaches() {
         FIELD_CACHE.clear();
@@ -322,9 +321,9 @@ public final class ClassUtils {
     }
 
     /**
-     * Retourne les statistiques des caches pour le monitoring.
+     * Returns cache statistics for monitoring.
      *
-     * @return une map contenant les tailles des caches
+     * @return a map containing the cache sizes
      */
     public static Map<String, Integer> getCacheStats() {
         Map<String, Integer> stats = new HashMap<>();
@@ -334,13 +333,13 @@ public final class ClassUtils {
     }
 
     /**
-     * Classe utilitaire permettant de capturer dynamiquement le type effectif d'un paramètre générique à l'instanciation.
-     * Version sécurisée contre les attaques par héritage multiple et avec validation renforcée.
+     * Utility class for dynamically capturing the actual type of a generic parameter at instantiation.
+     * Secure version against multiple inheritance attacks and with enhanced validation.
      * <p>
-     * Gère maintenant les types complexes et offre une meilleure sécurité.
+     * Now handles complex types and offers better security.
      * </p>
      *
-     * @param <T> type générique à capturer
+     * @param <T> generic type to capture
      */
     public static abstract class TypeReference<T> {
         private final Class<T> typeClass;
@@ -391,40 +390,40 @@ public final class ClassUtils {
             }
         }
 
-        /**
-         * Retourne la classe capturée correspondant au type générique T.
-         *
-         * @return la classe représentant T
-         */
+    /**
+     * Returns the captured class corresponding to the generic type T.
+     *
+     * @return the class representing T
+     */
         public final Class<T> getTypeClass() {
             return this.typeClass;
         }
 
-        /**
-         * Retourne le {@link Type} capturé, tel qu'un type paramétré ou une classe concrète.
-         *
-         * @return une instance de {@link Type} correspondant à T
-         */
+    /**
+     * Returns the captured {@link Type}, such as a parameterized type or a concrete class.
+     *
+     * @return an instance of {@link Type} corresponding to T
+     */
         public final Type getType() {
             return this.type;
         }
 
-        /**
-         * Vérifie si le type capturé est assignable depuis une classe donnée.
-         *
-         * @param clazz la classe à tester
-         * @return true si compatible
-         */
+    /**
+     * Checks if the captured type is assignable from a given class.
+     *
+     * @param clazz the class to test
+     * @return true if compatible
+     */
         public final boolean isAssignableFrom(Class<?> clazz) {
             return this.typeClass.isAssignableFrom(clazz);
         }
 
-        /**
-         * Vérifie si le type capturé est une instance d'une classe donnée.
-         *
-         * @param clazz la classe à tester
-         * @return true si instance
-         */
+    /**
+     * Checks if the captured type is an instance of a given class.
+     *
+     * @param clazz the class to test
+     * @return true if instance
+     */
         public final boolean isInstanceOf(Class<?> clazz) {
             return clazz.isAssignableFrom(this.typeClass);
         }

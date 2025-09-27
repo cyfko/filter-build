@@ -12,9 +12,12 @@ import java.util.Collection;
 /**
  * Builder interface for creating Spring condition adapters.
  * Each implementation defines how to build a Spring condition from PropertyRef, Operator, and value.
- * 
- * @param <T> The entity type (e.g., User, Product)
- * @param <P> The PropertyRef enum for this entity
+ *
+ * @author Frank KOSSI
+ * @since 1.0
+ *
+ * @param &lt;T&gt; The entity type (e.g., User, Product)
+ * @param &lt;P&gt; The PropertyRef enum for this entity
  */
 public interface ConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef & PathShape> {
 

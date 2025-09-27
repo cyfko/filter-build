@@ -10,17 +10,20 @@ import io.github.cyfko.filterql.core.validation.PropertyRef;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Constructeur de {@link Specification} Spring Data JPA à partir d'une requête de filtrage
- * comportant une expression DSL et plusieurs définitions de filtres.
+ * Builder for Spring Data JPA {@link Specification} from a filter request
+ * containing a DSL expression and multiple filter definitions.
  * <p>
- * Cette classe traduit l'expression DSL en arbre de filtres ({@link FilterTree})
- * en utilisant {@link DSLParser}, remplit un contexte de conditions adapté à Spring,
- * puis génère la {@link Specification} résultante.
+ * This class translates the DSL expression into a filter tree ({@link FilterTree})
+ * using {@link DSLParser}, fills a Spring-adapted condition context,
+ * and then generates the resulting {@link Specification}.
  * </p>
  *
- * <p>Cette approche permet de construire dynamiquement des requêtes complexes avec une syntaxe DSL lisible et extensible.</p>
+ * <p>This approach allows dynamic construction of complex queries with a readable and extensible DSL syntax.</p>
  *
- * @throws DSLSyntaxException en cas d'erreur de parsing ou de syntaxe dans l'expression DSL
+ * @author Frank KOSSI
+ * @since 1.0
+ *
+ * @throws DSLSyntaxException if there is a parsing or syntax error in the DSL expression
  *
  * @see DSLParser
  * @see FilterTree
@@ -29,14 +32,14 @@ import org.springframework.data.jpa.domain.Specification;
 public class SpecificationBuilder {
 
     /**
-     * Construit une {@link Specification} JPA à partir d'une requête de filtres.
+     * Builds a JPA {@link Specification} from a filter request.
      *
-     * @param filterRequest la requête contenant les définitions de filtres et la logique combinatoire DSL
-     * @param <T>           type d'entité sur lequel porte la Specification
-     * @param <P>           type d'enum des propriétés supportées (implémentant {@link PropertyRef} et {@link PathShape})
-     * @return une {@link Specification} traduisant la requête de filtrage
-     * @throws DSLSyntaxException en cas de syntaxe invalide dans l'expression DSL
-     * @throws FilterValidationException en cas de syntaxe invalide dans l'expression DSL
+     * @param filterRequest the request containing filter definitions and the DSL combination logic
+     * @param <T>           entity type for the Specification
+     * @param <P>           enum type of supported properties (implementing {@link PropertyRef} and {@link PathShape})
+     * @return a {@link Specification} representing the filter request
+     * @throws DSLSyntaxException if the DSL expression has invalid syntax
+     * @throws FilterValidationException if the DSL expression has invalid syntax
      */
     public static <T, P extends Enum<P> & PropertyRef & PathShape> Specification<T> toSpecification(FilterRequest<P> filterRequest) throws DSLSyntaxException, FilterValidationException {
         // Parse the filter DSL

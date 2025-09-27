@@ -1,15 +1,14 @@
 package io.github.cyfko.filterql.core.exception;
 
 /**
- * Exception levée lorsqu'une expression DSL contient des erreurs de syntaxe
- * ou des références invalides.
+ * Exception thrown when a DSL expression contains syntax errors
+ * or invalid references.
  * <p>
- * Cette exception est utilisée pour signaler des problèmes de validation syntaxique
- * dans le traitement d'expressions DSL (Domain Specific Language).
+ * This exception is used to signal syntax validation problems
+ * when processing DSL (Domain Specific Language) expressions.
  * </p>
  * <p>
- * Elle permet de différencier clairement les erreurs provenant du parsing ou de la
- * validation de la syntaxe DSL des autres types d'exceptions.
+ * It clearly distinguishes errors from parsing or DSL syntax validation from other exception types.
  * </p>
  *
  * @author Frank KOSSI
