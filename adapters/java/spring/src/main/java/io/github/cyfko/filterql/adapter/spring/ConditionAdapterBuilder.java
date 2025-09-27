@@ -16,7 +16,7 @@ import java.util.Collection;
  * @param <T> The entity type (e.g., User, Product)
  * @param <P> The PropertyRef enum for this entity
  */
-public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef & PathShape> {
+public interface ConditionAdapterBuilder<T, P extends Enum<P> & PropertyRef & PathShape> {
 
     /**
      * Builds a Spring condition adapter from the given parameters.
@@ -26,7 +26,7 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
      * @param value The value as object
      * @return A Spring condition adapter
      */
-    default SpringConditionAdapter<T> build(@NonNull P ref, @NonNull Operator op, Object value) {
+    default ConditionAdapter<T> build(@NonNull P ref, @NonNull Operator op, Object value) {
         Specification<T> specification = (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
 
             // Ensure value is of expected type for the given operator
@@ -73,7 +73,7 @@ public interface SpringConditionAdapterBuilder<T, P extends Enum<P> & PropertyRe
             }
         };
         
-        return new SpringConditionAdapter<>(specification);
+        return new ConditionAdapter<>(specification);
     }
 
 }

@@ -44,12 +44,12 @@ public class SpecificationBuilder {
         FilterTree filterTree = dslParser.parse(filterRequest.getCombineWith());
 
         // Fill the Context
-        SpringContextAdapter<T, P> context = new SpringContextAdapter<>(new SpringConditionAdapterBuilder<T, P>() {});
+        ContextAdapter<T, P> context = new ContextAdapter<>(new ConditionAdapterBuilder<T, P>() {});
         filterRequest.getFilters().forEach(context::addCondition);
 
         // Return Spring boot specification from the global Condition
         Condition condition = filterTree.generate(context);
-        return ((SpringConditionAdapter<T>) condition).getSpecification();
+        return ((ConditionAdapter<T>) condition).getSpecification();
     }
 }
 

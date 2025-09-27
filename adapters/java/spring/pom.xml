@@ -49,20 +49,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jakarta Persistence API -->
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Hibernate Core pour tests -->
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- H2 Database pour tests en mémoire -->
         <dependency>
             <groupId>com.h2database</groupId>
