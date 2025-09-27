@@ -75,7 +75,11 @@ public class PathResolverUtils {
                     currentClass = (Class<?>) ClassUtils.getCollectionGenericType(field,0)
                             .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part));
                 } else {
-                    current = current.join(part, JoinType.LEFT);
+                    try {
+                        current = current.join(part, JoinType.LEFT);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(String.format("%s is not a property name of %s", part, currentClass),e);
+                    }
                     currentClass = field.getType();
                 }
             } else {

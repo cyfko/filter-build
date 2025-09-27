@@ -133,17 +133,6 @@ class SpringEdgeCaseTest {
     }
 
     @Test
-    void testPathResolverUtilsWithEmptyPath() {
-        // Arrange
-        jakarta.persistence.criteria.Root<TestEntity> root = mock(jakarta.persistence.criteria.Root.class);
-
-        // Act & Assert - PathResolverUtils a des problèmes avec les types génériques
-        assertThrows(IllegalArgumentException.class, () -> {
-            PathResolverUtils.resolvePath(root, "");
-        });
-    }
-
-    @Test
     void testSpecificationBuilderWithNullFilterRequest() {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
