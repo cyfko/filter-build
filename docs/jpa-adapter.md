@@ -28,26 +28,20 @@ public class UserDao {
     private EntityManager entityManager;
     
     public List<User> findUsers(FilterRequest<UserProperty> request) {
-        BasicFilterExecutor<User, UserProperty> executor = 
-            new BasicFilterExecutor<>(entityManager, User.class);
-        
-        return executor.executeFilter(request);
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request);
     }
     
     // With pagination
     public List<User> findUsers(FilterRequest<UserProperty> request, int page, int size) {
-        BasicFilterExecutor<User, UserProperty> executor = 
-            new BasicFilterExecutor<>(entityManager, User.class);
-        
-        return executor.executeFilter(request, page * size, size);
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request, page * size, size);
     }
     
     // Get count
     public long countUsers(FilterRequest<UserProperty> request) {
-        BasicFilterExecutor<User, UserProperty> executor = 
-            new BasicFilterExecutor<>(entityManager, User.class);
-        
-        return executor.countFilter(request);
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.count(User.class, request);
     }
 }
 ```
@@ -106,22 +100,22 @@ public class BasicFilterExecutor<T, P extends Enum<P> & PropertyRef & PathShape>
     }
     
     // Execute filter and return results
-    public List<T> executeFilter(FilterRequest<P> request) {
-        return executeFilter(request, null, null);
+    public <E, P extends Enum<P> & PropertyRef> List<E> findAll(Class<E> entityClass, FilterRequest<P> request) {
+        return findAll(entityClass, request, null, null);
     }
     
-    // Execute filter with pagination
-    public List<T> executeFilter(FilterRequest<P> request, Integer offset, Integer limit) {
+    // Find with pagination
+    public <E, P extends Enum<P> & PropertyRef> List<E> findAll(Class<E> entityClass, FilterRequest<P> request, Integer offset, Integer limit) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        Root<T> root = cq.from(entityClass);
+        CriteriaQuery<E> cq = cb.createQuery(entityClass);
+        Root<E> root = cq.from(entityClass);
         
         if (request != null && !request.getFilters().isEmpty()) {
             Predicate predicate = buildPredicate(request, root, cq, cb);
             cq.where(predicate);
         }
         
-        TypedQuery<T> query = entityManager.createQuery(cq);
+        TypedQuery<E> query = entityManager.createQuery(cq);
         
         if (offset != null) {
             query.setFirstResult(offset);
@@ -134,10 +128,10 @@ public class BasicFilterExecutor<T, P extends Enum<P> & PropertyRef & PathShape>
     }
     
     // Count matching entities
-    public long countFilter(FilterRequest<P> request) {
+    public <E, P extends Enum<P> & PropertyRef> long count(Class<E> entityClass, FilterRequest<P> request) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-        Root<T> root = cq.from(entityClass);
+        Root<E> root = cq.from(entityClass);
         
         cq.select(cb.count(root));
         
@@ -149,19 +143,19 @@ public class BasicFilterExecutor<T, P extends Enum<P> & PropertyRef & PathShape>
         return entityManager.createQuery(cq).getSingleResult();
     }
     
-    private Predicate buildPredicate(FilterRequest<P> request, Root<T> root, 
+    private <E, P extends Enum<P> & PropertyRef> Predicate buildPredicate(FilterRequest<P> request, Root<E> root, 
                                    CriteriaQuery<?> cq, CriteriaBuilder cb) {
         DSLParser parser = new DSLParser();
         FilterTree tree = parser.parse(request.getCombineWith());
         
-        ContextAdapter<T, P> context = new ContextAdapter<>(
-            new ConditionAdapterBuilder<T, P>() {}
+        ContextAdapter<E, P> context = new ContextAdapter<>(
+            new ConditionAdapterBuilder<E, P>() {}
         );
         
         request.getFilters().forEach(context::addCondition);
         Condition condition = tree.generate(context);
         
-        return ((ConditionAdapter<T>) condition).toPredicate(root, cq, cb);
+        return ((ConditionAdapter<E>) condition).toPredicate(root, cq, cb);
     }
 }
 ```

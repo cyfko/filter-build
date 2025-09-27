@@ -157,17 +157,13 @@ public class UserDao {
     private EntityManager entityManager;
     
     public List<User> findUsers(FilterRequest<UserProperty> request) {
-        BasicFilterExecutor<User, UserProperty> executor = 
-            new BasicFilterExecutor<>(entityManager, User.class);
-        
-        return executor.executeFilter(request);
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request);
     }
     
     public long countUsers(FilterRequest<UserProperty> request) {
-        BasicFilterExecutor<User, UserProperty> executor = 
-            new BasicFilterExecutor<>(entityManager, User.class);
-        
-        return executor.countFilter(request);
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.count(User.class, request);
     }
 }
 ```

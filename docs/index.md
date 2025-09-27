@@ -116,9 +116,8 @@ Specification<User> spec = SpecificationBuilder.toSpecification(request);
 List<User> users = userRepository.findAll(spec);
 
 // JPA EntityManager approach  
-BasicFilterExecutor<User, UserProperty> executor = 
-    new BasicFilterExecutor<>(entityManager, User.class);
-List<User> users = executor.executeFilter(request);
+BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+List<User> users = executor.findAll(User.class, request);
 ```
 
 ## 🎯 Key Features
