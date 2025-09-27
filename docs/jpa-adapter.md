@@ -16,9 +16,43 @@ The FilterQL JPA adapter provides direct integration with the JPA Criteria API, 
 
 ### Basic Usage
 
+#### Simple Approach with BasicFilterExecutor
+
+For most use cases, use the simplified `BasicFilterExecutor`:
+
 ```java
 @Repository
 public class UserDao {
+    
+    @PersistenceContext
+    private EntityManager entityManager;
+    
+    public List<User> findUsers(FilterRequest<UserProperty> request) {
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request);
+    }
+    
+    // With pagination
+    public List<User> findUsers(FilterRequest<UserProperty> request, int page, int size) {
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request, page * size, size);
+    }
+    
+    // Get count
+    public long countUsers(FilterRequest<UserProperty> request) {
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.count(User.class, request);
+    }
+}
+```
+
+#### Advanced Approach with Manual Control
+
+For advanced use cases where you need full control over the query:
+
+```java
+@Repository
+public class AdvancedUserDao {
     
     @PersistenceContext
     private EntityManager entityManager;
@@ -49,6 +83,82 @@ public class UserDao {
 ```
 
 ## Core Components
+
+### BasicFilterExecutor
+
+The `BasicFilterExecutor` is the simplest way to execute FilterQL requests with JPA:
+
+```java
+public class BasicFilterExecutor<T, P extends Enum<P> & PropertyRef & PathShape> {
+    
+    private final EntityManager entityManager;
+    private final Class<T> entityClass;
+    
+    public BasicFilterExecutor(EntityManager entityManager, Class<T> entityClass) {
+        this.entityManager = entityManager;
+        this.entityClass = entityClass;
+    }
+    
+    // Execute filter and return results
+    public <E, P extends Enum<P> & PropertyRef> List<E> findAll(Class<E> entityClass, FilterRequest<P> request) {
+        return findAll(entityClass, request, null, null);
+    }
+    
+    // Find with pagination
+    public <E, P extends Enum<P> & PropertyRef> List<E> findAll(Class<E> entityClass, FilterRequest<P> request, Integer offset, Integer limit) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<E> cq = cb.createQuery(entityClass);
+        Root<E> root = cq.from(entityClass);
+        
+        if (request != null && !request.getFilters().isEmpty()) {
+            Predicate predicate = buildPredicate(request, root, cq, cb);
+            cq.where(predicate);
+        }
+        
+        TypedQuery<E> query = entityManager.createQuery(cq);
+        
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        if (limit != null) {
+            query.setMaxResults(limit);
+        }
+        
+        return query.getResultList();
+    }
+    
+    // Count matching entities
+    public <E, P extends Enum<P> & PropertyRef> long count(Class<E> entityClass, FilterRequest<P> request) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<E> root = cq.from(entityClass);
+        
+        cq.select(cb.count(root));
+        
+        if (request != null && !request.getFilters().isEmpty()) {
+            Predicate predicate = buildPredicate(request, root, cq, cb);
+            cq.where(predicate);
+        }
+        
+        return entityManager.createQuery(cq).getSingleResult();
+    }
+    
+    private <E, P extends Enum<P> & PropertyRef> Predicate buildPredicate(FilterRequest<P> request, Root<E> root, 
+                                   CriteriaQuery<?> cq, CriteriaBuilder cb) {
+        DSLParser parser = new DSLParser();
+        FilterTree tree = parser.parse(request.getCombineWith());
+        
+        ContextAdapter<E, P> context = new ContextAdapter<>(
+            new ConditionAdapterBuilder<E, P>() {}
+        );
+        
+        request.getFilters().forEach(context::addCondition);
+        Condition condition = tree.generate(context);
+        
+        return ((ConditionAdapter<E>) condition).toPredicate(root, cq, cb);
+    }
+}
+```
 
 ### ConditionAdapter
 

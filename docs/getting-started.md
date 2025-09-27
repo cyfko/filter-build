@@ -147,9 +147,32 @@ public class UserService {
 
 #### With JPA (EntityManager):
 
+**Simple approach with BasicFilterExecutor:**
+
 ```java
 @Repository
 public class UserDao {
+    
+    @PersistenceContext
+    private EntityManager entityManager;
+    
+    public List<User> findUsers(FilterRequest<UserProperty> request) {
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.findAll(User.class, request);
+    }
+    
+    public long countUsers(FilterRequest<UserProperty> request) {
+        BasicFilterExecutor executor = new BasicFilterExecutor(entityManager);
+        return executor.count(User.class, request);
+    }
+}
+```
+
+**Advanced approach for full control:**
+
+```java
+@Repository
+public class AdvancedUserDao {
     
     @PersistenceContext
     private EntityManager entityManager;

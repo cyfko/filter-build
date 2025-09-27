@@ -23,11 +23,12 @@ import org.springframework.data.jpa.domain.Specification;
  * @author Frank KOSSI
  * @since 1.0
  *
- * @throws DSLSyntaxException if there is a parsing or syntax error in the DSL expression
- *
  * @see DSLParser
  * @see FilterTree
  * @see Specification
+ */
+/**
+ * Builds Spring Data JPA Specifications from filter requests.
  */
 public class SpecificationBuilder {
 

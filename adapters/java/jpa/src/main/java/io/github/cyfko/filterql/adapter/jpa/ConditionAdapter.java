@@ -14,6 +14,7 @@ import java.util.Objects;
  * JPA implementation of the Condition interface using CriteriaBuilder.
  * This adapter translates core conditions into JPA Predicate objects.
  *
+ * @param <T> the entity type for JPA specification
  * @author Frank KOSSI
  * @since 1.0
  */

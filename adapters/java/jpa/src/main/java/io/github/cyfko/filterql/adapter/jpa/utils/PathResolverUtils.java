@@ -29,7 +29,7 @@ import java.util.*;
  *
  * <p><b>Note:</b> This resolution is designed for use in dynamic queries built with the Criteria API (javax.persistence.criteria).</p>
  *
- * <h3>Usage example:</h3>
+ * <h2>Usage example:</h2>
  * <pre>{@code
  * CriteriaBuilder cb = entityManager.getCriteriaBuilder();
  * CriteriaQuery<MyEntity> query = cb.createQuery(MyEntity.class);
@@ -41,6 +41,13 @@ import java.util.*;
  * }</pre>
  */
 public class PathResolverUtils {
+    
+    /**
+     * Private constructor to prevent syntax.
+     */
+    private PathResolverUtils() {
+        // Utility class
+    }
 
     /**
      * Resolves the given path into a JPA {@link Path} from the provided entity root.
@@ -53,9 +60,9 @@ public class PathResolverUtils {
      * In case of error (field not found, unable to determine generic type), an exception is thrown.
      * </p>
      *
+     * @param <T> the type of the root entity
      * @param root the root of the JPA Criteria query (Root of the base entity)
      * @param path the full property path in dot notation (e.g., "fieldA.fieldB.listField.fieldC")
-     * @param &lt;T&gt;  the type of the root entity
      * @return a {@link Path} instance corresponding to the resolved path
      * @throws IllegalArgumentException if path is {@code null} or {@code empty} or if a segment does not match any field in the class
      * @throws IllegalStateException    if the generic type of a collection cannot be determined
