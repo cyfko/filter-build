@@ -28,16 +28,16 @@ public enum Operator {
     /** Not equal: "!=" */
     NOT_EQUALS("!=", "NE"),
 
-    /** Greater than: ">" */
+    /** Greater than: "&gt;" */
     GREATER_THAN(">", "GT"),
 
-    /** Greater than or equal: ">=" */
+    /** Greater than or equal: "&gt;=" */
     GREATER_THAN_OR_EQUAL(">=", "GTE"),
 
-    /** Less than: "<" */
+    /** Less than: "&lt;" */
     LESS_THAN("<", "LT"),
 
-    /** Less than or equal: "<=" */
+    /** Less than or equal: "&lt;=" */
     LESS_THAN_OR_EQUAL("<=", "LTE"),
 
     /** Like (pattern): "LIKE" */

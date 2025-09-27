@@ -7,8 +7,6 @@ package io.github.cyfko.filterql.core.exception;
  * making it easier to handle specific errors in the filtering pipeline.
  * </p>
  *
- * <p>It extends {@link Exception} and must be handled or propagated by upstream calls.</p>
- *
  * <p>Usage example:</p>
  * <pre>{@code
  * if (!filter.isValid()) {
@@ -19,7 +17,7 @@ package io.github.cyfko.filterql.core.exception;
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterValidationException extends Exception {
+public class FilterValidationException extends RuntimeException {
 
     /**
      * Crée une exception avec un message explicatif.

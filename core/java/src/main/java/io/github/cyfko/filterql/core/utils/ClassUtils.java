@@ -333,6 +333,16 @@ public final class ClassUtils {
     }
 
     /**
+     * Utility method to obtain the {@link Class} object for the generic type {@code T}.
+     *
+     * @param <T> the generic type
+     * @return the {@link Class} of {@code T}
+     */
+    public static <T> Class<T> getClazz() {
+        return (new TypeReference<T>() {}).getTypeClass();
+    }
+
+    /**
      * Utility class for dynamically capturing the actual type of a generic parameter at instantiation.
      * Secure version against multiple inheritance attacks and with enhanced validation.
      * <p>

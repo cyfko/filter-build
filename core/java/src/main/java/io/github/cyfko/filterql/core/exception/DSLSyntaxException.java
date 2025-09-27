@@ -14,7 +14,7 @@ package io.github.cyfko.filterql.core.exception;
  * @author Frank KOSSI
  * @since 1.0
  */
-public class DSLSyntaxException extends Exception {
+public class DSLSyntaxException extends RuntimeException {
 
     /**
      * Constructeur avec un message explicatif de l'erreur.

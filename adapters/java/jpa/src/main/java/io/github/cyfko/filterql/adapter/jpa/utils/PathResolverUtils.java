@@ -9,22 +9,27 @@ import jakarta.persistence.criteria.Root;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
+
+import jakarta.persistence.criteria.*;
+
+import java.lang.reflect.*;
+import java.util.*;
+
 /**
- * Utilitaire fournissant une méthode statique pour résoudre un chemin d'accès à une propriété
- * dans un root d'entité JPA afin de construire des critères de requête dynamiques.
+ * Utility providing a static method to resolve a property path from a JPA entity root for building dynamic query criteria.
  * <p>
- * Cette classe facilite la navigation dans les entités imbriquées en décomposant
- * un chemin de style « dot notation » (ex: "fieldA.fieldB.listField.fieldC")
- * en jointures successives dans une requête Criteria.
+ * This class facilitates navigation through nested entities by splitting a dot notation path (e.g., "fieldA.fieldB.listField.fieldC")
+ * into successive joins in a Criteria query.
  * </p>
  *
- * <p>Elle gère également les collections en effectuant des jointures sur les relations
- * entre entités et en déterminant dynamiquement les types génériques des collections.</p>
+ * <p>It also handles collections by joining entity relationships and dynamically determining the generic types of collections.</p>
  *
- * <p><b>Remarque :</b> Cette résolution est conçue pour être utilisée dans des
- * requêtes dynamiques construites avec Criteria API (javax.persistence.criteria).</p>
+ * @author Frank KOSSI
+ * @since 1.0
  *
- * <h3>Exemple d'utilisation :</h3>
+ * <p><b>Note:</b> This resolution is designed for use in dynamic queries built with the Criteria API (javax.persistence.criteria).</p>
+ *
+ * <h3>Usage example:</h3>
  * <pre>{@code
  * CriteriaBuilder cb = entityManager.getCriteriaBuilder();
  * CriteriaQuery<MyEntity> query = cb.createQuery(MyEntity.class);
@@ -38,49 +43,50 @@ import java.util.Collection;
 public class PathResolverUtils {
 
     /**
-     * Résout le chemin fourni en une {@link Path} JPA à partir du root d'entité donné.
+     * Resolves the given path into a JPA {@link Path} from the provided entity root.
      * <p>
-     * Le chemin est décomposé en segments, chacun représentant une propriété de l'entité ou de ses relations.
-     * Si un segment correspond à une collection, une jointure gauche est effectuée et la résolution continue
-     * dans le type générique de la collection.
+     * The path is split into segments, each representing a property of the entity or its relationships.
+     * If a segment corresponds to a collection, a left join is performed and resolution continues
+     * in the generic type of the collection.
      * </p>
      * <p>
-     * En cas d'erreur (champ non trouvé, type générique impossible à déterminer), une exception est levée.
+     * In case of error (field not found, unable to determine generic type), an exception is thrown.
      * </p>
      *
-     * @param root        la racine de la requête Criteria JPA (Root de l'entité d'origine)
-     * @param path        le chemin complet vers la propriété, en notation « dot » (exemple : "fieldA.fieldB.listField.fieldC")
-     * @param entityClass la classe de l'entité root (type de départ)
-     * @param <T>         le type de l'entité root
-     * @return une instance {@link Path} correspondant au chemin résolu
-     * @throws IllegalArgumentException si un segment du chemin ne correspond à aucun champ dans la classe
-     * @throws IllegalStateException    si le type générique d'une collection ne peut être déterminé
+     * @param root the root of the JPA Criteria query (Root of the base entity)
+     * @param path the full property path in dot notation (e.g., "fieldA.fieldB.listField.fieldC")
+     * @param &lt;T&gt;  the type of the root entity
+     * @return a {@link Path} instance corresponding to the resolved path
+     * @throws IllegalArgumentException if path is {@code null} or {@code empty} or if a segment does not match any field in the class
+     * @throws IllegalStateException    if the generic type of a collection cannot be determined
      */
     public static <T> Path<?> resolvePath(Root<T> root, String path) {
+        if (root == null || path == null) throw new IllegalArgumentException("path cannot be null or empty");
+
         String[] parts = path.split("\\.");
         From<?, ?> current = root;
-        Class<?> currentClass = (new ClassUtils.TypeReference<T>() {}).getTypeClass();
+        Class<?> currentClass = root.getJavaType();
 
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
 
-            Field field;
-            try {
-                field = currentClass.getField(part);
-            } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("Field not found: " + part + " in " + currentClass.getName(), e);
-            }
+            final Class<?> finalCurrentClass = currentClass;
+            Field field = ClassUtils.getAnyField(currentClass, part)
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Field not found: %s in %s", part, finalCurrentClass)));
 
             boolean isCollection = Collection.class.isAssignableFrom(field.getType());
 
             if (i < parts.length - 1) {
                 if (isCollection) {
                     current = current.join(part, JoinType.LEFT);
-                    currentClass = ClassUtils.getCollectionGenericType(field,0)
-                            .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part))
-                            .getClass();
+                    currentClass = (Class<?>) ClassUtils.getCollectionGenericType(field,0)
+                            .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part));
                 } else {
-                    current = current.join(part, JoinType.LEFT);
+                    try {
+                        current = current.join(part, JoinType.LEFT);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(String.format("%s is not a property name of %s", part, currentClass),e);
+                    }
                     currentClass = field.getType();
                 }
             } else {
