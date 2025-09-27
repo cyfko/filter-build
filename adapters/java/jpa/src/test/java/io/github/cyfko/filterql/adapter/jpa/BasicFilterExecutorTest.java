@@ -83,9 +83,9 @@ class BasicFilterExecutorTest {
         NAME(String.class, OperatorUtils.FOR_TEXT),
         AGE(Integer.class, OperatorUtils.FOR_NUMBER),
         EMAIL(String.class, Set.of(Operator.EQUALS, Operator.NOT_EQUALS, Operator.LIKE, Operator.NOT_LIKE, Operator.IS_NULL, Operator.IS_NOT_NULL)),
-        ACTIVE(String.class, Set.of(Operator.EQUALS, Operator.NOT_EQUALS)),
-        CREATED_AT(String.class, OperatorUtils.FOR_TEXT),
-        GROUP(String.class, Arrays.stream(Operator.values()).collect(Collectors.toSet()));
+        ACTIVE(Boolean.class, Set.of(Operator.EQUALS, Operator.NOT_EQUALS)),
+        CREATED_AT(LocalDateTime.class, OperatorUtils.FOR_TEXT),
+        GROUP_NAME(String.class, OperatorUtils.FOR_TEXT);
 
         private final Class<?> type;
         private final Set<Operator> supportedOperators;
@@ -169,8 +169,8 @@ class BasicFilterExecutorTest {
                         return "active";
                     case CREATED_AT:
                         return "createdAt";
-                    case GROUP:
-                        return "group";
+                    case GROUP_NAME:
+                        return "group.name";
                     default:
                         throw new IllegalArgumentException("Unknown property: " + prop);
                 }
@@ -353,9 +353,6 @@ class BasicFilterExecutorTest {
                     .filter("A", new FilterDefinition<>(TestUserPropertyRef.NAME, Operator.EQUALS, "Alice"))
                     .build();
 
-            // Register builder
-            executor.registerPathNameBuilder(TestUser.class, TestUserPropertyRef.class, USER_BUILDER);
-
             // Spy on executor to mock DSLParser/FilterTree/ConditionAdapter/Specification
             BasicFilterExecutor spyExec = spy(executor);
             doReturn(mockDslParser).when(spyExec);
@@ -388,8 +385,6 @@ class BasicFilterExecutorTest {
                     .filter("B", new FilterDefinition<>(TestUserPropertyRef.EMAIL, Operator.LIKE, "%@a.com"))
                     .filter("C", new FilterDefinition<>(TestUserPropertyRef.ACTIVE, Operator.EQUALS, true))
                     .build();
-
-            executor.registerPathNameBuilder(TestUser.class, TestUserPropertyRef.class, USER_BUILDER);
 
             BasicFilterExecutor spyExec = spy(executor);
             doReturn(mockDslParser).when(spyExec);
@@ -450,7 +445,7 @@ class BasicFilterExecutorTest {
                     .combineWith("A")
                     .filter("A", new FilterDefinition<>(TestUserPropertyRef.NAME, Operator.EQUALS, "Bob"))
                     .build();
-            executor.registerPathNameBuilder(TestUser.class, TestUserPropertyRef.class, USER_BUILDER);
+
             BasicFilterExecutor spyExec = spy(executor);
             doReturn(mockDslParser).when(spyExec);
             when(mockDslParser.parse(anyString())).thenReturn(mockFilterTree);
@@ -574,7 +569,7 @@ class BasicFilterExecutorTest {
         void findAll_Relation_ShouldReturnCorrect() {
             FilterRequest<TestUserPropertyRef> req = FilterRequest.<TestUserPropertyRef>builder()
                     .combineWith("A")
-                    .filter("A", new FilterDefinition<>(TestUserPropertyRef.GROUP, Operator.EQUALS, "Admins"))
+                    .filter("A", new FilterDefinition<>(TestUserPropertyRef.GROUP_NAME, Operator.EQUALS, "Admins"))
                     .build();
             List<TestUser> result = executor.findAll(TestUser.class, req);
             assertThat(result).extracting(TestUser::getName).containsExactlyInAnyOrder("Alice", "Charlie");

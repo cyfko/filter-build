@@ -8,6 +8,7 @@ import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.FilterTree;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.impl.DSLParser;
+import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.utils.ClassUtils;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
@@ -231,12 +232,7 @@ public final class BasicFilterExecutor implements FilterExecutor {
             Class<E> entityClass, FilterRequest<P> request) {
 
         // Try to infer property class from the first filter
-        if (request.getFilters().isEmpty()) {
-            throw new IllegalArgumentException("Filter request must contain at least one filter to infer property type");
-        }
-
-        P firstProperty = request.getFilters().get(0).getRef();
-        Class<P> propertyClass = (Class<P>) firstProperty.getClass();
+        Class<P> propertyClass = BasicFilterExecutor.getPropertyClass(request.getFilters());
 
         String key = generateRegistryKey(entityClass, propertyClass);
         PathNameSpecificationBuilder<?, ?> builder = registry.get(key);
@@ -258,6 +254,19 @@ public final class BasicFilterExecutor implements FilterExecutor {
     private static <E, P extends Enum<P> & PropertyRef> String generateRegistryKey(
             Class<E> entityClass, Class<P> propertyClass) {
         return entityClass.getName() + ":" + propertyClass.getName();
+    }
+
+    /**
+     * Retourne une valeur quelconque de la map.
+     * @param map la map source
+     * @return une valeur arbitraire, ou null si la map est vide
+     */
+    @SuppressWarnings("unchecked")
+    private static <P extends Enum<P> & PropertyRef> Class<P> getPropertyClass(Map<String, FilterDefinition<P>> map) {
+        if (map == null || map.isEmpty()) {
+            throw new IllegalArgumentException("Filter request must contain at least one filter to infer property type");
+        }
+        return (Class<P>) map.values().iterator().next().getRef().getClass();
     }
 
     /**

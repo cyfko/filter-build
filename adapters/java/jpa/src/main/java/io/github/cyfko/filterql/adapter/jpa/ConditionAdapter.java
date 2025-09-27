@@ -18,24 +18,16 @@ import java.util.Objects;
  * @since 1.0
  */
 public class ConditionAdapter<T> implements Condition {
-    private final Class<T> clazz;
     private final Specification<T> specification;
     
     /**
      * Constructs a new JPA condition adapter.
      * 
-     * @param predicate The JPA predicate
-     * @param criteriaBuilder The JPA criteria builder
+     * @param specification The {@link Specification} of this condition
      */
     public ConditionAdapter(Specification<T> specification) {
         Objects.requireNonNull(specification, "specification cannot be null");
-        this.clazz = (new ClassUtils.TypeReference<T>() {}).getTypeClass();
         this.specification = specification;
-    }
-
-    // Retourne la classe capturée correspondant à l'entité racine sur laquelle porte cette condition
-    public Class<T> getEntityClass() {
-        return clazz;
     }
 
     /**
