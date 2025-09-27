@@ -61,7 +61,7 @@ public class PathResolverUtils {
      * @throws IllegalStateException    if the generic type of a collection cannot be determined
      */
     public static <T> Path<?> resolvePath(Root<T> root, String path) {
-        if (root == null || path == null) throw new IllegalArgumentException("path cannot be null or empty");
+        if (root == null || path == null) throw new IllegalArgumentException("root and path cannot be null");
 
         String[] parts = path.split("\\.");
         From<?, ?> current = root;
@@ -72,7 +72,7 @@ public class PathResolverUtils {
 
             final Class<?> finalCurrentClass = currentClass;
             Field field = ClassUtils.getAnyField(currentClass, part)
-                    .orElseThrow(() -> new IllegalArgumentException(String.format("Field not found: %s in %s", part, finalCurrentClass)));
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Field not found: <%s> in <%s>", part, finalCurrentClass.getSimpleName())));
 
             boolean isCollection = Collection.class.isAssignableFrom(field.getType());
 

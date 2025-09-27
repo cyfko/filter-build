@@ -344,6 +344,7 @@ class BasicFilterExecutorTest {
             when(mockEm.getCriteriaBuilder()).thenReturn(mockCb);
             when(mockCb.createQuery(TestUser.class)).thenReturn(mockQuery);
             when(mockQuery.from(TestUser.class)).thenReturn(mockRoot);
+            when(mockQuery.select(mockRoot)).thenReturn(mockQuery); // Must return the query itself
             when(mockEm.createQuery(mockQuery)).thenReturn(mockTypedQuery);
             when(mockTypedQuery.getResultList()).thenReturn(List.of(new TestUser("Alice", "a@a.com", 30, true, LocalDateTime.now(), null)));
 
@@ -355,18 +356,21 @@ class BasicFilterExecutorTest {
 
             // Spy on executor to mock DSLParser/FilterTree/ConditionAdapter/Specification
             BasicFilterExecutor spyExec = spy(executor);
-            doReturn(mockDslParser).when(spyExec);
-            when(mockDslParser.parse(anyString())).thenReturn(mockFilterTree);
-            when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
-            when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
-            when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(mockPredicate);
+            // Mock the static construction of DSLParser
+            try (MockedConstruction<DSLParser> mockedConstruction = mockConstruction(DSLParser.class, 
+                    (mock, context) -> when(mock.parse(anyString())).thenReturn(mockFilterTree))) {
+                
+                when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
+                when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
+                when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(mockPredicate);
 
-            List<TestUser> result = spyExec.findAll(TestUser.class, req);
+                List<TestUser> result = spyExec.findAll(TestUser.class, req);
 
-            assertThat(result).hasSize(1).extracting(TestUser::getName).containsExactly("Alice");
-            verify(mockEm).getCriteriaBuilder();
-            verify(mockEm).createQuery(mockQuery);
-            verify(mockTypedQuery).getResultList();
+                assertThat(result).hasSize(1).extracting(TestUser::getName).containsExactly("Alice");
+                verify(mockEm).getCriteriaBuilder();
+                verify(mockEm).createQuery(mockQuery);
+                verify(mockTypedQuery).getResultList();
+            }
         }
 
         @Test
@@ -376,6 +380,7 @@ class BasicFilterExecutorTest {
             when(mockEm.getCriteriaBuilder()).thenReturn(mockCb);
             when(mockCb.createQuery(TestUser.class)).thenReturn(mockQuery);
             when(mockQuery.from(TestUser.class)).thenReturn(mockRoot);
+            when(mockQuery.select(mockRoot)).thenReturn(mockQuery); // Must return the query itself
             when(mockEm.createQuery(mockQuery)).thenReturn(mockTypedQuery);
             when(mockTypedQuery.getResultList()).thenReturn(List.of());
 
@@ -387,18 +392,21 @@ class BasicFilterExecutorTest {
                     .build();
 
             BasicFilterExecutor spyExec = spy(executor);
-            doReturn(mockDslParser).when(spyExec);
-            when(mockDslParser.parse(anyString())).thenReturn(mockFilterTree);
-            when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
-            when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
-            when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(mockPredicate);
+            // Mock the static construction of DSLParser
+            try (MockedConstruction<DSLParser> mockedConstruction = mockConstruction(DSLParser.class, 
+                    (mock, context) -> when(mock.parse(anyString())).thenReturn(mockFilterTree))) {
+                
+                when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
+                when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
+                when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(mockPredicate);
 
-            List<TestUser> result = spyExec.findAll(TestUser.class, req);
+                List<TestUser> result = spyExec.findAll(TestUser.class, req);
 
-            assertThat(result).isEmpty();
-            verify(mockEm).getCriteriaBuilder();
-            verify(mockEm).createQuery(mockQuery);
-            verify(mockTypedQuery).getResultList();
+                assertThat(result).isEmpty();
+                verify(mockEm).getCriteriaBuilder();
+                verify(mockEm).createQuery(mockQuery);
+                verify(mockTypedQuery).getResultList();
+            }
         }
 
         @ParameterizedTest
@@ -410,11 +418,14 @@ class BasicFilterExecutorTest {
                     .filter("A", new FilterDefinition<>(TestUserPropertyRef.NAME, Operator.EQUALS, "Alice"))
                     .build();
             BasicFilterExecutor spyExec = spy(executor);
-            doReturn(mockDslParser).when(spyExec);
-            when(mockDslParser.parse(anyString())).thenThrow(new DSLSyntaxException("Invalid DSL"));
-            assertThatThrownBy(() -> spyExec.findAll(TestUser.class, req))
-                    .isInstanceOf(DSLSyntaxException.class)
-                    .hasMessage("Invalid DSL");
+            // Mock the static construction of DSLParser to throw exception
+            try (MockedConstruction<DSLParser> mockedConstruction = mockConstruction(DSLParser.class, 
+                    (mock, context) -> when(mock.parse(anyString())).thenThrow(new DSLSyntaxException("Invalid DSL")))) {
+                
+                assertThatThrownBy(() -> spyExec.findAll(TestUser.class, req))
+                        .isInstanceOf(DSLSyntaxException.class)
+                        .hasMessage("Invalid DSL");
+            }
         }
 
         @Test
@@ -425,12 +436,15 @@ class BasicFilterExecutorTest {
                     .filter("A", new FilterDefinition<>(TestUserPropertyRef.NAME, Operator.EQUALS, "Alice"))
                     .build();
             BasicFilterExecutor spyExec = spy(executor);
-            doReturn(mockDslParser).when(spyExec);
-            when(mockDslParser.parse(anyString())).thenReturn(mockFilterTree);
-            when(mockFilterTree.generate(any())).thenReturn(mock(Condition.class));
-            assertThatThrownBy(() -> spyExec.findAll(TestUser.class, req))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("not a ConditionAdapter");
+            // Mock the static construction of DSLParser
+            try (MockedConstruction<DSLParser> mockedConstruction = mockConstruction(DSLParser.class, 
+                    (mock, context) -> when(mock.parse(anyString())).thenReturn(mockFilterTree))) {
+                
+                when(mockFilterTree.generate(any())).thenReturn(mock(Condition.class));
+                assertThatThrownBy(() -> spyExec.findAll(TestUser.class, req))
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("not a ConditionAdapter");
+            }
         }
 
         @Test
@@ -447,15 +461,18 @@ class BasicFilterExecutorTest {
                     .build();
 
             BasicFilterExecutor spyExec = spy(executor);
-            doReturn(mockDslParser).when(spyExec);
-            when(mockDslParser.parse(anyString())).thenReturn(mockFilterTree);
-            when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
-            when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
-            when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(null);
+            // Mock the static construction of DSLParser
+            try (MockedConstruction<DSLParser> mockedConstruction = mockConstruction(DSLParser.class, 
+                    (mock, context) -> when(mock.parse(anyString())).thenReturn(mockFilterTree))) {
+                
+                when(mockFilterTree.generate(any())).thenReturn(mockConditionAdapter);
+                when(mockConditionAdapter.getSpecification()).thenReturn(mockSpecification);
+                when(mockSpecification.toPredicate(any(), any(), any())).thenReturn(null);
 
-            List<TestUser> result = spyExec.findAll(TestUser.class, req);
+                List<TestUser> result = spyExec.findAll(TestUser.class, req);
 
-            assertThat(result).hasSize(1).extracting(TestUser::getName).containsExactly("Bob");
+                assertThat(result).hasSize(1).extracting(TestUser::getName).containsExactly("Bob");
+            }
         }
     }
 
