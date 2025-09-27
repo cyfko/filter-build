@@ -4,14 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -622,6 +621,141 @@ class ClassUtilsTest {
             
             assertTrue(commonClass.isPresent());
             assertEquals(String.class, commonClass.get());
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests pour les types génériques complexes")
+    class ComplexGenericTypeTests {
+
+        @Test
+        @DisplayName("shouldHandleNestedGenericTypes")
+        void shouldHandleNestedGenericTypes() throws NoSuchFieldException {
+            class TestClass {
+                List<Map<String, List<Integer>>> nestedGenericField;
+            }
+
+            Field field = TestClass.class.getDeclaredField("nestedGenericField");
+            Optional<Type> genericType = ClassUtils.getCollectionGenericType(field, 0);
+
+            assertTrue(genericType.isPresent());
+            assertTrue(genericType.get() instanceof ParameterizedType);
+            ParameterizedType paramType = (ParameterizedType) genericType.get();
+            assertEquals(Map.class, paramType.getRawType());
+        }
+
+        @Test
+        @DisplayName("shouldHandleRecursiveGenericTypes")
+        void shouldHandleRecursiveGenericTypes() throws NoSuchFieldException {
+            class Node<T> {
+                Node<T> parent;
+                List<Node<T>> children;
+            }
+
+            Field field = Node.class.getDeclaredField("children");
+            Optional<Type> genericType = ClassUtils.getCollectionGenericType(field, 0);
+
+            assertTrue(genericType.isPresent());
+            assertTrue(genericType.get() instanceof ParameterizedType);
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests de performance et concurrence")
+    class PerformanceAndConcurrencyTests {
+
+        @Test
+        @DisplayName("shouldHandleConcurrentCacheAccess")
+        void shouldHandleConcurrentCacheAccess() throws InterruptedException {
+            int threadCount = 10;
+            CountDownLatch startLatch = new CountDownLatch(1);
+            CountDownLatch endLatch = new CountDownLatch(threadCount);
+
+            for (int i = 0; i < threadCount; i++) {
+                new Thread(() -> {
+                    try {
+                        startLatch.await();
+                        // Accès concurrent aux caches
+                        ClassUtils.getAnyField(TestChild.class, "childField");
+                        ClassUtils.getCommonSuperclass(Arrays.asList(1, 2, 3));
+                    } catch (InterruptedException e) {
+                        fail("Thread interrupted");
+                    } finally {
+                        endLatch.countDown();
+                    }
+                }).start();
+            }
+
+            startLatch.countDown();
+            assertTrue(endLatch.await(5, TimeUnit.SECONDS),
+                    "Concurrent operations should complete within timeout");
+        }
+
+        @Test
+        @DisplayName("shouldHandleLargeTypeHierarchy")
+        void shouldHandleLargeTypeHierarchy() {
+            class Level0 {}
+            class Level1 extends Level0 {}
+            class Level2 extends Level1 {}
+            // ... créer une hiérarchie profonde
+
+            List<Object> objects = Arrays.asList(new Level0(), new Level1(), new Level2());
+            long start = System.nanoTime();
+            Class<?> result = ClassUtils.getCommonSuperclass(objects);
+            long duration = System.nanoTime() - start;
+
+            assertEquals(Level0.class, result);
+            assertTrue(duration < 1_000_000_000, // 1 seconde
+                    "Deep hierarchy analysis should complete within reasonable time");
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests de validation robuste")
+    class RobustValidationTests {
+
+        @Test
+        @DisplayName("shouldNotRejectMalformedFieldNames")
+        void shouldNotRejectMalformedFieldNames() {
+            assertTrue(ClassUtils.getAnyField(TestClass.class, "invalid.field.name").isEmpty());
+
+            assertTrue(ClassUtils.getAnyField(TestClass.class, "").isEmpty());
+
+        }
+
+        // Test for SecurityManager removed due to deprecation and removal in Java 17+.
+
+        class TestClass {
+            private String privateField;
+            protected int protectedField;
+            public List<String> publicField;
+
+            class InnerClass {
+                private String innerField;
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests des limites du cache")
+    class CacheLimitTests {
+
+        @Test
+        @DisplayName("shouldHandleMemoryPressure")
+        void shouldHandleMemoryPressure() {
+            Runtime runtime = Runtime.getRuntime();
+            long initialMemory = runtime.totalMemory() - runtime.freeMemory();
+
+            // Créer beaucoup d'entrées de cache
+            for (int i = 0; i < 10_000; i++) {
+                ClassUtils.getAnyField(Object.class, "field" + i);
+            }
+
+            long finalMemory = runtime.totalMemory() - runtime.freeMemory();
+            long memoryIncrease = finalMemory - initialMemory;
+
+            assertTrue(memoryIncrease < 10_000_000,
+                    "Cache memory usage should be reasonable");
         }
     }
 

@@ -16,59 +16,65 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Implémentation d'un {@link SpecificationBuilder} construisant des spécifications JPA
- * basées sur un générateur de chemin de propriété (path name) à partir d'une propriété enum.
+ * Implementation of {@link SpecificationBuilder} that constructs JPA specifications
+ * based on a property path name generator derived from an enum property.
  * <p>
- * Cette classe utilise un {@link Function} pour transformer l'enum de propriété {@code P}
- * en nom de chemin (string) utilisé dans les critères JPA.
+ * This class uses a {@link Function} to convert the property enum {@code P}
+ * into a string path used in JPA Criteria queries.
  * </p>
  * <p>
- * Chaque filtre est traduit en prédicat en fonction de l'opérateur fourni.
+ * Each filter is translated to a predicate according to the provided operator.
  * </p>
  *
- * @param <E> Type d'entité sur lequel portent les spécifications.
- * @param <P> Enum des propriétés filtrables (implémente {@link PropertyRef}).
+ * @param <E> the entity type on which the specifications operate.
+ * @param <P> the enum type of filterable properties (implementing {@link PropertyRef}).
  *
  * @author Frank
  * @since 1.0
  */
 public class PathNameSpecificationBuilder<E, P extends Enum<P> & PropertyRef> implements SpecificationBuilder<E, P> {
 
-    private final Function<P, String> pathNameGenerator;
+    private final Function<P, String> pathNameSupplier;
 
     /**
-     * Construit un générateur de spécification avec un générateur de chemin de propriété.
+     * Constructs a specification builder with a property path name supplier function.
+     * <p>
+     * The function converts a property enum value into a dot notation path string
+     * (e.g., "fieldA.fieldB.listField.fieldC"). This facilitates navigation through
+     * nested entities by successive joins in a Criteria query.
+     * </p>
      *
-     * @param pathNameGenerator Fonction convertissant une propriété enum en chemin String.
-     * @throws NullPointerException si {@code pathNameGenerator} est null.
+     * @param pathNameSupplier function mapping a property enum to a string path
+     * @throws NullPointerException if {@code pathNameGenerator} is null
      */
-    public PathNameSpecificationBuilder(@NotNull Function<P, String> pathNameGenerator) {
-        Objects.requireNonNull(pathNameGenerator, "pathNameGenerator must not be null");
-        this.pathNameGenerator = pathNameGenerator;
+    public PathNameSpecificationBuilder(@NotNull Function<P, String> pathNameSupplier) {
+        this.pathNameSupplier = Objects.requireNonNull(pathNameSupplier, "pathNameGenerator must not be null");
     }
 
     /**
-     * Construit une spécification JPA à partir d'une référence de propriété, un opérateur, et une valeur.
+     * Builds a JPA specification predicate for the given property reference, operator, and filter value.
+     * <p>
+     * Resolves the path from the root entity using the path name generated from the property enum.
+     * Applies the appropriate CriteriaBuilder predicate according to the operator.
+     * </p>
      *
-     * @param ref  La propriété enum sur laquelle appliquer le filtre.
-     * @param op   L'opérateur de filtre.
-     * @param value La valeur du filtre, dont le type doit être compatible avec la propriété et l'opérateur.
-     * @return Une spécification JPA correspondant au filtre demandé.
-     * @throws IllegalArgumentException si l’opérateur n’est pas supporté.
-     * @throws NullPointerException si {@code ref} ou {@code op} sont null.
+     * @param ref   the enum property reference to filter on
+     * @param op    the filter operator
+     * @param value the filter value, compatible with the property and operator
+     * @return a JPA Specification predicate representing the filter
+     * @throws IllegalArgumentException if the operator is unsupported or path name is invalid
+     * @throws NullPointerException if {@code ref} or {@code op} are null
      */
     @Override
-    public Specification<E> build(@NotNull P ref, @NotNull Operator op, Object value) {
+    public final Specification<E> build(@NotNull P ref, @NotNull Operator op, Object value) {
         return (Root<E> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            String pathName = pathNameGenerator.apply(ref);
+            // Retrieve the relative path name for the root entity
+            String pathName = pathNameSupplier.apply(ref);
             if (pathName == null || pathName.isEmpty()) {
                 throw new IllegalArgumentException(String.format("Generated pathName for property reference <%s> must not be null or empty", ref));
             }
 
-            // Validation du type de valeur selon l'opérateur
-            ref.validateOperatorForValue(op, value);
-
-            // Résolution du chemin dans l'entité
+            // Resolve the Path object within the entity graph
             Path<?> path = PathResolverUtils.resolvePath(root, pathName);
 
             switch (op) {

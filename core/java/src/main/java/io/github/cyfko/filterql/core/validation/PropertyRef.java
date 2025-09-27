@@ -9,18 +9,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Interface représentant une référence de propriété dans un contexte de filtrage dynamique.
+ * Interface representing a property reference in a dynamic filtering context.
  * <p>
- * Les développeurs doivent créer leurs propres enums implémentant cette interface pour définir
- * les propriétés accessibles et leurs caractéristiques sur leurs entités.
+ * Developers must create their own enums implementing this interface to define
+ * the accessible properties and their characteristics on their entities.
  * </p>
  * <p>
- * {@code PropertyRef} contient uniquement la définition logique de la propriété (type, opérateurs supportés).
- * Chaque adaptateur est responsable d'interpréter cette interface et de construire les conditions appropriées.
- * Cette distinction offre une grande flexibilité, permettant par exemple qu'une seule référence de propriété
- * corresponde à plusieurs champs ou conditions complexes.
+ * {@code PropertyRef} only contains the logical definition of the property (type, supported operators).
+ * Each adapter is responsible for interpreting this interface and building the appropriate conditions.
+ * This distinction offers great flexibility, allowing for example a single property reference
+ * to correspond to multiple fields or complex conditions.
  * </p>
- * <p><b>Exemple d'utilisation :</b></p>
+ * <p><b>Usage example:</b></p>
  * <pre>{@code
  * public enum UserPropertyRef implements PropertyRef {
  *     USER_NAME(String.class, Set.of(LIKE, EQUALS, IN)),
@@ -41,33 +41,34 @@ import java.util.stream.Collectors;
  *     @Override
  *     public Set<Operator> getSupportedOperators() { return supportedOperators; }
  * }
- * }</pre>
+ * }
+ * </pre>
  *
- * @author Cyfko
+ * @author Frank KOSSI
  * @since 1.0
  */
 public interface PropertyRef {
 
     /**
-     * Retourne le type Java de la propriété représentée.
+     * Returns the Java type of the represented property.
      *
-     * @return la classe Java représentant le type de la propriété (ex: String.class, Integer.class)
+     * @return the Java class representing the property type (e.g., String.class, Integer.class)
      */
     Class<?> getType();
 
     /**
-     * Retourne la collection non modifiable des opérateurs supportés par cette propriété.
+     * Returns the unmodifiable collection of operators supported by this property.
      *
-     * @return un {@link Set} immuable des opérateurs que la propriété supporte
+     * @return an immutable {@link Set} of operators supported by the property
      */
     Set<Operator> getSupportedOperators();
 
     /**
-     * Indique si l'opérateur donné est supporté pour cette propriété.
+     * Indicates whether the given operator is supported for this property.
      *
-     * @param operator l'opérateur à tester, non nul
-     * @return {@code true} si l'opérateur est supporté, {@code false} sinon
-     * @throws NullPointerException si {@code operator} est {@code null}
+     * @param operator the operator to test, not null
+     * @return {@code true} if the operator is supported, {@code false} otherwise
+     * @throws NullPointerException if {@code operator} is {@code null}
      */
     default boolean supportsOperator(Operator operator) {
         Objects.requireNonNull(operator, "Operator cannot be null");
@@ -75,12 +76,12 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide que l'opérateur donné est bien supporté par cette propriété.
-     * Lance une {@link IllegalArgumentException} si ce n'est pas le cas.
+     * Validates that the given operator is supported by this property.
+     * Throws an {@link IllegalArgumentException} if not.
      *
-     * @param operator l'opérateur à valider, non nul
-     * @throws IllegalArgumentException si l'opérateur n'est pas supporté
-     * @throws NullPointerException     si {@code operator} est {@code null}
+     * @param operator the operator to validate, not null
+     * @throws IllegalArgumentException if the operator is not supported
+     * @throws NullPointerException     if {@code operator} is {@code null}
      */
     default void validateOperator(Operator operator) {
         Objects.requireNonNull(operator, "Operator cannot be null");
@@ -92,19 +93,19 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide que l'opérateur donné est applicable pour la valeur fournie,
-     * en se basant sur le type attendu de la propriété et la nature de la valeur.
+     * Validates that the given operator is applicable for the provided value,
+     * based on the expected property type and the nature of the value.
      * <p>
-     * Pour les opérateurs simples (comparaisons, like), la valeur doit être assignable au type de la propriété.
-     * Pour les opérateurs de vérification de nullité (IS_NULL, IS_NOT_NULL), aucune valeur n'est requise.
-     * Pour les opérateurs impliquant des collections ou des intervalles (IN, BETWEEN), la valeur
-     * doit être une collection compatible avec le type attendu.
+     * For simple operators (comparisons, like), the value must be assignable to the property type.
+     * For null-check operators (IS_NULL, IS_NOT_NULL), no value is required.
+     * For operators involving collections or ranges (IN, BETWEEN), the value
+     * must be a collection compatible with the expected type.
      * </p>
      *
-     * @param operator l'opérateur à valider, non nul
-     * @param value    la valeur sur laquelle l'opérateur s'applique, peut être nulle pour certains opérateurs
-     * @throws IllegalArgumentException si l'opérateur n'est pas applicable pour la valeur donnée
-     * @throws NullPointerException     si {@code operator} est {@code null}
+     * @param operator the operator to validate, not null
+     * @param value    the value to which the operator applies, may be null for some operators
+     * @throws IllegalArgumentException if the operator is not applicable for the given value
+     * @throws NullPointerException     if {@code operator} is {@code null}
      */
     default void validateOperatorForValue(Operator operator, Object value) {
         Objects.requireNonNull(operator, "Operator cannot be null");
@@ -120,12 +121,12 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide la compatibilité entre un opérateur et une valeur.
-     * Méthode interne pour une validation fine et extensible.
+     * Validates the compatibility between an operator and a value.
+     * Internal method for fine-grained and extensible validation.
      *
-     * @param operator l'opérateur à valider
-     * @param value la valeur à valider
-     * @return le résultat de validation
+     * @param operator the operator to validate
+     * @param value the value to validate
+     * @return the validation result
      */
     private ValidationResult validateValueForOperator(Operator operator, Object value) {
         switch (operator) {
@@ -159,7 +160,7 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide une valeur simple pour les opérateurs de comparaison.
+     * Validates a single value for comparison operators.
      */
     private ValidationResult validateSingleValue(Operator operator, Object value) {
         if (value == null) {
@@ -181,7 +182,7 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide les opérateurs de vérification de nullité.
+     * Validates null-check operators.
      */
     private ValidationResult validateNullCheck(Operator operator, Object value) {
         // Pour IS_NULL et IS_NOT_NULL, la valeur devrait être null ou absente
@@ -190,7 +191,7 @@ public interface PropertyRef {
     }
 
     /**
-     * Valide une valeur collection pour les opérateurs IN et BETWEEN.
+     * Validates a collection value for IN and BETWEEN operators.
      */
     private ValidationResult validateCollectionValue(Operator operator, Object value, boolean requiresExactlyTwo) {
         if (value == null) {
@@ -233,8 +234,8 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie la compatibilité entre deux types.
-     * Gère les types primitifs et leurs wrappers.
+     * Checks compatibility between two types.
+     * Handles primitive types and their wrappers.
      */
     private boolean isCompatibleType(Class<?> valueType, Class<?> expectedType) {
         // Assignabilité directe
@@ -247,7 +248,7 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie la compatibilité entre types primitifs et leurs wrappers.
+     * Checks compatibility between primitive types and their wrappers.
      */
     private boolean isPrimitiveCompatible(Class<?> valueType, Class<?> expectedType) {
         Map<Class<?>, Class<?>> primitiveToWrapper = Map.of(
@@ -271,12 +272,12 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie si cette propriété supporte un ensemble d'opérateurs.
-     * Utile pour valider des configurations ou des requêtes complexes.
+     * Checks if this property supports a set of operators.
+     * Useful for validating configurations or complex queries.
      *
-     * @param operators collection d'opérateurs à vérifier, non nulle
-     * @return true si tous les opérateurs sont supportés
-     * @throws NullPointerException si operators est null
+     * @param operators collection of operators to check, not null
+     * @return true if all operators are supported
+     * @throws NullPointerException if operators is null
      */
     default boolean supportsAllOperators(Collection<Operator> operators) {
         Objects.requireNonNull(operators, "Operators collection cannot be null");
@@ -284,12 +285,12 @@ public interface PropertyRef {
     }
 
     /**
-     * Retourne les opérateurs non supportés parmi ceux fournis.
-     * Utile pour le debugging et les messages d'erreur détaillés.
+     * Returns the unsupported operators among those provided.
+     * Useful for debugging and detailed error messages.
      *
-     * @param operators collection d'opérateurs à vérifier, non nulle
-     * @return ensemble des opérateurs non supportés (peut être vide)
-     * @throws NullPointerException si operators est null
+     * @param operators collection of operators to check, not null
+     * @return set of unsupported operators (may be empty)
+     * @throws NullPointerException if operators is null
      */
     default Set<Operator> getUnsupportedOperators(Collection<Operator> operators) {
         Objects.requireNonNull(operators, "Operators collection cannot be null");
@@ -299,10 +300,10 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie si cette propriété est de type numérique.
-     * Utile pour déterminer quels opérateurs de comparaison appliquer.
+     * Checks if this property is of numeric type.
+     * Useful for determining which comparison operators to apply.
      *
-     * @return true si le type est un nombre
+     * @return true if the type is a number
      */
     default boolean isNumeric() {
         Class<?> type = getType();
@@ -311,7 +312,7 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie si le type est un primitif numérique.
+     * Checks if the type is a numeric primitive.
      */
     private boolean isPrimitiveNumber(Class<?> type) {
         return type == byte.class || type == short.class ||
@@ -320,30 +321,30 @@ public interface PropertyRef {
     }
 
     /**
-     * Vérifie si cette propriété est de type textuel.
-     * Utile pour déterminer si les opérateurs LIKE sont applicables.
+     * Checks if this property is of textual type.
+     * Useful for determining if LIKE operators are applicable.
      *
-     * @return true si le type est String ou CharSequence
+     * @return true if the type is String or CharSequence
      */
     default boolean isTextual() {
         return CharSequence.class.isAssignableFrom(getType());
     }
 
     /**
-     * Classe représentant le résultat d'une opération de validation.
+     * Class representing the result of a validation operation.
      * <p>
-     * Le résultat peut indiquer soit une validation réussie, soit un échec avec un message d'erreur associé.
-     * Cette classe est utilisée pour transmettre de manière simple et claire l'état de la validation.
+     * The result can indicate either a successful validation or a failure with an associated error message.
+     * This class is used to simply and clearly convey the validation state.
      * </p>
      *
-     * <p>Instances sont immuables et créées via les méthodes statiques
-     * {@link #success()} et {@link #failure(String)}.</p>
+     * <p>Instances are immutable and created via the static methods
+     * {@link #success()} and {@link #failure(String)}.</p>
      *
-     * <p>Exemple d'utilisation :</p>
+     * <p>Usage example:</p>
      * <pre>{@code
      * ValidationResult result = validateInput(value);
      * if (!result.isValid()) {
-     *     System.out.println("Erreur de validation : " + result.getErrorMessage());
+     *     System.out.println("Validation error: " + result.getErrorMessage());
      * }
      * }</pre>
      */
@@ -352,50 +353,50 @@ public interface PropertyRef {
         private final boolean valid;
         private final String errorMessage;
 
-        /**
-         * Constructeur privé - utilisation via les méthodes statiques de création.
-         *
-         * @param valid        true si validation réussie, false sinon
-         * @param errorMessage message d'erreur en cas d'échec, ou null si valide
-         */
+    /**
+     * Private constructor - use via the static creation methods.
+     *
+     * @param valid        true if validation succeeded, false otherwise
+     * @param errorMessage error message in case of failure, or null if valid
+     */
         private ValidationResult(boolean valid, String errorMessage) {
             this.valid = valid;
             this.errorMessage = errorMessage;
         }
 
-        /**
-         * Crée une instance indiquant une validation réussie.
-         *
-         * @return un résultat valide sans message d'erreur
-         */
+    /**
+     * Creates an instance indicating a successful validation.
+     *
+     * @return a valid result with no error message
+     */
         public static ValidationResult success() {
             return new ValidationResult(true, null);
         }
 
-        /**
-         * Crée une instance indiquant une validation échouée avec un message d'erreur.
-         *
-         * @param errorMessage message expliquant la raison de l'échec
-         * @return un résultat invalide contenant le message d'erreur fourni
-         */
+    /**
+     * Creates an instance indicating a failed validation with an error message.
+     *
+     * @param errorMessage message explaining the reason for failure
+     * @return an invalid result containing the provided error message
+     */
         public static ValidationResult failure(String errorMessage) {
             return new ValidationResult(false, errorMessage);
         }
 
-        /**
-         * Indique si la validation a réussi.
-         *
-         * @return true si valide, false sinon
-         */
+    /**
+     * Indicates whether the validation succeeded.
+     *
+     * @return true if valid, false otherwise
+     */
         public boolean isValid() {
             return valid;
         }
 
-        /**
-         * Retourne le message d'erreur associé à une validation échouée.
-         *
-         * @return message d'erreur si invalide, ou null si valide
-         */
+    /**
+     * Returns the error message associated with a failed validation.
+     *
+     * @return error message if invalid, or null if valid
+     */
         public String getErrorMessage() {
             return errorMessage;
         }

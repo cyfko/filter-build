@@ -12,7 +12,10 @@ import java.util.Map;
 /**
  * Spring Data JPA Context Adapter implementing the correct pattern.
  * This adapter uses SpringConditionAdapterBuilder to create conditions.
- * 
+ *
+ * @author Frank KOSSI
+ * @since 1.0
+ *
  * @param <T> The entity type (e.g., User, Product)
  * @param <P> The PropertyRef enum for this entity
  */

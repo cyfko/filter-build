@@ -5,15 +5,15 @@ import io.github.cyfko.filterql.core.validation.Operator;
 import java.util.Set;
 
 /**
- * Utilitaires liés aux opérateurs de filtre, notamment des ensembles prédéfinis
- * d'opérateurs adaptés à différents types de données.
+ * Utilities related to filter operators, including predefined sets of operators
+ * suitable for different data types.
  * <p>
- * Cette classe fournit par exemple des collections immuables d'opérateurs
- * applicables aux valeurs textuelles ou numériques.
+ * This class provides, for example, immutable collections of operators
+ * applicable to textual or numeric values.
  * </p>
  * <p>
- * Ces ensembles peuvent être utilisés lors des validations ou des constructions
- * de filtres pour restreindre les opérateurs autorisés selon le type de propriété.
+ * These sets can be used during validation or filter construction to restrict
+ * the allowed operators according to the property type.
  * </p>
  *
  * @author Frank KOSSI
@@ -21,9 +21,9 @@ import java.util.Set;
  */
 public final class OperatorUtils {
 
-    /**
-     * Ensemble immuable des opérateurs applicables aux propriétés de type texte (String, etc.).
-     */
+        /**
+         * Immutable set of operators applicable to text properties (String, etc.).
+         */
     public static final Set<Operator> FOR_TEXT = Set.of(
             Operator.EQUALS, Operator.NOT_EQUALS,
             Operator.LIKE, Operator.NOT_LIKE,
@@ -31,9 +31,9 @@ public final class OperatorUtils {
             Operator.IS_NULL, Operator.IS_NOT_NULL
     );
 
-    /**
-     * Ensemble immuable des opérateurs applicables aux propriétés de type numérique.
-     */
+        /**
+         * Immutable set of operators applicable to numeric properties.
+         */
     public static final Set<Operator> FOR_NUMBER = Set.of(
             Operator.EQUALS, Operator.NOT_EQUALS,
             Operator.GREATER_THAN, Operator.GREATER_THAN_OR_EQUAL,

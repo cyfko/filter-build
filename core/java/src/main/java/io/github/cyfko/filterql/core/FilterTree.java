@@ -4,14 +4,14 @@ import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 
 /**
- * Interface représentant un arbre d'expression parsé d'une expression DSL.
+ * Interface representing an expression tree parsed from a DSL expression.
  * <p>
- * Une instance de {@code FilterTree} peut générer une condition globale en résolvant
- * les références de filtres en fonction du contexte fourni.
+ * An instance of {@code FilterTree} can generate a global condition by resolving
+ * filter references according to the provided context.
  * </p>
  *
- * <p>Cette abstraction permet de représenter des expressions booléennes complexes
- * composées de plusieurs filtres combinés.</p>
+ * <p>This abstraction allows representing complex boolean expressions
+ * composed of multiple combined filters.</p>
  *
  * @author Frank KOSSI
  * @since 1.0
@@ -19,13 +19,13 @@ import io.github.cyfko.filterql.core.exception.FilterValidationException;
 public interface FilterTree {
 
     /**
-     * Génère une condition globale en résolvant toutes les références de filtres
-     * via le contexte donné.
+     * Generates a global condition by resolving all filter references
+     * using the given context.
      *
-     * @param context Le contexte fournissant les conditions correspondantes aux clés de filtres.
-     * @return Une {@link Condition} représentant l'ensemble de l'arbre de filtres.
-     * @throws FilterValidationException Si la validation des filtres échoue ou la génération de la condition n'est pas possible.
-     * @throws DSLSyntaxException Si la combinaison des filtres fait référence à un filtre non définit.
+     * @param context The context providing the conditions corresponding to filter keys.
+     * @return A {@link Condition} representing the entire filter tree.
+     * @throws FilterValidationException If filter validation fails or the condition cannot be generated.
+     * @throws DSLSyntaxException If the filter combination refers to an undefined filter.
      */
     Condition generate(Context context) throws FilterValidationException, DSLSyntaxException;
 }

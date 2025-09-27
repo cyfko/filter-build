@@ -1,25 +1,23 @@
 package io.github.cyfko.filterql.core.exception;
 
 /**
- * Exception levée lorsqu'une condition de filtre ne peut pas être validée ou construite.
+ * Exception thrown when a filter condition cannot be validated or constructed.
  * <p>
- * Cette exception permet d'indiquer explicitement les erreurs liées à la validation des filtres,
- * facilitant ainsi la gestion spécifique des erreurs dans le pipeline de filtrage.
+ * This exception is used to explicitly indicate errors related to filter validation,
+ * making it easier to handle specific errors in the filtering pipeline.
  * </p>
  *
- * <p>Elle hérite de {@link Exception} et doit être traitée ou propagée par les appels en amont.</p>
- *
- * <p>Exemple d'utilisation :</p>
+ * <p>Usage example:</p>
  * <pre>{@code
  * if (!filter.isValid()) {
- *     throw new FilterValidationException("Le filtre contient des valeurs invalides");
+ *     throw new FilterValidationException("The filter contains invalid values");
  * }
  * }</pre>
  *
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterValidationException extends Exception {
+public class FilterValidationException extends RuntimeException {
 
     /**
      * Crée une exception avec un message explicatif.
