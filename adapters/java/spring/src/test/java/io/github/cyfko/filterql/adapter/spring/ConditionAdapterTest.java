@@ -1,14 +1,8 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
-import io.github.cyfko.filterql.core.model.FilterDefinition;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -16,12 +10,12 @@ import static org.mockito.Mockito.*;
 /**
  * Tests unitaires simples pour SpringConditionAdapter.
  */
-class SpringConditionAdapterTest {
+class ConditionAdapterTest {
 
     @Test
     void testConstructor() {
         Specification<TestEntity> specification = mock(Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(specification);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(specification);
         
         assertNotNull(adapter);
         assertEquals(specification, adapter.getSpecification());
@@ -30,7 +24,7 @@ class SpringConditionAdapterTest {
     @Test
     void testGetSpecification() {
         Specification<TestEntity> specification = mock(Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(specification);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(specification);
         
         Specification<TestEntity> result = adapter.getSpecification();
         assertEquals(specification, result);
@@ -41,13 +35,13 @@ class SpringConditionAdapterTest {
         Specification<TestEntity> spec1 = mock(Specification.class);
         Specification<TestEntity> spec2 = mock(Specification.class);
         
-        SpringConditionAdapter<TestEntity> adapter1 = new SpringConditionAdapter<>(spec1);
-        SpringConditionAdapter<TestEntity> adapter2 = new SpringConditionAdapter<>(spec2);
+        ConditionAdapter<TestEntity> adapter1 = new ConditionAdapter<>(spec1);
+        ConditionAdapter<TestEntity> adapter2 = new ConditionAdapter<>(spec2);
         
         Condition result = adapter1.and(adapter2);
         
         assertNotNull(result);
-        assertTrue(result instanceof SpringConditionAdapter);
+        assertTrue(result instanceof ConditionAdapter);
     }
 
     @Test
@@ -55,30 +49,30 @@ class SpringConditionAdapterTest {
         Specification<TestEntity> spec1 = mock(Specification.class);
         Specification<TestEntity> spec2 = mock(Specification.class);
         
-        SpringConditionAdapter<TestEntity> adapter1 = new SpringConditionAdapter<>(spec1);
-        SpringConditionAdapter<TestEntity> adapter2 = new SpringConditionAdapter<>(spec2);
+        ConditionAdapter<TestEntity> adapter1 = new ConditionAdapter<>(spec1);
+        ConditionAdapter<TestEntity> adapter2 = new ConditionAdapter<>(spec2);
         
         Condition result = adapter1.or(adapter2);
         
         assertNotNull(result);
-        assertTrue(result instanceof SpringConditionAdapter);
+        assertTrue(result instanceof ConditionAdapter);
     }
 
     @Test
     void testNotOperation() {
         Specification<TestEntity> specification = mock(Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(specification);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(specification);
         
         Condition result = adapter.not();
         
         assertNotNull(result);
-        assertTrue(result instanceof SpringConditionAdapter);
+        assertTrue(result instanceof ConditionAdapter);
     }
 
     @Test
     void testAndOperationWithNonSpringCondition() {
         Specification<TestEntity> specification = mock(Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(specification);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(specification);
         Condition nonSpringCondition = mock(Condition.class);
         
         assertThrows(IllegalArgumentException.class, () -> {
@@ -89,7 +83,7 @@ class SpringConditionAdapterTest {
     @Test
     void testOrOperationWithNonSpringCondition() {
         Specification<TestEntity> specification = mock(Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(specification);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(specification);
         Condition nonSpringCondition = mock(Condition.class);
         
         assertThrows(IllegalArgumentException.class, () -> {

@@ -3,34 +3,23 @@ package io.github.cyfko.filterql.adapter.spring.utils;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DataJpaTest
 class PathResolverUtilsTest {
 
-    private static EntityManagerFactory emf;
-    private EntityManager em;
+    @Autowired
+    private TestEntityManager em;
+
     private CriteriaBuilder cb;
-
-    @BeforeAll
-    static void init() {
-        emf = Persistence.createEntityManagerFactory("test-pu");
-    }
-
-    @AfterAll
-    static void close() {
-        emf.close();
-    }
 
     @BeforeEach
     void setup() {
-        em = emf.createEntityManager();
-        cb = em.getCriteriaBuilder();
-    }
-
-    @AfterEach
-    void tearDown() {
-        if (em.isOpen()) em.close();
+        cb = em.getEntityManager().getCriteriaBuilder();
     }
 
     // --- Cas simples ---
@@ -40,7 +29,7 @@ class PathResolverUtilsTest {
         CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
         Root<TestEntity> root = cq.from(TestEntity.class);
 
-        Path<?> result = PathResolverUtils.resolvePath(root, "name");
+        Path<?> result = PathResolverUtils.resolvePath(root, "id");
 
         assertNotNull(result);
     }
@@ -51,6 +40,16 @@ class PathResolverUtilsTest {
         Root<TestEntity> root = cq.from(TestEntity.class);
 
         Path<?> result = PathResolverUtils.resolvePath(root, "user.name");
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void resolvePath_trailingComma() {
+        CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
+        Root<TestEntity> root = cq.from(TestEntity.class);
+
+        Path<?> result = PathResolverUtils.resolvePath(root, "id.");
 
         assertNotNull(result);
     }
@@ -69,7 +68,7 @@ class PathResolverUtilsTest {
 
     @Test
     void resolvePath_nullRoot_throwsException() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> PathResolverUtils.resolvePath(null, "name"));
     }
 
@@ -78,20 +77,8 @@ class PathResolverUtilsTest {
         CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
         Root<TestEntity> root = cq.from(TestEntity.class);
 
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> PathResolverUtils.resolvePath(root, null));
-    }
-
-    @Test
-    void resolvePath_emptyOrDots_returnsRoot() {
-        CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
-        Root<TestEntity> root = cq.from(TestEntity.class);
-
-        assertEquals(root, PathResolverUtils.resolvePath(root, ""));
-        assertEquals(root, PathResolverUtils.resolvePath(root, " "));
-        assertEquals(root, PathResolverUtils.resolvePath(root, "."));
-        assertEquals(root, PathResolverUtils.resolvePath(root, ".."));
-        assertEquals(root, PathResolverUtils.resolvePath(root, "   ...  "));
     }
 
     @Test
@@ -99,32 +86,36 @@ class PathResolverUtilsTest {
         CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
         Root<TestEntity> root = cq.from(TestEntity.class);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PathResolverUtils.resolvePath(root, "badField"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, ""));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "."));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, ".id"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "x"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "x.id"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "id.user"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "user.y"));
+        assertThrows(IllegalArgumentException.class, () -> PathResolverUtils.resolvePath(root, "children.user.w"));
     }
 
-    @Test
-    void resolvePath_nonExistentNestedField_throwsException() {
-        CriteriaQuery<TestEntity> cq = cb.createQuery(TestEntity.class);
-        Root<TestEntity> root = cq.from(TestEntity.class);
+    @MappedSuperclass
+    static class SuperBasePart {
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        private Long id;
+    }
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PathResolverUtils.resolvePath(root, "user.badField"));
+    @MappedSuperclass
+    static class BasePart extends SuperBasePart {
+        private String name;
     }
 
     // --- Classe test persistable ---
-    @Entity(name = "TestEntity")
-    static class TestEntity {
-        @Id
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        public Long id;
-
-        public String name;
+    @Entity(name = "PathResolverTestEntity")
+    static class TestEntity extends BasePart {
 
         @ManyToOne
-        public TestEntity user;
+        private TestEntity user;
 
         @OneToMany(mappedBy = "user")
-        public java.util.List<TestEntity> children;
+        private java.util.List<TestEntity> children;
     }
 }

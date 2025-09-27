@@ -1,7 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
-import io.github.cyfko.filterql.core.Context;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
 import io.github.cyfko.filterql.core.validation.Operator;
@@ -23,19 +22,19 @@ import static org.mockito.Mockito.*;
  * Teste la gestion des conditions dans un contexte Spring.
  */
 @ExtendWith(MockitoExtension.class)
-class SpringContextAdapterTest {
+class ContextAdapterTest {
 
     @Mock
-    private SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionAdapterBuilder;
+    private ConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionAdapterBuilder;
     
     @Mock
-    private SpringConditionAdapter<TestEntity> conditionAdapter;
+    private ConditionAdapter<TestEntity> conditionAdapter;
     
-    private SpringContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
+    private ContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
 
     @BeforeEach
     void setUp() {
-        contextAdapter = new SpringContextAdapter<>(conditionAdapterBuilder);
+        contextAdapter = new ContextAdapter<>(conditionAdapterBuilder);
     }
 
     @Test
@@ -48,7 +47,7 @@ class SpringContextAdapterTest {
         // Le constructeur ne vérifie pas les nulls, donc ce test doit être adapté
         // ou supprimé car il n'y a pas de validation dans le constructeur
         assertDoesNotThrow(() -> {
-            new SpringContextAdapter<>(null);
+            new ContextAdapter<>(null);
         });
     }
 
@@ -176,10 +175,9 @@ class SpringContextAdapterTest {
     @Test
     void testGetSpecificationNonExistent() {
         // Act
-        Specification<TestEntity> result = contextAdapter.getSpecification("nonExistentFilter");
-        
-        // Assert
-        assertNull(result);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Specification<TestEntity> result = contextAdapter.getSpecification("nonExistentFilter");
+        });
     }
 
     @Test
@@ -195,8 +193,8 @@ class SpringContextAdapterTest {
             TestPropertyRef.USER_AGE, Operator.GREATER_THAN, 25
         );
         
-        SpringConditionAdapter<TestEntity> conditionAdapter1 = mock(SpringConditionAdapter.class);
-        SpringConditionAdapter<TestEntity> conditionAdapter2 = mock(SpringConditionAdapter.class);
+        ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
+        ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
         
         when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"))
             .thenReturn(conditionAdapter1);
@@ -226,8 +224,8 @@ class SpringContextAdapterTest {
             TestPropertyRef.USER_NAME, Operator.LIKE, "%value2%"
         );
         
-        SpringConditionAdapter<TestEntity> conditionAdapter1 = mock(SpringConditionAdapter.class);
-        SpringConditionAdapter<TestEntity> conditionAdapter2 = mock(SpringConditionAdapter.class);
+        ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
+        ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
         
         when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"))
             .thenReturn(conditionAdapter1);
@@ -263,7 +261,7 @@ class SpringContextAdapterTest {
                 TestPropertyRef.USER_NAME, supportedOperators[i], value
             );
             
-            SpringConditionAdapter<TestEntity> conditionAdapter = mock(SpringConditionAdapter.class);
+            ConditionAdapter<TestEntity> conditionAdapter = mock(ConditionAdapter.class);
             
             when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, supportedOperators[i], value))
                 .thenReturn(conditionAdapter);

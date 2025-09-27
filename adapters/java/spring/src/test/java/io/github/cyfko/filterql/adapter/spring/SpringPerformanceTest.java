@@ -6,16 +6,12 @@ import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
-import jakarta.persistence.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
@@ -43,13 +39,13 @@ class SpringPerformanceTest {
     @Autowired
     private UserRepository userRepository;
 
-    private SpringContextAdapter<User, UserPropertyRef> contextAdapter;
-    private SpringConditionAdapterBuilder<User, UserPropertyRef> conditionBuilder;
+    private ContextAdapter<User, UserPropertyRef> contextAdapter;
+    private ConditionAdapterBuilder<User, UserPropertyRef> conditionBuilder;
 
     @BeforeEach
     void setUp() {
-        conditionBuilder = new SpringConditionAdapterBuilder<User, UserPropertyRef>() {};
-        contextAdapter = new SpringContextAdapter<>(conditionBuilder);
+        conditionBuilder = new ConditionAdapterBuilder<User, UserPropertyRef>() {};
+        contextAdapter = new ContextAdapter<>(conditionBuilder);
         
         // Créer un grand nombre de données de test
         createLargeTestDataset();
@@ -59,7 +55,7 @@ class SpringPerformanceTest {
     void testPerformanceWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.USER_AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
         );
         contextAdapter.addCondition("ageFilter", filterDef);
 
@@ -86,12 +82,12 @@ class SpringPerformanceTest {
         // Arrange
         FilterRequest<UserPropertyRef> filterRequest = new FilterRequest<UserPropertyRef>(
             Map.of(
-                "ageFilter1", new FilterDefinition<>(UserPropertyRef.USER_AGE, Operator.GREATER_THAN, 20),
-                "ageFilter2", new FilterDefinition<>(UserPropertyRef.USER_AGE, Operator.LESS_THAN, 50),
-                "nameFilter", new FilterDefinition<>(UserPropertyRef.USER_NAME, Operator.LIKE, "%User%"),
-                "emailFilter", new FilterDefinition<>(UserPropertyRef.USER_EMAIL, Operator.IS_NOT_NULL, null)
+                "ageFilter1", new FilterDefinition<>(UserPropertyRef.AGE, Operator.GREATER_THAN, 20),
+                "ageFilter2", new FilterDefinition<>(UserPropertyRef.AGE, Operator.LESS_THAN, 50),
+                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Operator.LIKE, "%User%"),
+                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Operator.IS_NOT_NULL, null)
             ),
-            "(ageFilter1 AND ageFilter2) AND (nameFilter OR emailFilter)"
+            "(ageFilter1 & ageFilter2) & (nameFilter | emailFilter)"
         );
 
         // Act
@@ -117,7 +113,7 @@ class SpringPerformanceTest {
         List<FilterDefinition<UserPropertyRef>> filters = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             filters.add(new FilterDefinition<>(
-                UserPropertyRef.USER_AGE, Operator.GREATER_THAN, i * 5
+                UserPropertyRef.AGE, Operator.GREATER_THAN, i * 5
             ));
         }
 
@@ -139,7 +135,7 @@ class SpringPerformanceTest {
             }
         }
 
-        Specification<User> spec = ((SpringConditionAdapter<User>) combinedCondition).getSpecification();
+        Specification<User> spec = ((ConditionAdapter<User>) combinedCondition).getSpecification();
         List<User> results = userRepository.findAll(spec);
         
         long endTime = System.currentTimeMillis();
@@ -163,7 +159,7 @@ class SpringPerformanceTest {
                 .collect(Collectors.toList());
         
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.USER_NAME, Operator.IN, names
+            UserPropertyRef.NAME, Operator.IN, names
         );
         contextAdapter.addCondition("nameFilter", filterDef);
 
@@ -189,7 +185,7 @@ class SpringPerformanceTest {
         // Arrange
         List<Integer> ageRange = Arrays.asList(25, 35);
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.USER_AGE, Operator.BETWEEN, ageRange
+            UserPropertyRef.AGE, Operator.BETWEEN, ageRange
         );
         contextAdapter.addCondition("ageFilter", filterDef);
 
@@ -214,7 +210,7 @@ class SpringPerformanceTest {
     void testMemoryUsageWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.USER_AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
         );
         contextAdapter.addCondition("ageFilter", filterDef);
 
@@ -242,7 +238,7 @@ class SpringPerformanceTest {
     void testConcurrentAccess() throws InterruptedException {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.USER_AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
         );
         contextAdapter.addCondition("ageFilter", filterDef);
 
@@ -297,113 +293,6 @@ class SpringPerformanceTest {
             entityManager.persist(user);
         }
         entityManager.flush();
-    }
-
-    // Entity class
-    @Entity
-    @Table(name = "users")
-    static class User {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-
-        @Column(name = "name")
-        private String name;
-
-        @Column(name = "age")
-        private Integer age;
-
-        @Column(name = "email")
-        private String email;
-
-        @Column(name = "created_at")
-        private LocalDateTime createdAt;
-
-        public User() {}
-
-        public User(String name, Integer age, String email, LocalDateTime createdAt) {
-            this.name = name;
-            this.age = age;
-            this.email = email;
-            this.createdAt = createdAt;
-        }
-
-        // Getters and setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public Integer getAge() { return age; }
-        public void setAge(Integer age) { this.age = age; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    }
-
-    // Repository interface
-    interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {}
-
-    // Property reference enum
-    enum UserPropertyRef implements PropertyRef, PathShape {
-        USER_NAME("name", String.class, Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
-        )),
-        USER_AGE("age", Integer.class, Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.GREATER_THAN, Operator.GREATER_THAN_OR_EQUAL,
-            Operator.LESS_THAN, Operator.LESS_THAN_OR_EQUAL,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL,
-            Operator.BETWEEN, Operator.NOT_BETWEEN
-        )),
-        USER_EMAIL("email", String.class, Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
-        ));
-
-        private final String path;
-        private final Class<?> type;
-        private final Set<Operator> supportedOperators;
-
-        UserPropertyRef(String path, Class<?> type, Set<Operator> supportedOperators) {
-            this.path = path;
-            this.type = type;
-            this.supportedOperators = supportedOperators;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return type;
-        }
-
-        @Override
-        public Set<Operator> getSupportedOperators() {
-            return supportedOperators;
-        }
-
-        @Override
-        public void validateOperator(Operator operator) {
-            if (!supportedOperators.contains(operator)) {
-                throw new IllegalArgumentException("Operator " + operator + " not supported for " + this);
-            }
-        }
-
-        @Override
-        public void validateOperatorForValue(Operator operator, Object value) {
-            validateOperator(operator);
-            // Additional value validation could be added here
-        }
     }
 }
 

@@ -8,7 +8,6 @@ import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
 import jakarta.persistence.criteria.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -18,7 +17,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests pour les utilitaires et helpers de l'adaptateur Spring.
@@ -206,8 +204,8 @@ class SpringUtilityTest {
     @Test
     void testSpringConditionAdapterBuilderWithAllOperators() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Test all supported operators
         Operator[] operators = {
@@ -219,7 +217,7 @@ class SpringUtilityTest {
 
         for (Operator operator : operators) {
             // Act
-            SpringConditionAdapter<TestEntity> adapter = builder.build(
+            ConditionAdapter<TestEntity> adapter = builder.build(
                 TestPropertyRef.TEST_FIELD, 
                 operator, 
                 getTestValueForOperator(operator)
@@ -234,8 +232,8 @@ class SpringUtilityTest {
     @Test
     void testSpringConditionAdapterBuilderWithDifferentValueTypes() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Test with different value types
         Object[] values = {
@@ -246,7 +244,7 @@ class SpringUtilityTest {
 
         for (Object value : values) {
             // Act
-            SpringConditionAdapter<TestEntity> adapter = builder.build(
+            ConditionAdapter<TestEntity> adapter = builder.build(
                 TestPropertyRef.TEST_FIELD, 
                 Operator.EQUALS, 
                 value
@@ -261,8 +259,8 @@ class SpringUtilityTest {
     @Test
     void testSpringContextAdapterWithMultiplePropertyRefs() {
         // Arrange
-        SpringContextAdapter<TestEntity, TestPropertyRef> contextAdapter = 
-            new SpringContextAdapter<>(new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
+        ContextAdapter<TestEntity, TestPropertyRef> contextAdapter =
+            new ContextAdapter<>(new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
 
         // Act
         contextAdapter.addCondition("filter1", new FilterDefinition<>(
@@ -282,8 +280,8 @@ class SpringUtilityTest {
     @Test
     void testSpringContextAdapterWithOverwriteCondition() {
         // Arrange
-        SpringContextAdapter<TestEntity, TestPropertyRef> contextAdapter = 
-            new SpringContextAdapter<>(new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
+        ContextAdapter<TestEntity, TestPropertyRef> contextAdapter =
+            new ContextAdapter<>(new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
 
         // Act
         contextAdapter.addCondition("filter1", new FilterDefinition<>(

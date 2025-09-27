@@ -27,25 +27,25 @@ import static org.mockito.Mockito.*;
 class SpringEdgeCaseTest {
 
     @Mock
-    private SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionBuilder;
+    private ConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionBuilder;
 
     @Mock
-    private SpringConditionAdapter<TestEntity> conditionAdapter;
+    private ConditionAdapter<TestEntity> conditionAdapter;
 
     @Mock
-    private SpringConditionAdapter<TestEntity> otherConditionAdapter;
+    private ConditionAdapter<TestEntity> otherConditionAdapter;
 
-    private SpringContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
+    private ContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
 
     @BeforeEach
     void setUp() {
-        contextAdapter = new SpringContextAdapter<>(conditionBuilder);
+        contextAdapter = new ContextAdapter<>(conditionBuilder);
     }
 
     @Test
     void testSpringConditionAdapterWithNullSpecification() {
         // Arrange
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(null);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(null);
 
         // Act & Assert - Le constructeur n'effectue pas de validation null
         assertDoesNotThrow(() -> {
@@ -56,7 +56,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterAndWithNullCondition() {
         // Arrange
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
@@ -67,7 +67,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterAndWithNonSpringCondition() {
         // Arrange
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
         Condition nonSpringCondition = mock(Condition.class);
 
         // Act & Assert
@@ -79,7 +79,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterOrWithNullCondition() {
         // Arrange
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
@@ -90,7 +90,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterOrWithNonSpringCondition() {
         // Arrange
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
         Condition nonSpringCondition = mock(Condition.class);
 
         // Act & Assert
@@ -103,14 +103,14 @@ class SpringEdgeCaseTest {
     void testSpringConditionAdapterNot() {
         // Arrange
         org.springframework.data.jpa.domain.Specification<TestEntity> spec = mock(org.springframework.data.jpa.domain.Specification.class);
-        SpringConditionAdapter<TestEntity> adapter = new SpringConditionAdapter<>(spec);
+        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(spec);
 
         // Act
         Condition notCondition = adapter.not();
 
         // Assert
         assertNotNull(notCondition);
-        assertTrue(notCondition instanceof SpringConditionAdapter);
+        assertTrue(notCondition instanceof ConditionAdapter);
     }
 
     @Test
@@ -127,7 +127,7 @@ class SpringEdgeCaseTest {
         jakarta.persistence.criteria.Root<TestEntity> root = mock(jakarta.persistence.criteria.Root.class);
 
         // Act & Assert
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             PathResolverUtils.resolvePath(root, null);
         });
     }
@@ -140,17 +140,6 @@ class SpringEdgeCaseTest {
         // Act & Assert - PathResolverUtils a des problèmes avec les types génériques
         assertThrows(IllegalArgumentException.class, () -> {
             PathResolverUtils.resolvePath(root, "");
-        });
-    }
-
-    @Test
-    void testPathResolverUtilsWithInvalidPath() {
-        // Arrange
-        jakarta.persistence.criteria.Root<TestEntity> root = mock(jakarta.persistence.criteria.Root.class);
-
-        // Act & Assert - PathResolverUtils a des problèmes avec les types génériques
-        assertThrows(IllegalArgumentException.class, () -> {
-            PathResolverUtils.resolvePath(root, "invalidField");
         });
     }
 
@@ -211,8 +200,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringContextAdapterWithNullBuilder() {
         // Act
-        SpringContextAdapter<TestEntity, TestPropertyRef> adapter = 
-            new SpringContextAdapter<>(null);
+        ContextAdapter<TestEntity, TestPropertyRef> adapter =
+            new ContextAdapter<>(null);
 
         // Assert
         assertNotNull(adapter);
@@ -262,11 +251,10 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringContextAdapterGetSpecificationWithNonExistentKey() {
         // Act
-        org.springframework.data.jpa.domain.Specification<TestEntity> spec = 
-            contextAdapter.getSpecification("nonExistent");
-
-        // Assert
-        assertNull(spec);
+        assertThrows(IllegalArgumentException.class, () -> {
+            org.springframework.data.jpa.domain.Specification<TestEntity> spec =
+                    contextAdapter.getSpecification("nonExistent");
+        });
     }
 
     @Test
@@ -280,14 +268,14 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithUnsupportedOperator() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
         jakarta.persistence.criteria.Root<TestEntity> root = mock(jakarta.persistence.criteria.Root.class);
         jakarta.persistence.criteria.CriteriaQuery<?> query = mock(jakarta.persistence.criteria.CriteriaQuery.class);
         jakarta.persistence.criteria.CriteriaBuilder cb = mock(jakarta.persistence.criteria.CriteriaBuilder.class);
 
         // Act
-        SpringConditionAdapter<TestEntity> adapter = builder.build(TestPropertyRef.TEST_FIELD, Operator.GREATER_THAN, "stringValue");
+        ConditionAdapter<TestEntity> adapter = builder.build(TestPropertyRef.TEST_FIELD, Operator.GREATER_THAN, "stringValue");
 
         // Assert - La validation se fait lors de l'utilisation de la spécification
         assertThrows(IllegalArgumentException.class, () -> {
@@ -298,11 +286,11 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithNullValue() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act
-        SpringConditionAdapter<TestEntity> adapter = 
+        ConditionAdapter<TestEntity> adapter =
             builder.build(TestPropertyRef.TEST_FIELD, Operator.IS_NULL, null);
 
         // Assert
@@ -312,8 +300,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithEmptyCollection() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act & Assert - Le builder n'effectue pas de validation des collections vides
         assertDoesNotThrow(() -> {
@@ -324,8 +312,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithInvalidBetweenValues() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
         assertDoesNotThrow(() -> {
@@ -336,8 +324,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithTooManyBetweenValues() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
         assertDoesNotThrow(() -> {
@@ -349,8 +337,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithNullBetweenValues() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act & Assert - Le builder n'effectue pas de validation null
         assertDoesNotThrow(() -> {
@@ -361,8 +349,8 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterBuilderWithInvalidTypeCast() {
         // Arrange
-        SpringConditionAdapterBuilder<TestEntity, TestPropertyRef> builder = 
-            new SpringConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
+            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Act & Assert - Le builder n'effectue pas de validation de type au niveau du cast
         assertDoesNotThrow(() -> {

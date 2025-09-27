@@ -16,16 +16,16 @@ import java.util.Map;
  * @param <T> The entity type (e.g., User, Product)
  * @param <P> The PropertyRef enum for this entity
  */
-public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape> implements Context {
-    private final Map<String, SpringConditionAdapter<T>> filters;
-    private final SpringConditionAdapterBuilder<T, P> conditionAdapterBuilder;
+public class ContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape> implements Context {
+    private final Map<String, ConditionAdapter<T>> filters;
+    private final ConditionAdapterBuilder<T, P> conditionAdapterBuilder;
 
     /**
      * Constructs a new Spring context adapter.
      *
      * @param conditionAdapterBuilder The condition adapter builder for this entity type
      */
-    public SpringContextAdapter(SpringConditionAdapterBuilder<T, P> conditionAdapterBuilder) {
+    public ContextAdapter(ConditionAdapterBuilder<T, P> conditionAdapterBuilder) {
         this.filters = new HashMap<>();
         this.conditionAdapterBuilder = conditionAdapterBuilder;
     }
@@ -45,7 +45,7 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
         propertyRef.validateOperator(operator);
 
         // Build condition using the builder and store it
-        SpringConditionAdapter<T> condition = conditionAdapterBuilder.build(propertyRef, operator, definition.getValue());
+        ConditionAdapter<T> condition = conditionAdapterBuilder.build(propertyRef, operator, definition.getValue());
         filters.put(filterKey, condition);
     }
 
@@ -57,7 +57,7 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
      */
     @Override
     public Condition getCondition(String filterKey) {
-        SpringConditionAdapter<T> condition = filters.get(filterKey);
+        ConditionAdapter<T> condition = filters.get(filterKey);
         if (condition == null) {
             throw new IllegalArgumentException(filterKey + " not found");
         }
@@ -69,12 +69,14 @@ public class SpringContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape
      *
      * @param filterKey The key to identify the condition
      * @return The Spring JPA specification for this condition
+     * @throws IllegalArgumentException If the filterKey provided is not associated to a given Condition
      */
+    @SuppressWarnings("unchecked")
     public Specification<T> getSpecification(String filterKey) {
-        SpringConditionAdapter<T> condition = filters.get(filterKey);
-        return condition != null ? condition.getSpecification() : null;
+        return ((ConditionAdapter<T>) getCondition(filterKey)).getSpecification();
     }
 }
+
 
 
 

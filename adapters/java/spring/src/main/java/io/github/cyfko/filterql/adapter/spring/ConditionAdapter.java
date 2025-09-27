@@ -14,7 +14,7 @@ import jakarta.persistence.criteria.Root;
  * 
  * @param <T> The entity type
  */
-public class SpringConditionAdapter<T> implements Condition {
+public class ConditionAdapter<T> implements Condition {
     private final Specification<T> specification;
 
     /**
@@ -22,7 +22,7 @@ public class SpringConditionAdapter<T> implements Condition {
      *
      * @param specification The Spring JPA specification
      */
-    public SpringConditionAdapter(Specification<T> specification) {
+    public ConditionAdapter(Specification<T> specification) {
         this.specification = specification;
     }
 
@@ -35,12 +35,12 @@ public class SpringConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition and(Condition other) {
-        if (!(other instanceof SpringConditionAdapter<?>)) {
+        if (!(other instanceof ConditionAdapter<?>)) {
             throw new IllegalArgumentException("Cannot combine with non-Spring condition");
         }
 
-        SpringConditionAdapter<T> otherSpring = (SpringConditionAdapter<T>) other;
-        return new SpringConditionAdapter<>(Specification.where(specification).and(otherSpring.specification));
+        ConditionAdapter<T> otherSpring = (ConditionAdapter<T>) other;
+        return new ConditionAdapter<>(Specification.where(specification).and(otherSpring.specification));
     }
 
     /**
@@ -52,12 +52,12 @@ public class SpringConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition or(Condition other) {
-        if (!(other instanceof SpringConditionAdapter<?>)) {
+        if (!(other instanceof ConditionAdapter<?>)) {
             throw new IllegalArgumentException("Cannot combine with non-Spring condition");
         }
         
-        SpringConditionAdapter<T> otherSpring = (SpringConditionAdapter<T>) other;
-        return new SpringConditionAdapter<>(Specification.where(specification).or(otherSpring.specification));
+        ConditionAdapter<T> otherSpring = (ConditionAdapter<T>) other;
+        return new ConditionAdapter<>(Specification.where(specification).or(otherSpring.specification));
     }
 
     /**
@@ -67,7 +67,7 @@ public class SpringConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition not() {
-        return new SpringConditionAdapter<>(Specification.not(specification));
+        return new ConditionAdapter<>(Specification.not(specification));
     }
 
     /**
@@ -91,6 +91,7 @@ public class SpringConditionAdapter<T> implements Condition {
         return specification.toPredicate(root, query, cb);
     }
 }
+
 
 
 

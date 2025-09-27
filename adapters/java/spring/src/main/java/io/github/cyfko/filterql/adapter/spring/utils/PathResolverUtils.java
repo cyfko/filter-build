@@ -2,6 +2,8 @@ package io.github.cyfko.filterql.adapter.spring.utils;
 
 import io.github.cyfko.filterql.core.utils.ClassUtils;
 import jakarta.persistence.criteria.*;
+import org.springframework.lang.NonNull;
+
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -46,35 +48,32 @@ public class PathResolverUtils {
      *
      * @param root        la racine de la requête Criteria JPA (Root de l'entité d'origine)
      * @param path        le chemin complet vers la propriété, en notation « dot » (exemple : "fieldA.fieldB.listField.fieldC")
-     * @param entityClass la classe de l'entité root (type de départ)
      * @param <T>         le type de l'entité root
      * @return une instance {@link Path} correspondant au chemin résolu
-     * @throws IllegalArgumentException si un segment du chemin ne correspond à aucun champ dans la classe
+     * @throws IllegalArgumentException si path est {@code null} ou {@code empty} ou si un segment du chemin ne correspond à aucun champ dans la classe
      * @throws IllegalStateException    si le type générique d'une collection ne peut être déterminé
      */
     public static <T> Path<?> resolvePath(Root<T> root, String path) {
+        if (root == null || path == null) throw new IllegalArgumentException("path cannot be null or empty");
+
         String[] parts = path.split("\\.");
         From<?, ?> current = root;
-        Class<?> currentClass = (new ClassUtils.TypeReference<T>() {}).getTypeClass();
+        Class<?> currentClass = root.getJavaType();
 
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
 
-            Field field;
-            try {
-                field = currentClass.getField(part);
-            } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("Field not found: " + part + " in " + currentClass.getName(), e);
-            }
+            final Class<?> finalCurrentClass = currentClass;
+            Field field = ClassUtils.getAnyField(currentClass, part)
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Field not found: %s in %s", part, finalCurrentClass)));
 
             boolean isCollection = Collection.class.isAssignableFrom(field.getType());
 
             if (i < parts.length - 1) {
                 if (isCollection) {
                     current = current.join(part, JoinType.LEFT);
-                    currentClass = ClassUtils.getCollectionGenericType(field,0)
-                            .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part))
-                            .getClass();
+                    currentClass = (Class<?>) ClassUtils.getCollectionGenericType(field,0)
+                            .orElseThrow(() -> new IllegalStateException("Unable to determine the parameter type of the joined collection: " + part));
                 } else {
                     current = current.join(part, JoinType.LEFT);
                     currentClass = field.getType();
