@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
 
@@ -9,7 +10,7 @@ import java.util.Set;
  * Enum PropertyRef pour l'entité de test.
  * Cet enum définit les propriétés disponibles pour le filtrage.
  */
-public enum UserPropertyRef implements PropertyRef, PathShape {
+public enum UserPropertyRef implements PropertyRef, PathMapping<User> {
     NAME("name", String.class, Set.of(
         Operator.EQUALS, Operator.NOT_EQUALS,
         Operator.LIKE, Operator.NOT_LIKE,

@@ -19,7 +19,7 @@ import java.util.Map;
  * @param <T> The entity type (e.g., User, Product)
  * @param <P> The PropertyRef enum for this entity
  */
-public class ContextAdapter<T, P extends Enum<P> & PropertyRef & PathShape> implements Context {
+public class ContextAdapter<T, P extends Enum<P> & PropertyRef & ReferenceMapping<T>> implements Context {
     private final Map<String, ConditionAdapter<T>> filters;
     private final ConditionAdapterBuilder<T, P> conditionAdapterBuilder;
 

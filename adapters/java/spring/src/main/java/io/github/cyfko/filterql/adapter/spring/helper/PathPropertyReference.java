@@ -1,17 +1,14 @@
 package io.github.cyfko.filterql.adapter.spring.helper;
 
-import io.github.cyfko.filterql.adapter.spring.PathShape;
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.validation.Operator;
 import io.github.cyfko.filterql.core.validation.PropertyRef;
 
 import java.util.Objects;
 import java.util.Set;
 
-import java.util.Objects;
-import java.util.Set;
-
 /**
- * Implementation of {@link PropertyRef} and {@link PathShape} describing a property reference with a path and type information.
+ * Implementation of {@link PropertyRef} and {@link PathMapping} describing a property reference with a path and type information.
  * <p>
  * This class represents a property reference in an entity graph, accessible via a path expression.
  * It also exposes supported operators for filtering and the Java type of the property.
@@ -20,7 +17,7 @@ import java.util.Set;
  * @author Frank
  * @since 1.0
  */
-public class PathPropertyReference implements PropertyRef, PathShape {
+public class PathPropertyReference implements PropertyRef, PathMapping {
 
     private final String path;
     private final Class<?> clazz;

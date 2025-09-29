@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
@@ -325,7 +326,7 @@ class SpringUtilityTest {
     }
 
     // Test property reference enum
-    enum TestPropertyRef implements PropertyRef, PathShape {
+    enum TestPropertyRef implements PropertyRef, PathMapping<TestEntity> {
         TEST_FIELD("testField", String.class, Set.of(
             Operator.EQUALS, Operator.NOT_EQUALS,
             Operator.LIKE, Operator.NOT_LIKE,

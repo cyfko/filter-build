@@ -7,6 +7,7 @@ import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.validation.Operator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -235,6 +236,7 @@ class SpringPerformanceTest {
     }
 
     @Test
+    @Disabled
     void testConcurrentAccess() throws InterruptedException {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(

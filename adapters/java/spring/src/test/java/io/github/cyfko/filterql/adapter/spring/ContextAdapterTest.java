@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
@@ -323,7 +324,7 @@ class ContextAdapterTest {
     /**
      * Enum de test pour PropertyRef avec PathShape.
      */
-    enum TestPropertyRef implements PropertyRef, PathShape {
+    enum TestPropertyRef implements PropertyRef, PathMapping<TestEntity> {
         USER_NAME(String.class, OperatorUtils.FOR_TEXT, "name"),
         USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER, "age");
 

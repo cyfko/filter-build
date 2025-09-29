@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
@@ -109,7 +110,7 @@ class SpecificationBuilderTest {
     /**
      * Enum de test pour PropertyRef avec PathShape.
      */
-    enum TestPropertyRef implements PropertyRef, PathShape {
+    enum TestPropertyRef implements PropertyRef, PathMapping {
         USER_NAME(String.class, OperatorUtils.FOR_TEXT, "name"),
         USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER, "age");
 

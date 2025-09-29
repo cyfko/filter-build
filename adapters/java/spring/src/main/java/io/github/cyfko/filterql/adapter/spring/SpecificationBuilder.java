@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.FilterTree;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
@@ -37,12 +38,13 @@ public class SpecificationBuilder {
      *
      * @param filterRequest the request containing filter definitions and the DSL combination logic
      * @param <T>           entity type for the Specification
-     * @param <P>           enum type of supported properties (implementing {@link PropertyRef} and {@link PathShape})
+     * @param <P>           enum type of supported properties (implementing {@link PropertyRef} and {@link PathMapping})
      * @return a {@link Specification} representing the filter request
      * @throws DSLSyntaxException if the DSL expression has invalid syntax
      * @throws FilterValidationException if the DSL expression has invalid syntax
      */
-    public static <T, P extends Enum<P> & PropertyRef & PathShape> Specification<T> toSpecification(FilterRequest<P> filterRequest) throws DSLSyntaxException, FilterValidationException {
+    public static <T, P extends Enum<P> & PropertyRef & ReferenceMapping<T>> Specification<T> toSpecification(FilterRequest<P> filterRequest)
+            throws DSLSyntaxException, FilterValidationException {
         // Parse the filter DSL
         DSLParser dslParser = new DSLParser();
         FilterTree filterTree = dslParser.parse(filterRequest.getCombineWith());

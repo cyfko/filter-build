@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.adapter.spring;
 
+import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtils;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
@@ -356,7 +357,7 @@ class SpringEdgeCaseTest {
     }
 
     // Test property reference enum
-    enum TestPropertyRef implements PropertyRef, PathShape {
+    enum TestPropertyRef implements PropertyRef, PathMapping<TestEntity> {
         TEST_FIELD("testField", String.class, Set.of(
             Operator.EQUALS, Operator.NOT_EQUALS,
             Operator.LIKE, Operator.NOT_LIKE,
