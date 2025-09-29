@@ -20,7 +20,6 @@ import org.springframework.lang.NonNull;
  *   <li>Value: "Alice"</li>
  *   <li>Result: Specification filtering "User.name = 'Alice'"</li>
  * </ul>
- * </p>
  *
  * @param <E> the entity type the Specification applies to
  */
@@ -33,7 +32,6 @@ public interface SpecificationMapping<E> extends ReferenceMapping<E> {
      * @param ref   the logical reference (enum constant) representing the targeted property
      * @param op    the comparison operator (e.g., EQUAL, LIKE, GREATER_THAN)
      * @param value the value to compare against
-     * @param <E>   the entity type the Specification applies to
      * @param <P>   the enum type representing logical property references
      * @return a Specification ready to be combined or executed
      */

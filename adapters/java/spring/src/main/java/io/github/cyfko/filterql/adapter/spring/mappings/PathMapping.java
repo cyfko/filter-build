@@ -16,7 +16,7 @@ import io.github.cyfko.filterql.adapter.spring.ReferenceMapping;
  *   <li>Path: "address.city.name"</li>
  * </ul>
  * The enum constant serves as the logical key, and its implementation
- * of {@code PathMapping} indicates how to reach the property technically.</p>
+ * of {@code PathMapping} indicates how to reach the property technically.
  *
  * @param <E> the entity type this path mapping applies to
  */
