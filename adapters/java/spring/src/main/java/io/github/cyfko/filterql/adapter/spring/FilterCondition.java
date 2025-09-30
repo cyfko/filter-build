@@ -3,18 +3,13 @@ package io.github.cyfko.filterql.adapter.spring;
 import io.github.cyfko.filterql.core.Condition;
 import org.springframework.data.jpa.domain.Specification;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-
 /**
  * Spring Data JPA Condition Adapter implementing the Condition interface.
  * This adapter wraps Spring JPA Specifications.
  * 
  * @param <T> The entity type
  */
-public class ConditionAdapter<T> implements Condition {
+public class FilterCondition<T> implements Condition {
     private final Specification<T> specification;
 
     /**
@@ -22,7 +17,7 @@ public class ConditionAdapter<T> implements Condition {
      *
      * @param specification The Spring JPA specification
      */
-    public ConditionAdapter(Specification<T> specification) {
+    public FilterCondition(Specification<T> specification) {
         this.specification = specification;
     }
 
@@ -35,12 +30,12 @@ public class ConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition and(Condition other) {
-        if (!(other instanceof ConditionAdapter<?>)) {
+        if (!(other instanceof FilterCondition<?>)) {
             throw new IllegalArgumentException("Cannot combine with non-Spring condition");
         }
 
-        ConditionAdapter<T> otherSpring = (ConditionAdapter<T>) other;
-        return new ConditionAdapter<>(Specification.where(specification).and(otherSpring.specification));
+        FilterCondition<T> otherSpring = (FilterCondition<T>) other;
+        return new FilterCondition<>(Specification.where(specification).and(otherSpring.specification));
     }
 
     /**
@@ -52,12 +47,12 @@ public class ConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition or(Condition other) {
-        if (!(other instanceof ConditionAdapter<?>)) {
+        if (!(other instanceof FilterCondition<?>)) {
             throw new IllegalArgumentException("Cannot combine with non-Spring condition");
         }
         
-        ConditionAdapter<T> otherSpring = (ConditionAdapter<T>) other;
-        return new ConditionAdapter<>(Specification.where(specification).or(otherSpring.specification));
+        FilterCondition<T> otherSpring = (FilterCondition<T>) other;
+        return new FilterCondition<>(Specification.where(specification).or(otherSpring.specification));
     }
 
     /**
@@ -67,7 +62,7 @@ public class ConditionAdapter<T> implements Condition {
      */
     @Override
     public Condition not() {
-        return new ConditionAdapter<>(Specification.not(specification));
+        return new FilterCondition<>(Specification.not(specification));
     }
 
     /**
@@ -77,18 +72,6 @@ public class ConditionAdapter<T> implements Condition {
      */
     public Specification<T> getSpecification() {
         return specification;
-    }
-
-    /**
-     * Creates a predicate from this specification.
-     *
-     * @param root The root entity
-     * @param query The criteria query
-     * @param cb The criteria builder
-     * @return The JPA predicate
-     */
-    public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        return specification.toPredicate(root, query, cb);
     }
 }
 

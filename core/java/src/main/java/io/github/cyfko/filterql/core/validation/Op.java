@@ -20,7 +20,7 @@ package io.github.cyfko.filterql.core.validation;
  * @author Frank KOSSI
  * @since 1.0
  */
-public enum Operator {
+public enum Op {
 
     /** Equality: "=" */
     EQUALS("=", "EQ"),
@@ -67,7 +67,7 @@ public enum Operator {
     private final String symbol;
     private final String code;
 
-    Operator(String symbol, String code) {
+    Op(String symbol, String code) {
         this.symbol = symbol;
         this.code = code;
     }
@@ -96,12 +96,12 @@ public enum Operator {
      * @param value symbol or code to search for (case-insensitive)
      * @return the corresponding operator, or {@code null} if not found
      */
-    public static Operator fromString(String value) {
+    public static Op fromString(String value) {
         if (value == null) return null;
 
         String trimmed = value.trim().toUpperCase();
 
-        for (Operator op : values()) {
+        for (Op op : values()) {
             if (op.symbol.equalsIgnoreCase(trimmed) || op.code.equalsIgnoreCase(trimmed)) {
                 return op;
             }

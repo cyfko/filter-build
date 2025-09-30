@@ -1,7 +1,4 @@
-package io.github.cyfko.filterql.adapter.spring;
-
-import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
-import io.github.cyfko.filterql.adapter.spring.mappings.SpecificationMapping;
+package io.github.cyfko.filterql.core.mappings;
 
 /**
  * Marker interface representing a mapping between a logical property reference

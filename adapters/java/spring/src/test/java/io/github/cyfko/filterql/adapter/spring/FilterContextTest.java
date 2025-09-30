@@ -1,11 +1,11 @@
 package io.github.cyfko.filterql.adapter.spring;
 
-import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
 import io.github.cyfko.filterql.core.Condition;
+import io.github.cyfko.filterql.core.mappings.PathMapping;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
  * Teste la gestion des conditions dans un contexte Spring.
  */
 @ExtendWith(MockitoExtension.class)
-class ContextAdapterTest {
+class FilterContextTest {
 
     @Mock
     private ConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionAdapterBuilder;
@@ -31,16 +31,26 @@ class ContextAdapterTest {
     @Mock
     private ConditionAdapter<TestEntity> conditionAdapter;
     
-    private ContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
+    private FilterContext<TestEntity> filterContext;
 
     @BeforeEach
     void setUp() {
-        contextAdapter = new ContextAdapter<>(conditionAdapterBuilder);
+        filterContext = new FilterContext<>(TestEntity.class);
+        filterContext.setConditionBuilder(propertyRef -> {
+            if (propertyRef instanceof TestPropertyRef ref) {
+                switch (ref){
+                    case USER_NAME -> { return ((PathMapping<TestEntity>) () -> "name"); }
+                    case USER_AGE -> { return ((PathMapping<TestEntity>) () -> "age"); }
+                }
+            }
+
+            throw new IllegalArgumentException("");
+        });
     }
 
     @Test
     void testConstructor() {
-        assertNotNull(contextAdapter);
+        assertNotNull(filterContext);
     }
 
     @Test
@@ -48,7 +58,7 @@ class ContextAdapterTest {
         // Le constructeur ne vérifie pas les nulls, donc ce test doit être adapté
         // ou supprimé car il n'y a pas de validation dans le constructeur
         assertDoesNotThrow(() -> {
-            new ContextAdapter<>(null);
+            new FilterContext<>(null);
         });
     }
 
@@ -57,20 +67,20 @@ class ContextAdapterTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
         );
         
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"))
+        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"))
             .thenReturn(conditionAdapter);
         
         // Act
-        contextAdapter.addCondition(filterKey, filterDef);
+        filterContext.addCondition(filterKey, filterDef);
         
         // Assert
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue");
+        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue");
         
         // Verify condition is stored
-        Condition retrievedCondition = contextAdapter.getCondition(filterKey);
+        Condition retrievedCondition = filterContext.getCondition(filterKey);
         assertEquals(conditionAdapter, retrievedCondition);
     }
 
@@ -79,13 +89,13 @@ class ContextAdapterTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.GREATER_THAN, "testValue" // Unsupported operator
+            TestPropertyRef.USER_NAME, Op.GREATER_THAN, "testValue" // Unsupported operator
         );
         
         // Act & Assert
         // La validation se fait dans propertyRef.validateOperator() avant d'appeler le builder
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.addCondition(filterKey, filterDef);
+            filterContext.addCondition(filterKey, filterDef);
         });
         
         // Le builder ne devrait pas être appelé car la validation échoue avant
@@ -96,13 +106,13 @@ class ContextAdapterTest {
     void testAddConditionWithNullFilterKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
         );
         
         // Act & Assert
         // HashMap.put() accepte les clés null, donc pas d'exception
         assertDoesNotThrow(() -> {
-            contextAdapter.addCondition(null, filterDef);
+            filterContext.addCondition(null, filterDef);
         });
     }
 
@@ -110,7 +120,7 @@ class ContextAdapterTest {
     void testAddConditionWithNullFilterDefinition() {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
-            contextAdapter.addCondition("testFilter", null);
+            filterContext.addCondition("testFilter", null);
         });
     }
 
@@ -119,16 +129,16 @@ class ContextAdapterTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
         );
         
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"))
+        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"))
             .thenReturn(conditionAdapter);
         
-        contextAdapter.addCondition(filterKey, filterDef);
+        filterContext.addCondition(filterKey, filterDef);
         
         // Act
-        Condition result = contextAdapter.getCondition(filterKey);
+        Condition result = filterContext.getCondition(filterKey);
         
         // Assert
         assertEquals(conditionAdapter, result);
@@ -138,7 +148,7 @@ class ContextAdapterTest {
     void testGetConditionNonExistent() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.getCondition("nonExistentFilter");
+            filterContext.getCondition("nonExistentFilter");
         });
     }
 
@@ -146,7 +156,7 @@ class ContextAdapterTest {
     void testGetConditionWithNullKey() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.getCondition(null);
+            filterContext.getCondition(null);
         });
     }
 
@@ -155,19 +165,19 @@ class ContextAdapterTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
         );
         
         Specification<TestEntity> specification = mock(Specification.class);
         
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "testValue"))
+        when(conditionAdapterBuilder.build(filterDef))
             .thenReturn(conditionAdapter);
         when(conditionAdapter.getSpecification()).thenReturn(specification);
         
-        contextAdapter.addCondition(filterKey, filterDef);
+        filterContext.addCondition(filterKey, filterDef);
         
         // Act
-        Specification<TestEntity> result = contextAdapter.getSpecification(filterKey);
+        Specification<TestEntity> result = filterContext.getSpecification(filterKey);
         
         // Assert
         assertEquals(specification, result);
@@ -177,7 +187,7 @@ class ContextAdapterTest {
     void testGetSpecificationNonExistent() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            Specification<TestEntity> result = contextAdapter.getSpecification("nonExistentFilter");
+            Specification<TestEntity> result = filterContext.getSpecification("nonExistentFilter");
         });
     }
 
@@ -188,30 +198,30 @@ class ContextAdapterTest {
         String filterKey2 = "filter2";
         
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            TestPropertyRef.USER_AGE, Operator.GREATER_THAN, 25
+            TestPropertyRef.USER_AGE, Op.GREATER_THAN, 25
         );
         
         ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
         ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
         
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"))
+        when(conditionAdapterBuilder.build(filterDef1))
             .thenReturn(conditionAdapter1);
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_AGE, Operator.GREATER_THAN, 25))
+        when(conditionAdapterBuilder.build(filterDef2))
             .thenReturn(conditionAdapter2);
         
         // Act
-        contextAdapter.addCondition(filterKey1, filterDef1);
-        contextAdapter.addCondition(filterKey2, filterDef2);
+        filterContext.addCondition(filterKey1, filterDef1);
+        filterContext.addCondition(filterKey2, filterDef2);
         
         // Assert
-        assertEquals(conditionAdapter1, contextAdapter.getCondition(filterKey1));
-        assertEquals(conditionAdapter2, contextAdapter.getCondition(filterKey2));
+        assertEquals(conditionAdapter1, filterContext.getCondition(filterKey1));
+        assertEquals(conditionAdapter2, filterContext.getCondition(filterKey2));
         
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1");
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_AGE, Operator.GREATER_THAN, 25);
+        verify(conditionAdapterBuilder).build(filterDef1);
+        verify(conditionAdapterBuilder).build(filterDef2);
     }
 
     @Test
@@ -219,39 +229,39 @@ class ContextAdapterTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"
+            TestPropertyRef.USER_NAME, Op.EQUALS, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Operator.LIKE, "%value2%"
+            TestPropertyRef.USER_NAME, Op.LIKE, "%value2%"
         );
         
         ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
         ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
         
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1"))
+        when(conditionAdapterBuilder.build(filterDef1))
             .thenReturn(conditionAdapter1);
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Operator.LIKE, "%value2%"))
+        when(conditionAdapterBuilder.build(filterDef2))
             .thenReturn(conditionAdapter2);
         
         // Act
-        contextAdapter.addCondition(filterKey, filterDef1);
-        contextAdapter.addCondition(filterKey, filterDef2); // Overwrite
+        filterContext.addCondition(filterKey, filterDef1);
+        filterContext.addCondition(filterKey, filterDef2); // Overwrite
         
         // Assert
-        assertEquals(conditionAdapter2, contextAdapter.getCondition(filterKey));
+        assertEquals(conditionAdapter2, filterContext.getCondition(filterKey));
         
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Operator.EQUALS, "value1");
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Operator.LIKE, "%value2%");
+        verify(conditionAdapterBuilder).build(filterDef1);
+        verify(conditionAdapterBuilder).build(filterDef2);
     }
 
     @Test
     void testDifferentOperators() {
         // Test only operators supported by USER_NAME
-        Operator[] supportedOperators = {
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+        Op[] supportedOperators = {
+            Op.EQUALS, Op.NOT_EQUALS,
+            Op.LIKE, Op.NOT_LIKE,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.IS_NOT_NULL
         };
         
         for (int i = 0; i < supportedOperators.length; i++) {
@@ -264,41 +274,26 @@ class ContextAdapterTest {
             
             ConditionAdapter<TestEntity> conditionAdapter = mock(ConditionAdapter.class);
             
-            when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, supportedOperators[i], value))
+            when(conditionAdapterBuilder.build(filterDef))
                 .thenReturn(conditionAdapter);
             
             // Act
-            contextAdapter.addCondition(filterKey, filterDef);
+            filterContext.addCondition(filterKey, filterDef);
             
             // Assert
-            assertEquals(conditionAdapter, contextAdapter.getCondition(filterKey));
+            assertEquals(conditionAdapter, filterContext.getCondition(filterKey));
         }
     }
 
-    private Object getTestValueForOperator(Operator operator) {
-        switch (operator) {
-            case EQUALS:
-            case NOT_EQUALS:
-            case LIKE:
-            case NOT_LIKE:
-                return "testValue";
-            case GREATER_THAN:
-            case GREATER_THAN_OR_EQUAL:
-            case LESS_THAN:
-            case LESS_THAN_OR_EQUAL:
-                return 100;
-            case IN:
-            case NOT_IN:
-                return java.util.List.of("value1", "value2");
-            case IS_NULL:
-            case IS_NOT_NULL:
-                return null;
-            case BETWEEN:
-            case NOT_BETWEEN:
-                return java.util.List.of(10, 20);
-            default:
-                return "defaultValue";
-        }
+    private Object getTestValueForOperator(Op operator) {
+        return switch (operator) {
+            case EQUALS, NOT_EQUALS, LIKE, NOT_LIKE -> "testValue";
+            case GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL -> 100;
+            case IN, NOT_IN -> java.util.List.of("value1", "value2");
+            case IS_NULL, IS_NOT_NULL -> null;
+            case BETWEEN, NOT_BETWEEN -> java.util.List.of(10, 20);
+            default -> "defaultValue";
+        };
     }
 
     /**
@@ -324,18 +319,16 @@ class ContextAdapterTest {
     /**
      * Enum de test pour PropertyRef avec PathShape.
      */
-    enum TestPropertyRef implements PropertyRef, PathMapping<TestEntity> {
-        USER_NAME(String.class, OperatorUtils.FOR_TEXT, "name"),
-        USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER, "age");
+    enum TestPropertyRef implements PropertyReference {
+        USER_NAME(String.class, OperatorUtils.FOR_TEXT),
+        USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER);
 
         private final Class<?> type;
-        private final Set<Operator> supportedOperators;
-        private final String path;
+        private final Set<Op> supportedOperators;
 
-        TestPropertyRef(Class<?> type, Set<Operator> supportedOperators, String path) {
+        TestPropertyRef(Class<?> type, Set<Op> supportedOperators) {
             this.type = type;
             this.supportedOperators = supportedOperators;
-            this.path = path;
         }
 
         @Override
@@ -344,13 +337,8 @@ class ContextAdapterTest {
         }
 
         @Override
-        public Set<Operator> getSupportedOperators() {
+        public Set<Op> getSupportedOperators() {
             return supportedOperators;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
         }
     }
 }
