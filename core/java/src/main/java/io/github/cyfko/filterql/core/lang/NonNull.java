@@ -1,9 +1,9 @@
-package io.github.cyfko.filterql.adapter.jpa.annotations;
+package io.github.cyfko.filterql.core.lang;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Annotation indiquant qu'un élément (paramètre, champ, méthode) ne doit jamais être null.
@@ -28,6 +28,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NotNull {
+public @interface NonNull {
 }
 

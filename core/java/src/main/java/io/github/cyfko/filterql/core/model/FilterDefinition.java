@@ -1,34 +1,34 @@
 package io.github.cyfko.filterql.core.model;
 
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 
 /**
  * Represents a single filter definition with a property reference,
  * an operator, and a value.
  * <p>
- * The reference property {@code ref} must be an enum implementing {@link PropertyRef}
+ * The reference property {@code ref} must be an enum implementing {@link PropertyReference}
  * to ensure type safety and performance.
  * </p>
  *
- * @param <P> type of the reference property (enum implementing {@link PropertyRef})
+ * @param <P> type of the reference property (enum implementing {@link PropertyReference})
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterDefinition<P extends Enum<P> & PropertyRef> {
+public class FilterDefinition<P extends Enum<P> & PropertyReference> {
 
     private final P ref;
-    private final Operator operator;
+    private final Op operator;
     private final Object value;
 
     /**
      * Creates a filter definition with the given property, operator, and value.
      *
-     * @param ref       the property reference (enum {@link PropertyRef})
+     * @param ref       the property reference (enum {@link PropertyReference})
      * @param operator  the comparison or logical operator
      * @param value     the value to use in the filter (may be a collection depending on the operator)
      */
-    public FilterDefinition(P ref, Operator operator, Object value) {
+    public FilterDefinition(P ref, Op operator, Object value) {
         this.ref = ref;
         this.operator = operator;
         this.value = value;
@@ -48,7 +48,7 @@ public class FilterDefinition<P extends Enum<P> & PropertyRef> {
      *
      * @return the operator
      */
-    public Operator getOperator() {
+    public Op getOperator() {
         return operator;
     }
 

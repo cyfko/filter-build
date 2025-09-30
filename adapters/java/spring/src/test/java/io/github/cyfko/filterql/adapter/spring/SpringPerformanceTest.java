@@ -1,18 +1,19 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
+import io.github.cyfko.filterql.core.FilterResolver;
+import io.github.cyfko.filterql.core.domain.PredicateResolver;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
-import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.Op;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
@@ -40,13 +41,17 @@ class SpringPerformanceTest {
     @Autowired
     private UserRepository userRepository;
 
-    private ContextAdapter<User, UserPropertyRef> contextAdapter;
-    private ConditionAdapterBuilder<User, UserPropertyRef> conditionBuilder;
+    private FilterContext<User,UserPropertyRef> context;
 
     @BeforeEach
     void setUp() {
-        conditionBuilder = new ConditionAdapterBuilder<User, UserPropertyRef>() {};
-        contextAdapter = new ContextAdapter<>(conditionBuilder);
+        context = new FilterContext<>(User.class, UserPropertyRef.class, ref -> switch (ref){
+            case NAME -> "name";
+            case AGE -> "age";
+            case EMAIL -> "email";
+            case ACTIVE -> "active";
+            case CREATED_AT -> "createdAt";
+        });
         
         // Créer un grand nombre de données de test
         createLargeTestDataset();
@@ -56,14 +61,14 @@ class SpringPerformanceTest {
     void testPerformanceWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GREATER_THAN, 25
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
+        Condition condition = context.addCondition("ageFilter", filterDef);
 
         // Act
         long startTime = System.currentTimeMillis();
-        Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = context.toResolver(User.class, condition);
+        List<User> results = userRepository.findAll(resolver::resolve);
         long endTime = System.currentTimeMillis();
 
         // Assert
@@ -83,18 +88,18 @@ class SpringPerformanceTest {
         // Arrange
         FilterRequest<UserPropertyRef> filterRequest = new FilterRequest<UserPropertyRef>(
             Map.of(
-                "ageFilter1", new FilterDefinition<>(UserPropertyRef.AGE, Operator.GREATER_THAN, 20),
-                "ageFilter2", new FilterDefinition<>(UserPropertyRef.AGE, Operator.LESS_THAN, 50),
-                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Operator.LIKE, "%User%"),
-                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Operator.IS_NOT_NULL, null)
+                "ageFilter1", new FilterDefinition<>(UserPropertyRef.AGE, Op.GREATER_THAN, 20),
+                "ageFilter2", new FilterDefinition<>(UserPropertyRef.AGE, Op.LESS_THAN, 50),
+                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Op.LIKE, "%User%"),
+                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Op.IS_NOT_NULL, null)
             ),
             "(ageFilter1 & ageFilter2) & (nameFilter | emailFilter)"
         );
 
         // Act
         long startTime = System.currentTimeMillis();
-        Specification<User> spec = SpecificationBuilder.toSpecification(filterRequest);
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = FilterResolver.of(context).resolve(User.class, filterRequest);
+        List<User> results = userRepository.findAll(resolver::resolve);
         long endTime = System.currentTimeMillis();
 
         // Assert
@@ -114,7 +119,7 @@ class SpringPerformanceTest {
         List<FilterDefinition<UserPropertyRef>> filters = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             filters.add(new FilterDefinition<>(
-                UserPropertyRef.AGE, Operator.GREATER_THAN, i * 5
+                UserPropertyRef.AGE, Op.GREATER_THAN, i * 5
             ));
         }
 
@@ -122,13 +127,13 @@ class SpringPerformanceTest {
         long startTime = System.currentTimeMillis();
         
         for (int i = 0; i < filters.size(); i++) {
-            contextAdapter.addCondition("filter" + i, filters.get(i));
+            context.addCondition("filter" + i, filters.get(i));
         }
 
         // Combiner toutes les conditions avec AND
         Condition combinedCondition = null;
         for (int i = 0; i < filters.size(); i++) {
-            Condition condition = contextAdapter.getCondition("filter" + i);
+            Condition condition = context.getCondition("filter" + i);
             if (combinedCondition == null) {
                 combinedCondition = condition;
             } else {
@@ -136,8 +141,8 @@ class SpringPerformanceTest {
             }
         }
 
-        Specification<User> spec = ((ConditionAdapter<User>) combinedCondition).getSpecification();
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = context.toResolver(User.class, combinedCondition);
+        List<User> results = userRepository.findAll(resolver::resolve);
         
         long endTime = System.currentTimeMillis();
 
@@ -160,14 +165,14 @@ class SpringPerformanceTest {
                 .collect(Collectors.toList());
         
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.IN, names
+            UserPropertyRef.NAME, Op.IN, names
         );
-        contextAdapter.addCondition("nameFilter", filterDef);
+        Condition condition = context.addCondition("nameFilter", filterDef);
 
         // Act
         long startTime = System.currentTimeMillis();
-        Specification<User> spec = contextAdapter.getSpecification("nameFilter");
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = context.toResolver(User.class, condition);
+        List<User> results = userRepository.findAll(resolver::resolve);
         long endTime = System.currentTimeMillis();
 
         // Assert
@@ -186,14 +191,14 @@ class SpringPerformanceTest {
         // Arrange
         List<Integer> ageRange = Arrays.asList(25, 35);
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.BETWEEN, ageRange
+            UserPropertyRef.AGE, Op.BETWEEN, ageRange
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
+        Condition condition = context.addCondition("ageFilter", filterDef);
 
         // Act
         long startTime = System.currentTimeMillis();
-        Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = context.toResolver(User.class, condition);
+        List<User> results = userRepository.findAll(resolver::resolve);
         long endTime = System.currentTimeMillis();
 
         // Assert
@@ -211,16 +216,16 @@ class SpringPerformanceTest {
     void testMemoryUsageWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GREATER_THAN, 25
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
+        Condition condition = context.addCondition("ageFilter", filterDef);
 
         // Act
         Runtime runtime = Runtime.getRuntime();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
         
-        Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-        List<User> results = userRepository.findAll(spec);
+        PredicateResolver<User> resolver = context.toResolver(User.class, condition);
+        List<User> results = userRepository.findAll(resolver::resolve);
         
         long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
         long memoryUsed = memoryAfter - memoryBefore;
@@ -240,9 +245,9 @@ class SpringPerformanceTest {
     void testConcurrentAccess() throws InterruptedException {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GREATER_THAN, 25
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
+        Condition condition = context.addCondition("ageFilter", filterDef);
 
         // Act
         List<Thread> threads = new ArrayList<>();
@@ -250,8 +255,8 @@ class SpringPerformanceTest {
         
         for (int i = 0; i < 10; i++) {
             Thread thread = new Thread(() -> {
-                Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-                List<User> threadResults = userRepository.findAll(spec);
+                PredicateResolver<User> resolver = context.toResolver(User.class, condition);
+                List<User> threadResults = userRepository.findAll(resolver::resolve);
                 results.add(threadResults);
             });
             threads.add(thread);

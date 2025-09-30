@@ -6,26 +6,31 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 /**
- * Functional interface for resolving a logical condition into a JPA {@link Predicate}.
+ * Functional interface for resolving a logical condition into a JPA predicate.
  *
  * <p>
  * A {@code PredicateResolver} represents a deferred predicate: it does not
- * directly hold a JPA {@link Predicate}, but knows how to create one when
- * given a JPA context ({@link Root}, {@link CriteriaQuery}, {@link CriteriaBuilder}).
+ * directly hold a JPA predicate, but knows how to create one when
+ * given the appropriate JPA context (root, query, builder).
+ * </p>
+ * 
+ * <p>
+ * This interface bridges FilterQL conditions with JPA Criteria API.
+ * </p>
  *
- * @param <T> the entity type
+ * @param <E> the entity type
  */
 @FunctionalInterface
-public interface PredicateResolver<T> {
+public interface PredicateResolver<E> {
 
     /**
-     * Resolves this condition into a JPA {@link Predicate}.
+     * Resolves this condition into a JPA predicate.
      *
      * @param root  the root entity
      * @param query the criteria query
-     * @param cb    the criteria builder
+     * @param criteriaBuilder the criteria builder
      * @return the resolved JPA predicate
      */
-    Predicate resolve(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
+    Predicate resolve(Root<E> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder);
 }
 

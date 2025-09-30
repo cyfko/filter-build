@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
 
-class PropertyRefTest {
+class PropertyReferenceTest {
 
     // Tests pour BasePropertyRef.BASE
     @Test
     @DisplayName("Should test BasePropertyRef BASE properties")
     void shouldTestBasePropertyRefProperties() {
         // Given & When
-        BasePropertyRef baseRef = BasePropertyRef.BASE;
+        BasePropertyReference baseRef = BasePropertyReference.BASE;
 
         // Then
         assertEquals(Object.class, baseRef.getType());
@@ -25,24 +25,24 @@ class PropertyRefTest {
     @DisplayName("Should test BasePropertyRef enum behavior")
     void shouldTestBasePropertyRefEnumBehavior() {
         // When
-        BasePropertyRef base = BasePropertyRef.valueOf("BASE");
-        BasePropertyRef[] values = BasePropertyRef.values();
+        BasePropertyReference base = BasePropertyReference.valueOf("BASE");
+        BasePropertyReference[] values = BasePropertyReference.values();
 
         // Then
-        assertEquals(BasePropertyRef.BASE, base);
+        assertEquals(BasePropertyReference.BASE, base);
         assertEquals(1, values.length);
-        assertEquals("BASE", BasePropertyRef.BASE.toString());
+        assertEquals("BASE", BasePropertyReference.BASE.toString());
     }
 
     @Test
     @DisplayName("Should throw exception for unsupported operators on BASE")
     void shouldThrowExceptionForUnsupportedOperatorsOnBase() {
         // Given
-        BasePropertyRef baseRef = BasePropertyRef.BASE;
+        BasePropertyReference baseRef = BasePropertyReference.BASE;
 
         // When & Then - BASE supports no operators
-        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Operator.EQUALS));
-        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Operator.LIKE));
+        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Op.EQUALS));
+        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Op.LIKE));
         assertThrows(NullPointerException.class, () -> baseRef.validateOperator(null));
     }
 
@@ -51,62 +51,62 @@ class PropertyRefTest {
     @DisplayName("Should test DefinedPropertyRef values and properties")
     void shouldTestDefinedPropertyRefValues() {
         // When & Then
-        assertEquals(String.class, DefinedPropertyRef.USER_NAME.getType());
-        assertEquals(Integer.class, DefinedPropertyRef.USER_AGE.getType());
-        assertEquals(String.class, DefinedPropertyRef.USER_EMAIL.getType());
-        assertEquals(String.class, DefinedPropertyRef.USER_STATUS.getType());
+        assertEquals(String.class, DefinedPropertyReference.USER_NAME.getType());
+        assertEquals(Integer.class, DefinedPropertyReference.USER_AGE.getType());
+        assertEquals(String.class, DefinedPropertyReference.USER_EMAIL.getType());
+        assertEquals(String.class, DefinedPropertyReference.USER_STATUS.getType());
 
         // Test enum behavior
-        assertEquals(4, DefinedPropertyRef.values().length);
-        assertEquals(DefinedPropertyRef.USER_NAME, DefinedPropertyRef.valueOf("USER_NAME"));
+        assertEquals(4, DefinedPropertyReference.values().length);
+        assertEquals(DefinedPropertyReference.USER_NAME, DefinedPropertyReference.valueOf("USER_NAME"));
     }
 
     @Test
     @DisplayName("Should validate operators correctly for defined properties")
     void shouldValidateOperatorsForDefinedProperties() {
         // Test USER_NAME supports string operators
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_NAME.validateOperator(Operator.EQUALS));
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_NAME.validateOperator(Operator.LIKE));
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_NAME.validateOperator(Operator.IN));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.EQUALS));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.LIKE));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.IN));
         
         // Test USER_NAME does not support numeric operators
         assertThrows(IllegalArgumentException.class, 
-                    () -> DefinedPropertyRef.USER_NAME.validateOperator(Operator.GREATER_THAN));
+                    () -> DefinedPropertyReference.USER_NAME.validateOperator(Op.GREATER_THAN));
 
         // Test USER_AGE supports numeric operators
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_AGE.validateOperator(Operator.EQUALS));
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_AGE.validateOperator(Operator.GREATER_THAN));
-        assertDoesNotThrow(() -> DefinedPropertyRef.USER_AGE.validateOperator(Operator.BETWEEN));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.EQUALS));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.GREATER_THAN));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.BETWEEN));
         
         // Test USER_AGE does not support string operators
         assertThrows(IllegalArgumentException.class, 
-                    () -> DefinedPropertyRef.USER_AGE.validateOperator(Operator.LIKE));
+                    () -> DefinedPropertyReference.USER_AGE.validateOperator(Op.LIKE));
     }
 
     @Test
     @DisplayName("Should return correct supported operators for defined properties")
     void shouldReturnCorrectSupportedOperatorsForDefinedProperties() {
         // Test USER_NAME operators
-        Set<Operator> userNameOps = DefinedPropertyRef.USER_NAME.getSupportedOperators();
-        assertTrue(userNameOps.contains(Operator.EQUALS));
-        assertTrue(userNameOps.contains(Operator.LIKE));
-        assertTrue(userNameOps.contains(Operator.IN));
-        assertFalse(userNameOps.contains(Operator.GREATER_THAN));
+        Set<Op> userNameOps = DefinedPropertyReference.USER_NAME.getSupportedOperators();
+        assertTrue(userNameOps.contains(Op.EQUALS));
+        assertTrue(userNameOps.contains(Op.LIKE));
+        assertTrue(userNameOps.contains(Op.IN));
+        assertFalse(userNameOps.contains(Op.GREATER_THAN));
 
         // Test USER_AGE operators
-        Set<Operator> userAgeOps = DefinedPropertyRef.USER_AGE.getSupportedOperators();
-        assertTrue(userAgeOps.contains(Operator.EQUALS));
-        assertTrue(userAgeOps.contains(Operator.GREATER_THAN));
-        assertTrue(userAgeOps.contains(Operator.LESS_THAN));
-        assertTrue(userAgeOps.contains(Operator.BETWEEN));
-        assertFalse(userAgeOps.contains(Operator.LIKE));
+        Set<Op> userAgeOps = DefinedPropertyReference.USER_AGE.getSupportedOperators();
+        assertTrue(userAgeOps.contains(Op.EQUALS));
+        assertTrue(userAgeOps.contains(Op.GREATER_THAN));
+        assertTrue(userAgeOps.contains(Op.LESS_THAN));
+        assertTrue(userAgeOps.contains(Op.BETWEEN));
+        assertFalse(userAgeOps.contains(Op.LIKE));
 
         // Test USER_STATUS operators
-        Set<Operator> userStatusOps = DefinedPropertyRef.USER_STATUS.getSupportedOperators();
-        assertTrue(userStatusOps.contains(Operator.EQUALS));
-        assertTrue(userStatusOps.contains(Operator.NOT_EQUALS));
-        assertTrue(userStatusOps.contains(Operator.IN));
-        assertFalse(userStatusOps.contains(Operator.LIKE));
+        Set<Op> userStatusOps = DefinedPropertyReference.USER_STATUS.getSupportedOperators();
+        assertTrue(userStatusOps.contains(Op.EQUALS));
+        assertTrue(userStatusOps.contains(Op.NOT_EQUALS));
+        assertTrue(userStatusOps.contains(Op.IN));
+        assertFalse(userStatusOps.contains(Op.LIKE));
     }
 
     @Test
@@ -114,31 +114,31 @@ class PropertyRefTest {
     void shouldHandleNullOperatorValidationForDefinedProperties() {
         // When & Then
         assertThrows(NullPointerException.class, 
-                    () -> DefinedPropertyRef.USER_NAME.validateOperator(null));
+                    () -> DefinedPropertyReference.USER_NAME.validateOperator(null));
         assertThrows(NullPointerException.class, 
-                    () -> DefinedPropertyRef.USER_AGE.validateOperator(null));
+                    () -> DefinedPropertyReference.USER_AGE.validateOperator(null));
     }
 
     @Test
     @DisplayName("Should ensure operator sets are immutable")
     void shouldEnsureOperatorSetsAreImmutable() {
         // Given
-        Set<Operator> userNameOps = DefinedPropertyRef.USER_NAME.getSupportedOperators();
-        Set<Operator> baseOps = BasePropertyRef.BASE.getSupportedOperators();
+        Set<Op> userNameOps = DefinedPropertyReference.USER_NAME.getSupportedOperators();
+        Set<Op> baseOps = BasePropertyReference.BASE.getSupportedOperators();
 
         // When & Then - Should not be able to modify the sets
         assertThrows(UnsupportedOperationException.class, 
-                    () -> userNameOps.add(Operator.GREATER_THAN));
+                    () -> userNameOps.add(Op.GREATER_THAN));
         assertThrows(UnsupportedOperationException.class, 
-                    () -> baseOps.add(Operator.EQUALS));
+                    () -> baseOps.add(Op.EQUALS));
     }
 
     @Test
     @DisplayName("Should test behavior of different property ref types")
     void shouldTestDifferentPropertyRefTypes() {
         // Given - Different property ref types
-        BasePropertyRef baseProperty = BasePropertyRef.BASE;
-        DefinedPropertyRef definedProperty = DefinedPropertyRef.USER_NAME;
+        BasePropertyReference baseProperty = BasePropertyReference.BASE;
+        DefinedPropertyReference definedProperty = DefinedPropertyReference.USER_NAME;
 
         // When & Then
         assertEquals(Object.class, baseProperty.getType());
@@ -152,8 +152,8 @@ class PropertyRefTest {
     @DisplayName("Should test toString methods")
     void shouldTestToStringMethods() {
         // When
-        String baseString = BasePropertyRef.BASE.toString();
-        String definedString = DefinedPropertyRef.USER_NAME.toString();
+        String baseString = BasePropertyReference.BASE.toString();
+        String definedString = DefinedPropertyReference.USER_NAME.toString();
 
         // Then
         assertEquals("BASE", baseString);
@@ -164,11 +164,11 @@ class PropertyRefTest {
     @DisplayName("Should test equality and hashCode")
     void shouldTestEqualityAndHashCode() {
         // Given
-        BasePropertyRef base1 = BasePropertyRef.BASE;
-        BasePropertyRef base2 = BasePropertyRef.BASE;
-        DefinedPropertyRef defined1 = DefinedPropertyRef.USER_NAME;
-        DefinedPropertyRef defined2 = DefinedPropertyRef.USER_NAME;
-        DefinedPropertyRef defined3 = DefinedPropertyRef.USER_AGE;
+        BasePropertyReference base1 = BasePropertyReference.BASE;
+        BasePropertyReference base2 = BasePropertyReference.BASE;
+        DefinedPropertyReference defined1 = DefinedPropertyReference.USER_NAME;
+        DefinedPropertyReference defined2 = DefinedPropertyReference.USER_NAME;
+        DefinedPropertyReference defined3 = DefinedPropertyReference.USER_AGE;
 
         // When & Then
         assertEquals(base1, base2);
@@ -185,14 +185,14 @@ class PropertyRefTest {
     @DisplayName("Should test supportsOperator method")
     void shouldTestSupportsOperatorMethod() {
         // When & Then
-        assertFalse(BasePropertyRef.BASE.supportsOperator(Operator.EQUALS));
-        assertFalse(BasePropertyRef.BASE.supportsOperator(Operator.LIKE));
+        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.EQUALS));
+        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.LIKE));
         
-        assertTrue(DefinedPropertyRef.USER_NAME.supportsOperator(Operator.EQUALS));
-        assertTrue(DefinedPropertyRef.USER_NAME.supportsOperator(Operator.LIKE));
-        assertFalse(DefinedPropertyRef.USER_NAME.supportsOperator(Operator.GREATER_THAN));
+        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.EQUALS));
+        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.LIKE));
+        assertFalse(DefinedPropertyReference.USER_NAME.supportsOperator(Op.GREATER_THAN));
         
-        assertTrue(DefinedPropertyRef.USER_AGE.supportsOperator(Operator.GREATER_THAN));
-        assertFalse(DefinedPropertyRef.USER_AGE.supportsOperator(Operator.LIKE));
+        assertTrue(DefinedPropertyReference.USER_AGE.supportsOperator(Op.GREATER_THAN));
+        assertFalse(DefinedPropertyReference.USER_AGE.supportsOperator(Op.LIKE));
     }
 }

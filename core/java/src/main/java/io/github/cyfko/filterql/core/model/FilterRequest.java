@@ -1,6 +1,6 @@
 package io.github.cyfko.filterql.core.model;
 
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +14,12 @@ import java.util.Map;
  * (for example, using AND, OR operators).
  * </p>
  *
- * @param <P> type of the reference property, an enum implementing {@link PropertyRef}
+ * @param <P> type of the reference property, an enum implementing {@link PropertyReference}
  *
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterRequest<P extends Enum<P> & PropertyRef> {
+public class FilterRequest<P extends Enum<P> & PropertyReference> {
 
     private final Map<String, FilterDefinition<P>> filters;
     private final String combineWith;
@@ -65,10 +65,10 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
      * for constructing {@link FilterRequest} objects with a fluent API.
      * </p>
      *
-     * @param <R> the enum type representing filterable properties, which must extend {@code Enum} and implement {@link PropertyRef}
+     * @param <R> the enum type representing filterable properties, which must extend {@code Enum} and implement {@link PropertyReference}
      * @return a new builder instance
      */
-    public static <R extends Enum<R> & PropertyRef> Builder<R> builder() {
+    public static <R extends Enum<R> & PropertyReference> Builder<R> builder() {
         return new Builder<>();
     }
 
@@ -80,9 +80,9 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
      * </p>
      *
      * @param <P> the enum type representing filterable properties,
-     *            which must extend {@code Enum} and implement {@link PropertyRef}
+     *            which must extend {@code Enum} and implement {@link PropertyReference}
      */
-    public static class Builder<P extends Enum<P> & PropertyRef> {
+    public static class Builder<P extends Enum<P> & PropertyReference> {
 
         private final Map<String, FilterDefinition<P>> filters = new HashMap<>();
         private String combineWith;

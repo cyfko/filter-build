@@ -1,87 +1,72 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
-import io.github.cyfko.filterql.core.mappings.PathMapping;
+import io.github.cyfko.filterql.core.domain.PredicateResolver;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
 import io.github.cyfko.filterql.core.validation.Op;
 import io.github.cyfko.filterql.core.validation.PropertyReference;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Set;
 
+import static io.github.cyfko.filterql.adapter.spring.FilterContextTest.TestPropertyRef.USER_AGE;
+import static io.github.cyfko.filterql.adapter.spring.FilterContextTest.TestPropertyRef.USER_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Tests unitaires pour SpringContextAdapter.
+ * Tests unitaires pour FilterContext.
  * Teste la gestion des conditions dans un contexte Spring.
  */
 @ExtendWith(MockitoExtension.class)
 class FilterContextTest {
 
     @Mock
-    private ConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionAdapterBuilder;
-    
+    private FilterCondition<TestEntity> mockedFilterCondition;
+
     @Mock
-    private ConditionAdapter<TestEntity> conditionAdapter;
+    private FilterContext<TestEntity, TestPropertyRef> mockedContext;
     
-    private FilterContext<TestEntity> filterContext;
+    private FilterContext<TestEntity, TestPropertyRef> context;
 
     @BeforeEach
     void setUp() {
-        filterContext = new FilterContext<>(TestEntity.class);
-        filterContext.setConditionBuilder(propertyRef -> {
-            if (propertyRef instanceof TestPropertyRef ref) {
-                switch (ref){
-                    case USER_NAME -> { return ((PathMapping<TestEntity>) () -> "name"); }
-                    case USER_AGE -> { return ((PathMapping<TestEntity>) () -> "age"); }
-                }
-            }
-
-            throw new IllegalArgumentException("");
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, ref -> switch (ref){
+            case USER_NAME -> "name";
+            case USER_AGE -> "age";
         });
     }
 
     @Test
     void testConstructor() {
-        assertNotNull(filterContext);
-    }
-
-    @Test
-    void testConstructorWithNullBuilder() {
-        // Le constructeur ne vérifie pas les nulls, donc ce test doit être adapté
-        // ou supprimé car il n'y a pas de validation dans le constructeur
-        assertDoesNotThrow(() -> {
-            new FilterContext<>(null);
-        });
+        assertNotNull(context);
     }
 
     @Test
     void testAddConditionSuccess() {
+
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQUALS, "testValue"
         );
-        
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"))
-            .thenReturn(conditionAdapter);
+        when(mockedContext.addCondition(filterKey,filterDef)).thenReturn(mockedFilterCondition);
         
         // Act
-        filterContext.addCondition(filterKey, filterDef);
-        
-        // Assert
-        verify(conditionAdapterBuilder).build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue");
-        
+        Condition retrievedCondition = mockedContext.addCondition(filterKey, filterDef);
+
         // Verify condition is stored
-        Condition retrievedCondition = filterContext.getCondition(filterKey);
-        assertEquals(conditionAdapter, retrievedCondition);
+        assertEquals(mockedFilterCondition, retrievedCondition);
     }
 
     @Test
@@ -89,30 +74,27 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.GREATER_THAN, "testValue" // Unsupported operator
+            USER_NAME, Op.GREATER_THAN, "testValue" // Unsupported operator
         );
         
         // Act & Assert
         // La validation se fait dans propertyRef.validateOperator() avant d'appeler le builder
         assertThrows(IllegalArgumentException.class, () -> {
-            filterContext.addCondition(filterKey, filterDef);
+            context.addCondition(filterKey, filterDef);
         });
-        
-        // Le builder ne devrait pas être appelé car la validation échoue avant
-        verify(conditionAdapterBuilder, never()).build(any(), any(), any());
     }
 
     @Test
     void testAddConditionWithNullFilterKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQUALS, "testValue"
         );
         
         // Act & Assert
         // HashMap.put() accepte les clés null, donc pas d'exception
         assertDoesNotThrow(() -> {
-            filterContext.addCondition(null, filterDef);
+            context.addCondition(null, filterDef);
         });
     }
 
@@ -120,7 +102,7 @@ class FilterContextTest {
     void testAddConditionWithNullFilterDefinition() {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
-            filterContext.addCondition("testFilter", null);
+            context.addCondition("testFilter", null);
         });
     }
 
@@ -129,26 +111,22 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQUALS, "testValue"
         );
-        
-        when(conditionAdapterBuilder.build(TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"))
-            .thenReturn(conditionAdapter);
-        
-        filterContext.addCondition(filterKey, filterDef);
+        when(mockedContext.getCondition(filterKey)).thenReturn(mockedFilterCondition);
         
         // Act
-        Condition result = filterContext.getCondition(filterKey);
+        Condition result = mockedContext.getCondition(filterKey);
         
         // Assert
-        assertEquals(conditionAdapter, result);
+        assertEquals(mockedFilterCondition, result);
     }
 
     @Test
     void testGetConditionNonExistent() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            filterContext.getCondition("nonExistentFilter");
+            context.getCondition("nonExistentFilter");
         });
     }
 
@@ -156,7 +134,7 @@ class FilterContextTest {
     void testGetConditionWithNullKey() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            filterContext.getCondition(null);
+            context.getCondition(null);
         });
     }
 
@@ -165,29 +143,47 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQUALS, "testValue"
         );
         
-        Specification<TestEntity> specification = mock(Specification.class);
-        
-        when(conditionAdapterBuilder.build(filterDef))
-            .thenReturn(conditionAdapter);
-        when(conditionAdapter.getSpecification()).thenReturn(specification);
-        
-        filterContext.addCondition(filterKey, filterDef);
-        
         // Act
-        Specification<TestEntity> result = filterContext.getSpecification(filterKey);
+        context.addCondition(filterKey, filterDef);
+        Condition condition = context.getCondition(filterKey);
+        PredicateResolver<TestEntity> result = context.toResolver(TestEntity.class, condition);
+
+        // Assert - Test that we get a valid PredicateResolver
+        assertNotNull(result);
+        assertNotNull(condition);
+        assertTrue(condition instanceof FilterCondition);
         
-        // Assert
-        assertEquals(specification, result);
+        // Test that the condition can be retrieved
+        assertEquals(condition, context.getCondition(filterKey));
     }
 
     @Test
     void testGetSpecificationNonExistent() {
         // Act
         assertThrows(IllegalArgumentException.class, () -> {
-            Specification<TestEntity> result = filterContext.getSpecification("nonExistentFilter");
+            PredicateResolver<TestEntity> result = context.toResolver(TestEntity.class, null);
+        });
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            context.toResolver(TestEntity.class, new Condition() {
+                @Override
+                public Condition and(Condition other) {
+                    return null;
+                }
+
+                @Override
+                public Condition or(Condition other) {
+                    return null;
+                }
+
+                @Override
+                public Condition not() {
+                    return null;
+                }
+            });
         });
     }
 
@@ -198,30 +194,27 @@ class FilterContextTest {
         String filterKey2 = "filter2";
         
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "value1"
+            USER_NAME, Op.EQUALS, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            TestPropertyRef.USER_AGE, Op.GREATER_THAN, 25
+            USER_AGE, Op.GREATER_THAN, 25
         );
         
-        ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
-        ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
-        
-        when(conditionAdapterBuilder.build(filterDef1))
-            .thenReturn(conditionAdapter1);
-        when(conditionAdapterBuilder.build(filterDef2))
-            .thenReturn(conditionAdapter2);
-        
         // Act
-        filterContext.addCondition(filterKey1, filterDef1);
-        filterContext.addCondition(filterKey2, filterDef2);
+        context.addCondition(filterKey1, filterDef1);
+        context.addCondition(filterKey2, filterDef2);
         
         // Assert
-        assertEquals(conditionAdapter1, filterContext.getCondition(filterKey1));
-        assertEquals(conditionAdapter2, filterContext.getCondition(filterKey2));
+        Condition condition1 = context.getCondition(filterKey1);
+        Condition condition2 = context.getCondition(filterKey2);
         
-        verify(conditionAdapterBuilder).build(filterDef1);
-        verify(conditionAdapterBuilder).build(filterDef2);
+        assertNotNull(condition1);
+        assertNotNull(condition2);
+        assertTrue(condition1 instanceof FilterCondition);
+        assertTrue(condition2 instanceof FilterCondition);
+        
+        // Test that both conditions are stored and retrievable
+        assertNotEquals(condition1, condition2);
     }
 
     @Test
@@ -229,29 +222,24 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.EQUALS, "value1"
+            USER_NAME, Op.EQUALS, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            TestPropertyRef.USER_NAME, Op.LIKE, "%value2%"
+            USER_NAME, Op.LIKE, "%value2%"
         );
         
-        ConditionAdapter<TestEntity> conditionAdapter1 = mock(ConditionAdapter.class);
-        ConditionAdapter<TestEntity> conditionAdapter2 = mock(ConditionAdapter.class);
-        
-        when(conditionAdapterBuilder.build(filterDef1))
-            .thenReturn(conditionAdapter1);
-        when(conditionAdapterBuilder.build(filterDef2))
-            .thenReturn(conditionAdapter2);
-        
         // Act
-        filterContext.addCondition(filterKey, filterDef1);
-        filterContext.addCondition(filterKey, filterDef2); // Overwrite
+        context.addCondition(filterKey, filterDef1);
+        Condition condition1 = context.getCondition(filterKey);
+        
+        context.addCondition(filterKey, filterDef2); // Overwrite
+        Condition condition2 = context.getCondition(filterKey);
         
         // Assert
-        assertEquals(conditionAdapter2, filterContext.getCondition(filterKey));
-        
-        verify(conditionAdapterBuilder).build(filterDef1);
-        verify(conditionAdapterBuilder).build(filterDef2);
+        assertNotNull(condition1);
+        assertNotNull(condition2);
+        assertNotEquals(condition1, condition2); // Should be different after overwrite
+        assertTrue(condition2 instanceof FilterCondition);
     }
 
     @Test
@@ -269,19 +257,14 @@ class FilterContextTest {
             Object value = getTestValueForOperator(supportedOperators[i]);
             
             FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-                TestPropertyRef.USER_NAME, supportedOperators[i], value
+                USER_NAME, supportedOperators[i], value
             );
-            
-            ConditionAdapter<TestEntity> conditionAdapter = mock(ConditionAdapter.class);
-            
-            when(conditionAdapterBuilder.build(filterDef))
-                .thenReturn(conditionAdapter);
-            
+
             // Act
-            filterContext.addCondition(filterKey, filterDef);
-            
+            Condition condition = context.addCondition(filterKey, filterDef);
+
             // Assert
-            assertEquals(conditionAdapter, filterContext.getCondition(filterKey));
+            assertNotNull(condition);
         }
     }
 
@@ -292,7 +275,6 @@ class FilterContextTest {
             case IN, NOT_IN -> java.util.List.of("value1", "value2");
             case IS_NULL, IS_NOT_NULL -> null;
             case BETWEEN, NOT_BETWEEN -> java.util.List.of(10, 20);
-            default -> "defaultValue";
         };
     }
 

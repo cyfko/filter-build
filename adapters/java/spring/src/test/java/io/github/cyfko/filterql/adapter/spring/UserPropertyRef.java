@@ -1,8 +1,7 @@
 package io.github.cyfko.filterql.adapter.spring;
 
-import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 
 import java.util.Set;
 
@@ -10,52 +9,45 @@ import java.util.Set;
  * Enum PropertyRef pour l'entité de test.
  * Cet enum définit les propriétés disponibles pour le filtrage.
  */
-public enum UserPropertyRef implements PropertyRef, PathMapping<User> {
-    NAME("name", String.class, Set.of(
-        Operator.EQUALS, Operator.NOT_EQUALS,
-        Operator.LIKE, Operator.NOT_LIKE,
-        Operator.IN, Operator.NOT_IN,
-        Operator.IS_NULL, Operator.IS_NOT_NULL
+public enum UserPropertyRef implements PropertyReference {
+    NAME(String.class, Set.of(
+        Op.EQUALS, Op.NOT_EQUALS,
+        Op.LIKE, Op.NOT_LIKE,
+        Op.IN, Op.NOT_IN,
+        Op.IS_NULL, Op.IS_NOT_NULL
     )),
-    AGE("age", Integer.class, Set.of(
-        Operator.EQUALS, Operator.NOT_EQUALS,
-        Operator.GREATER_THAN, Operator.GREATER_THAN_OR_EQUAL,
-        Operator.LESS_THAN, Operator.LESS_THAN_OR_EQUAL,
-        Operator.IN, Operator.NOT_IN,
-        Operator.IS_NULL, Operator.IS_NOT_NULL,
-        Operator.BETWEEN, Operator.NOT_BETWEEN
+    AGE(Integer.class, Set.of(
+        Op.EQUALS, Op.NOT_EQUALS,
+        Op.GREATER_THAN, Op.GREATER_THAN_OR_EQUAL,
+        Op.LESS_THAN, Op.LESS_THAN_OR_EQUAL,
+        Op.IN, Op.NOT_IN,
+        Op.IS_NULL, Op.IS_NOT_NULL,
+        Op.BETWEEN, Op.NOT_BETWEEN
     )),
-    EMAIL("email", String.class, Set.of(
-        Operator.EQUALS, Operator.NOT_EQUALS,
-        Operator.LIKE, Operator.NOT_LIKE,
-        Operator.IN, Operator.NOT_IN,
-        Operator.IS_NULL, Operator.IS_NOT_NULL
+    EMAIL(String.class, Set.of(
+        Op.EQUALS, Op.NOT_EQUALS,
+        Op.LIKE, Op.NOT_LIKE,
+        Op.IN, Op.NOT_IN,
+        Op.IS_NULL, Op.IS_NOT_NULL
     )),
-    ACTIVE("active", Boolean.class, Set.of(
-        Operator.EQUALS, Operator.NOT_EQUALS,
-        Operator.IS_NULL, Operator.IS_NOT_NULL
+    ACTIVE(Boolean.class, Set.of(
+        Op.EQUALS, Op.NOT_EQUALS,
+        Op.IS_NULL, Op.IS_NOT_NULL
     )),
-    CREATED_AT("createdAt", java.time.LocalDateTime.class, Set.of(
-        Operator.EQUALS, Operator.NOT_EQUALS,
-        Operator.GREATER_THAN, Operator.GREATER_THAN_OR_EQUAL,
-        Operator.LESS_THAN, Operator.LESS_THAN_OR_EQUAL,
-        Operator.IS_NULL, Operator.IS_NOT_NULL,
-        Operator.BETWEEN, Operator.NOT_BETWEEN
+    CREATED_AT(java.time.LocalDateTime.class, Set.of(
+        Op.EQUALS, Op.NOT_EQUALS,
+        Op.GREATER_THAN, Op.GREATER_THAN_OR_EQUAL,
+        Op.LESS_THAN, Op.LESS_THAN_OR_EQUAL,
+        Op.IS_NULL, Op.IS_NOT_NULL,
+        Op.BETWEEN, Op.NOT_BETWEEN
     ));
 
-    private final String path;
     private final Class<?> type;
-    private final Set<Operator> supportedOperators;
+    private final Set<Op> supportedOperators;
 
-    UserPropertyRef(String path, Class<?> type, Set<Operator> supportedOperators) {
-        this.path = path;
+    UserPropertyRef(Class<?> type, Set<Op> supportedOperators) {
         this.type = type;
         this.supportedOperators = supportedOperators;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
     }
 
     @Override
@@ -64,19 +56,19 @@ public enum UserPropertyRef implements PropertyRef, PathMapping<User> {
     }
 
     @Override
-    public Set<Operator> getSupportedOperators() {
+    public Set<Op> getSupportedOperators() {
         return supportedOperators;
     }
 
     @Override
-    public void validateOperator(Operator operator) {
+    public void validateOperator(Op operator) {
         if (!supportedOperators.contains(operator)) {
-            throw new IllegalArgumentException("Operator " + operator + " not supported for " + this);
+            throw new IllegalArgumentException("Op " + operator + " not supported for " + this);
         }
     }
 
     @Override
-    public void validateOperatorForValue(Operator operator, Object value) {
+    public void validateOperatorForValue(Op operator, Object value) {
         validateOperator(operator);
         
         // Validation spécifique pour certains opérateurs

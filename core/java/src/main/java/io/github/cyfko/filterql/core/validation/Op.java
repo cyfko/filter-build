@@ -11,7 +11,7 @@ package io.github.cyfko.filterql.core.validation;
  * in a dynamic filtering system.</p>
  *
  * <pre>{@code
- * Operator op = Operator.fromString("=");
+ * Op op = Op.fromString("=");
  * if (op != null && op.requiresValue()) {
  *     // handle operators that require a value
  * }

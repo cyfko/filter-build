@@ -1,7 +1,7 @@
 package io.github.cyfko.filterql.core.model;
 
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.DefinedPropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.DefinedPropertyReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,12 +12,12 @@ class FilterDefinitionTest {
     @DisplayName("Should create FilterDefinition with valid parameters")
     void shouldCreateFilterDefinitionWithValidParameters() {
         // Given
-        DefinedPropertyRef ref = DefinedPropertyRef.USER_NAME;
-        Operator operator = Operator.EQUALS;
+        DefinedPropertyReference ref = DefinedPropertyReference.USER_NAME;
+        Op operator = Op.EQUALS;
         Object value = "test";
 
         // When
-        FilterDefinition<DefinedPropertyRef> filterDefinition = new FilterDefinition<>(ref, operator, value);
+        FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(ref, operator, value);
 
         // Then
         assertEquals(ref, filterDefinition.getRef());
@@ -29,12 +29,12 @@ class FilterDefinitionTest {
     @DisplayName("Should create FilterDefinition with null value")
     void shouldCreateFilterDefinitionWithNullValue() {
         // Given
-        DefinedPropertyRef ref = DefinedPropertyRef.USER_NAME;
-        Operator operator = Operator.IS_NULL;
+        DefinedPropertyReference ref = DefinedPropertyReference.USER_NAME;
+        Op operator = Op.IS_NULL;
         Object value = null;
 
         // When
-        FilterDefinition<DefinedPropertyRef> filterDefinition = new FilterDefinition<>(ref, operator, value);
+        FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(ref, operator, value);
 
         // Then
         assertEquals(ref, filterDefinition.getRef());
@@ -46,15 +46,15 @@ class FilterDefinitionTest {
     @DisplayName("Should create FilterDefinition with different value types")
     void shouldCreateFilterDefinitionWithDifferentValueTypes() {
         // Test with String
-        FilterDefinition<DefinedPropertyRef> stringFilter = new FilterDefinition<>(DefinedPropertyRef.USER_NAME, Operator.LIKE, "pattern%");
+        FilterDefinition<DefinedPropertyReference> stringFilter = new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.LIKE, "pattern%");
         assertEquals("pattern%", stringFilter.getValue());
 
         // Test with Integer
-        FilterDefinition<DefinedPropertyRef> intFilter = new FilterDefinition<>(DefinedPropertyRef.USER_AGE, Operator.GREATER_THAN, 42);
+        FilterDefinition<DefinedPropertyReference> intFilter = new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.GREATER_THAN, 42);
         assertEquals(42, intFilter.getValue());
 
         // Test with Boolean
-        FilterDefinition<DefinedPropertyRef> booleanFilter = new FilterDefinition<>(DefinedPropertyRef.USER_STATUS, Operator.EQUALS, true);
+        FilterDefinition<DefinedPropertyReference> booleanFilter = new FilterDefinition<>(DefinedPropertyReference.USER_STATUS, Op.EQUALS, true);
         assertEquals(true, booleanFilter.getValue());
     }
 
@@ -62,9 +62,9 @@ class FilterDefinitionTest {
     @DisplayName("Should handle toString method")
     void shouldHandleToStringMethod() {
         // Given
-        FilterDefinition<DefinedPropertyRef> filterDefinition = new FilterDefinition<>(
-            DefinedPropertyRef.USER_NAME, 
-            Operator.EQUALS, 
+        FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(
+            DefinedPropertyReference.USER_NAME,
+            Op.EQUALS,
             "test"
         );
 

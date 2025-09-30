@@ -1,7 +1,7 @@
 package io.github.cyfko.filterql.core.model;
 
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.DefinedPropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.DefinedPropertyReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,13 +15,13 @@ class FilterRequestTest {
     @DisplayName("Should create FilterRequest with filters and combination")
     void shouldCreateFilterRequestWithFiltersAndCombination() {
         // Given
-        Map<String, FilterDefinition<DefinedPropertyRef>> filters = new HashMap<>();
-        filters.put("filter1", new FilterDefinition<>(DefinedPropertyRef.USER_NAME, Operator.EQUALS, "value1"));
-        filters.put("filter2", new FilterDefinition<>(DefinedPropertyRef.USER_AGE, Operator.GREATER_THAN, 10));
+        Map<String, FilterDefinition<DefinedPropertyReference>> filters = new HashMap<>();
+        filters.put("filter1", new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.EQUALS, "value1"));
+        filters.put("filter2", new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.GREATER_THAN, 10));
         String combineWith = "AND";
 
         // When
-        FilterRequest<DefinedPropertyRef> filterRequest = new FilterRequest<>(filters, combineWith);
+        FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
         assertEquals(filters, filterRequest.getFilters());
@@ -33,11 +33,11 @@ class FilterRequestTest {
     @DisplayName("Should create FilterRequest with empty filters")
     void shouldCreateFilterRequestWithEmptyFilters() {
         // Given
-        Map<String, FilterDefinition<DefinedPropertyRef>> filters = new HashMap<>();
+        Map<String, FilterDefinition<DefinedPropertyReference>> filters = new HashMap<>();
         String combineWith = "OR";
 
         // When
-        FilterRequest<DefinedPropertyRef> filterRequest = new FilterRequest<>(filters, combineWith);
+        FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
         assertEquals(filters, filterRequest.getFilters());
@@ -49,12 +49,12 @@ class FilterRequestTest {
     @DisplayName("Should create FilterRequest with null combineWith")
     void shouldCreateFilterRequestWithNullCombineWith() {
         // Given
-        Map<String, FilterDefinition<DefinedPropertyRef>> filters = new HashMap<>();
-        filters.put("filter1", new FilterDefinition<>(DefinedPropertyRef.USER_NAME, Operator.EQUALS, "value"));
+        Map<String, FilterDefinition<DefinedPropertyReference>> filters = new HashMap<>();
+        filters.put("filter1", new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.EQUALS, "value"));
         String combineWith = null;
 
         // When
-        FilterRequest<DefinedPropertyRef> filterRequest = new FilterRequest<>(filters, combineWith);
+        FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
         assertEquals(filters, filterRequest.getFilters());
@@ -65,14 +65,14 @@ class FilterRequestTest {
     @DisplayName("Should handle complex filter scenarios")
     void shouldHandleComplexFilterScenarios() {
         // Given
-        Map<String, FilterDefinition<DefinedPropertyRef>> filters = new HashMap<>();
-        filters.put("nameFilter", new FilterDefinition<>(DefinedPropertyRef.USER_NAME, Operator.LIKE, "John%"));
-        filters.put("ageFilter", new FilterDefinition<>(DefinedPropertyRef.USER_AGE, Operator.BETWEEN, new Object[]{18, 65}));
-        filters.put("statusFilter", new FilterDefinition<>(DefinedPropertyRef.USER_STATUS, Operator.IN, new String[]{"ACTIVE", "PENDING"}));
-        filters.put("nullFilter", new FilterDefinition<>(DefinedPropertyRef.USER_EMAIL, Operator.IS_NOT_NULL, null));
+        Map<String, FilterDefinition<DefinedPropertyReference>> filters = new HashMap<>();
+        filters.put("nameFilter", new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.LIKE, "John%"));
+        filters.put("ageFilter", new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.BETWEEN, new Object[]{18, 65}));
+        filters.put("statusFilter", new FilterDefinition<>(DefinedPropertyReference.USER_STATUS, Op.IN, new String[]{"ACTIVE", "PENDING"}));
+        filters.put("nullFilter", new FilterDefinition<>(DefinedPropertyReference.USER_EMAIL, Op.IS_NOT_NULL, null));
 
         // When
-        FilterRequest<DefinedPropertyRef> filterRequest = new FilterRequest<>(filters, "AND");
+        FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, "AND");
 
         // Then
         assertEquals(4, filterRequest.getFilters().size());
@@ -87,9 +87,9 @@ class FilterRequestTest {
     @DisplayName("Should handle toString method")
     void shouldHandleToStringMethod() {
         // Given
-        Map<String, FilterDefinition<DefinedPropertyRef>> filters = new HashMap<>();
-        filters.put("test", new FilterDefinition<>(DefinedPropertyRef.USER_NAME, Operator.EQUALS, "value"));
-        FilterRequest<DefinedPropertyRef> filterRequest = new FilterRequest<>(filters, "AND");
+        Map<String, FilterDefinition<DefinedPropertyReference>> filters = new HashMap<>();
+        filters.put("test", new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.EQUALS, "value"));
+        FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, "AND");
 
         // When
         String result = filterRequest.toString();

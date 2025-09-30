@@ -1,15 +1,16 @@
 package io.github.cyfko.filterql.adapter.spring;
 
-import io.github.cyfko.filterql.adapter.spring.mappings.PathMapping;
+import io.github.cyfko.filterql.core.FilterResolver;
+import io.github.cyfko.filterql.core.domain.PredicateResolver;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,23 +18,33 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests unitaires simples pour SpecificationBuilder.
+ * Tests unitaires simples pour FilterResolver.
  */
 class SpecificationBuilderTest {
+
+    private FilterContext<TestEntity, TestPropertyRef> context;
+
+    @BeforeEach
+    void setUp() {
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, p -> switch (p) {
+            case USER_NAME -> "name";
+            case USER_AGE -> "age";
+        });
+    }
 
     @Test
     void testToSpecificationSimpleExpression() throws DSLSyntaxException, FilterValidationException {
         // Arrange
         TestPropertyRef propertyRef = TestPropertyRef.USER_NAME;
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            propertyRef, Operator.EQUALS, "John"
+            propertyRef, Op.EQUALS, "John"
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of("f1", filterDef);
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(filters, "f1");
         
         // Act
-        Specification<TestEntity> result = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> result = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         
         // Assert
         assertNotNull(result);
@@ -46,10 +57,10 @@ class SpecificationBuilderTest {
         TestPropertyRef ageRef = TestPropertyRef.USER_AGE;
         
         FilterDefinition<TestPropertyRef> nameFilter = new FilterDefinition<>(
-            nameRef, Operator.EQUALS, "John"
+            nameRef, Op.EQUALS, "John"
         );
         FilterDefinition<TestPropertyRef> ageFilter = new FilterDefinition<>(
-            ageRef, Operator.GREATER_THAN, 25
+            ageRef, Op.GREATER_THAN, 25
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of(
@@ -59,7 +70,7 @@ class SpecificationBuilderTest {
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(filters, "f1 & f2");
         
         // Act
-        Specification<TestEntity> result = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> result = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         
         // Assert
         assertNotNull(result);
@@ -71,7 +82,7 @@ class SpecificationBuilderTest {
         TestPropertyRef nameRef = TestPropertyRef.USER_NAME;
         
         FilterDefinition<TestPropertyRef> nameFilter = new FilterDefinition<>(
-            nameRef, Operator.EQUALS, "John"
+            nameRef, Op.EQUALS, "John"
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of("f1", nameFilter);
@@ -79,7 +90,7 @@ class SpecificationBuilderTest {
         
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -110,18 +121,16 @@ class SpecificationBuilderTest {
     /**
      * Enum de test pour PropertyRef avec PathShape.
      */
-    enum TestPropertyRef implements PropertyRef, PathMapping {
-        USER_NAME(String.class, OperatorUtils.FOR_TEXT, "name"),
-        USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER, "age");
+    enum TestPropertyRef implements PropertyReference {
+        USER_NAME(String.class, OperatorUtils.FOR_TEXT),
+        USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER);
 
         private final Class<?> type;
-        private final Set<Operator> supportedOperators;
-        private final String path;
+        private final Set<Op> supportedOperators;
 
-        TestPropertyRef(Class<?> type, Set<Operator> supportedOperators, String path) {
+        TestPropertyRef(Class<?> type, Set<Op> supportedOperators) {
             this.type = type;
             this.supportedOperators = supportedOperators;
-            this.path = path;
         }
 
         @Override
@@ -130,13 +139,8 @@ class SpecificationBuilderTest {
         }
 
         @Override
-        public Set<Operator> getSupportedOperators() {
+        public Set<Op> getSupportedOperators() {
             return supportedOperators;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
         }
     }
 
