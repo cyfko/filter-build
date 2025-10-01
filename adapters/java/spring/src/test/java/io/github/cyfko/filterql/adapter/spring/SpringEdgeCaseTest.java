@@ -27,12 +27,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SpringEdgeCaseTest {
 
-    @Mock
-    private FilterCondition<TestEntity> filterCondition;
-
-    @Mock
-    private FilterCondition<TestEntity> otherFilterCondition;
-
     private FilterContext<TestEntity,TestPropertyRef> context;
 
     @BeforeEach

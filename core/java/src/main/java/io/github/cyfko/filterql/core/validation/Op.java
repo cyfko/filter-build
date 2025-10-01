@@ -3,66 +3,89 @@ package io.github.cyfko.filterql.core.validation;
 /**
  * Enumeration of supported filter operators.
  * <p>
- * Each operator defines its own symbol, code, as well as its validation rules
- * and the types of operations it supports.
+ * Each operator defines its own symbol, code, and the types of operations it supports.
+ * This enum follows naming conventions similar to those used in web standards,
+ * HTML, and DOM APIs, emphasizing short, descriptive codes.
  * </p>
  *
- * <p>This enum is used to represent, in a type-safe way, logical or comparison operators
- * in a dynamic filtering system.</p>
- *
+ * <p><strong>Example usage:</strong></p>
  * <pre>{@code
+ * // Parse operator from symbol or code string
  * Op op = Op.fromString("=");
  * if (op != null && op.requiresValue()) {
  *     // handle operators that require a value
  * }
+ *
+ * // Check if operator supports multiple values (like IN or RANGE)
+ * if (op.supportsMultipleValues()) {
+ *     // handle collection or range values
+ * }
  * }</pre>
+ *
+ * <p><strong>HTML-style operator mappings:</strong></p>
+ * <ul>
+ *     <li>EQ / =</li>
+ *     <li>NE / !=</li>
+ *     <li>GT / &gt;</li>
+ *     <li>GTE / &gt;=</li>
+ *     <li>LT / &lt;</li>
+ *     <li>LTE / &lt;=</li>
+ *     <li>MATCHES / LIKE</li>
+ *     <li>NOT_MATCHES / NOT LIKE</li>
+ *     <li>IN / IN</li>
+ *     <li>NOT_IN / NOT IN</li>
+ *     <li>IS_NULL / IS NULL</li>
+ *     <li>NOT_NULL / IS NOT NULL</li>
+ *     <li>RANGE / BETWEEN</li>
+ *     <li>NOT_RANGE / NOT BETWEEN</li>
+ * </ul>
  *
  * @author Frank KOSSI
  * @since 1.0
  */
 public enum Op {
 
-    /** Equality: "=" */
-    EQUALS("=", "EQ"),
+    /** Equality operator: "=" */
+    EQ("=", "EQ"),
 
-    /** Not equal: "!=" */
-    NOT_EQUALS("!=", "NE"),
+    /** Not equal operator: "!=" */
+    NE("!=", "NE"),
 
-    /** Greater than: "&gt;" */
-    GREATER_THAN(">", "GT"),
+    /** Greater than operator: "&gt;" */
+    GT(">", "GT"),
 
-    /** Greater than or equal: "&gt;=" */
-    GREATER_THAN_OR_EQUAL(">=", "GTE"),
+    /** Greater than or equal operator: "&gt;=" */
+    GTE(">=", "GTE"),
 
-    /** Less than: "&lt;" */
-    LESS_THAN("<", "LT"),
+    /** Less than operator: "&lt;" */
+    LT("<", "LT"),
 
-    /** Less than or equal: "&lt;=" */
-    LESS_THAN_OR_EQUAL("<=", "LTE"),
+    /** Less than or equal operator: "&lt;=" */
+    LTE("<=", "LTE"),
 
-    /** Like (pattern): "LIKE" */
-    LIKE("LIKE", "LIKE"),
+    /** Pattern matching operator: "LIKE" */
+    MATCHES("LIKE", "MATCHES"),
 
-    /** Not like: "NOT LIKE" */
-    NOT_LIKE("NOT LIKE", "NOT_LIKE"),
+    /** Negated pattern matching operator: "NOT LIKE" */
+    NOT_MATCHES("NOT LIKE", "NOT_MATCHES"),
 
-    /** Included in collection: "IN" */
+    /** Inclusion operator for collections: "IN" */
     IN("IN", "IN"),
 
-    /** Not included in collection: "NOT IN" */
+    /** Negated inclusion operator: "NOT IN" */
     NOT_IN("NOT IN", "NOT_IN"),
 
-    /** Is null: "IS NULL" */
+    /** Operator for checking NULL: "IS NULL" */
     IS_NULL("IS NULL", "IS_NULL"),
 
-    /** Is not null: "IS NOT NULL" */
-    IS_NOT_NULL("IS NOT NULL", "IS_NOT_NULL"),
+    /** Operator for checking NOT NULL: "IS NOT NULL" */
+    NOT_NULL("IS NOT NULL", "NOT_NULL"),
 
-    /** Between two values: "BETWEEN" */
-    BETWEEN("BETWEEN", "BETWEEN"),
+    /** Range operator: "BETWEEN" */
+    RANGE("BETWEEN", "RANGE"),
 
-    /** Not between two values: "NOT BETWEEN" */
-    NOT_BETWEEN("NOT BETWEEN", "NOT_BETWEEN");
+    /** Negated range operator: "NOT BETWEEN" */
+    NOT_RANGE("NOT BETWEEN", "NOT_RANGE");
 
     private final String symbol;
     private final String code;
@@ -73,28 +96,28 @@ public enum Op {
     }
 
     /**
-     * Returns the textual symbol of the operator.
+     * Returns the textual symbol of the operator, e.g. "=", "LIKE".
      *
-     * @return the symbol (e.g., "=", "LIKE")
+     * @return symbol string
      */
     public String getSymbol() {
         return symbol;
     }
 
     /**
-     * Returns the short code used as the operator's identifier.
+     * Returns the short code used as the operator's identifier, e.g. "EQ", "MATCHES".
      *
-     * @return the short code (e.g., "EQ", "LIKE")
+     * @return code string
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * Finds an operator by its symbol or code.
+     * Finds an {@code Op} by its symbol or code, ignoring case.
      *
-     * @param value symbol or code to search for (case-insensitive)
-     * @return the corresponding operator, or {@code null} if not found
+     * @param value symbol or code string to search for
+     * @return matching {@code Op}, or {@code null} if none found
      */
     public static Op fromString(String value) {
         if (value == null) return null;
@@ -111,22 +134,24 @@ public enum Op {
     }
 
     /**
-     * Indicates whether the operator strictly requires an input value.
+     * Checks whether the operator requires an input value.
+     * <p>
+     * Operators like {@link #IS_NULL} and {@link #NOT_NULL} do not take values.
      *
-     * @return {@code true} if the operator takes a value (e.g., =, >, IN),
-     *         {@code false} if it is a predicate without a value (e.g., IS NULL)
+     * @return {@code true} if operator requires a value, {@code false} otherwise
      */
     public boolean requiresValue() {
-        return this != IS_NULL && this != IS_NOT_NULL;
+        return this != IS_NULL && this != NOT_NULL;
     }
 
     /**
-     * Indicates whether the operator supports multiple values (collection or range).
+     * Checks whether the operator supports multiple values, e.g. for collections or ranges.
+     * Supported operators include {@link #IN}, {@link #NOT_IN}, {@link #RANGE}, and {@link #NOT_RANGE}.
      *
-     * @return {@code true} for IN, NOT_IN, BETWEEN, NOT_BETWEEN; {@code false} otherwise
+     * @return {@code true} if operator supports multiple values, otherwise {@code false}
      */
     public boolean supportsMultipleValues() {
-        return this == IN || this == NOT_IN || this == BETWEEN || this == NOT_BETWEEN;
+        return this == IN || this == NOT_IN || this == RANGE || this == NOT_RANGE;
     }
 }
 

@@ -20,9 +20,9 @@ class FilterDefinitionTest {
         FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(ref, operator, value);
 
         // Then
-        assertEquals(ref, filterDefinition.getRef());
-        assertEquals(operator, filterDefinition.getOperator());
-        assertEquals(value, filterDefinition.getValue());
+        assertEquals(ref, filterDefinition.ref());
+        assertEquals(operator, filterDefinition.operator());
+        assertEquals(value, filterDefinition.value());
     }
 
     @Test
@@ -37,9 +37,9 @@ class FilterDefinitionTest {
         FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(ref, operator, value);
 
         // Then
-        assertEquals(ref, filterDefinition.getRef());
-        assertEquals(operator, filterDefinition.getOperator());
-        assertNull(filterDefinition.getValue());
+        assertEquals(ref, filterDefinition.ref());
+        assertEquals(operator, filterDefinition.operator());
+        assertNull(filterDefinition.value());
     }
 
     @Test
@@ -47,15 +47,15 @@ class FilterDefinitionTest {
     void shouldCreateFilterDefinitionWithDifferentValueTypes() {
         // Test with String
         FilterDefinition<DefinedPropertyReference> stringFilter = new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.LIKE, "pattern%");
-        assertEquals("pattern%", stringFilter.getValue());
+        assertEquals("pattern%", stringFilter.value());
 
         // Test with Integer
         FilterDefinition<DefinedPropertyReference> intFilter = new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.GREATER_THAN, 42);
-        assertEquals(42, intFilter.getValue());
+        assertEquals(42, intFilter.value());
 
         // Test with Boolean
         FilterDefinition<DefinedPropertyReference> booleanFilter = new FilterDefinition<>(DefinedPropertyReference.USER_STATUS, Op.EQUALS, true);
-        assertEquals(true, booleanFilter.getValue());
+        assertEquals(true, booleanFilter.value());
     }
 
     @Test
