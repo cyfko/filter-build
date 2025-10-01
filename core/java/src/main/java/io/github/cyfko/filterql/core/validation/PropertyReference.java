@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.core.validation;
 
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.utils.ClassUtils;
 
 import java.util.Collection;
@@ -77,16 +78,16 @@ public interface PropertyReference {
 
     /**
      * Validates that the given operator is supported by this property.
-     * Throws an {@link IllegalArgumentException} if not.
+     * Throws an {@link FilterValidationException} if not.
      *
      * @param operator the operator to validate, not null
-     * @throws IllegalArgumentException if the operator is not supported
+     * @throws FilterValidationException if the operator is not supported
      * @throws NullPointerException     if {@code operator} is {@code null}
      */
     default void validateOperator(Op operator) {
         Objects.requireNonNull(operator, "Operator cannot be null");
         if (!supportsOperator(operator)) {
-            throw new IllegalArgumentException(
+            throw new FilterValidationException(
                     String.format("Operator %s is not supported for property %s. Supported operators: %s",
                             operator, this, getSupportedOperators()));
         }
@@ -104,7 +105,7 @@ public interface PropertyReference {
      *
      * @param operator the operator to validate, not null
      * @param value    the value to which the operator applies, may be null for some operators
-     * @throws IllegalArgumentException if the operator is not applicable for the given value
+     * @throws FilterValidationException if the operator is not applicable for the given value
      * @throws NullPointerException     if {@code operator} is {@code null}
      */
     default void validateOperatorForValue(Op operator, Object value) {
@@ -116,7 +117,7 @@ public interface PropertyReference {
         // Validation spécifique selon le type d'opérateur
         ValidationResult result = validateValueForOperator(operator, value);
         if (!result.isValid()) {
-            throw new IllegalArgumentException(result.getErrorMessage());
+            throw new FilterValidationException(result.getErrorMessage());
         }
     }
 

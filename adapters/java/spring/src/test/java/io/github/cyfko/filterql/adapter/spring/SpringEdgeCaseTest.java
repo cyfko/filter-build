@@ -259,34 +259,34 @@ class SpringEdgeCaseTest {
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithInvalidBetweenValues() {
+    void testFilterContextWithInvalidBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
-        assertDoesNotThrow(() -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN, Arrays.asList("singleValue")));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithTooManyBetweenValues() {
+    void testFilterContextWithTooManyBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
-        assertDoesNotThrow(() -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN,
                 Arrays.asList("value1", "value2", "value3")));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithNullBetweenValues() {
+    void testFilterContextWithNullBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation null
-        assertDoesNotThrow(() -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN, null));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithInvalidTypeCast() {
+    void testFilterContextWithInvalidTypeCast() {
         // Act & Assert - Le builder n'effectue pas de validation de type au niveau du cast
-        assertDoesNotThrow(() -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GREATER_THAN, "stringValue"));
         });
     }

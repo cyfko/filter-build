@@ -62,7 +62,7 @@
         <dependency>
             <groupId>io.github.cyfko</groupId>
             <artifactId>filterql-core</artifactId>
-            <version>1.2.0</version>
+            <version>2.0.0</version>
         </dependency>
 
         <!-- Spring Data JPA (fourni aux utilisateurs via leur version) -->

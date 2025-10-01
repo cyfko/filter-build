@@ -93,7 +93,7 @@ class FilterContextTest {
         
         // Act & Assert
         // HashMap.put() accepte les clés null, donc pas d'exception
-        assertDoesNotThrow(() -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             context.addCondition(null, filterDef);
         });
     }
