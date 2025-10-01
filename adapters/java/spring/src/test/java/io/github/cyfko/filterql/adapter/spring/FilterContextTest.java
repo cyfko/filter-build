@@ -2,6 +2,7 @@ package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.domain.PredicateResolver;
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.utils.OperatorUtils;
 import io.github.cyfko.filterql.core.validation.Op;
@@ -79,7 +80,7 @@ class FilterContextTest {
         
         // Act & Assert
         // La validation se fait dans propertyRef.validateOperator() avant d'appeler le builder
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition(filterKey, filterDef);
         });
     }

@@ -166,7 +166,7 @@ class SpringEdgeCaseTest {
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            FilterResolver.of(null, context).resolve(TestEntity.class, filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -234,7 +234,7 @@ class SpringEdgeCaseTest {
         FilterDefinition<TestPropertyRef> definition = new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GREATER_THAN, "stringValue");
 
         // Assert - La validation se fait lors de l'utilisation de la création de la condition
-        assertThrows(IllegalArgumentException.class, () -> context.addCondition("someKey", definition));
+        assertThrows(FilterValidationException.class, () -> context.addCondition("someKey", definition));
     }
 
     @Test
@@ -252,8 +252,7 @@ class SpringEdgeCaseTest {
 
     @Test
     void testFilterContextWithEmptyCollection() {
-        // Act & Assert - Le builder n'effectue pas de validation des collections vides
-        assertDoesNotThrow(() -> {
+        assertThrows(FilterValidationException.class, () -> {
             context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.IN, Collections.emptyList()));
         });
     }
