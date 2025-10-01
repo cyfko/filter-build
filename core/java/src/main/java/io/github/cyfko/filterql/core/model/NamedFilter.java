@@ -13,7 +13,7 @@ public class NamedFilter<P extends Enum<P> &PropertyReference> extends FilterDef
      * @param operator the comparison or logical operator
      * @param value    the value to use in the filter (may be a collection depending on the operator)
      */
-    public NamedFilter(P ref, Op operator, Object value) {
+    public NamedFilter(String name, P ref, Op operator, Object value) {
         super(ref, operator, value);
     }
 

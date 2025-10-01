@@ -24,9 +24,9 @@ class FilterRequestTest {
         FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
-        assertEquals(filters, filterRequest.getFilters());
-        assertEquals(combineWith, filterRequest.getCombineWith());
-        assertEquals(2, filterRequest.getFilters().size());
+        assertEquals(filters, filterRequest.filters());
+        assertEquals(combineWith, filterRequest.combineWith());
+        assertEquals(2, filterRequest.filters().size());
     }
 
     @Test
@@ -40,9 +40,9 @@ class FilterRequestTest {
         FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
-        assertEquals(filters, filterRequest.getFilters());
-        assertEquals(combineWith, filterRequest.getCombineWith());
-        assertTrue(filterRequest.getFilters().isEmpty());
+        assertEquals(filters, filterRequest.filters());
+        assertEquals(combineWith, filterRequest.combineWith());
+        assertTrue(filterRequest.filters().isEmpty());
     }
 
     @Test
@@ -57,8 +57,8 @@ class FilterRequestTest {
         FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, combineWith);
 
         // Then
-        assertEquals(filters, filterRequest.getFilters());
-        assertNull(filterRequest.getCombineWith());
+        assertEquals(filters, filterRequest.filters());
+        assertNull(filterRequest.combineWith());
     }
 
     @Test
@@ -75,12 +75,12 @@ class FilterRequestTest {
         FilterRequest<DefinedPropertyReference> filterRequest = new FilterRequest<>(filters, "AND");
 
         // Then
-        assertEquals(4, filterRequest.getFilters().size());
-        assertTrue(filterRequest.getFilters().containsKey("nameFilter"));
-        assertTrue(filterRequest.getFilters().containsKey("ageFilter"));
-        assertTrue(filterRequest.getFilters().containsKey("statusFilter"));
-        assertTrue(filterRequest.getFilters().containsKey("nullFilter"));
-        assertEquals("AND", filterRequest.getCombineWith());
+        assertEquals(4, filterRequest.filters().size());
+        assertTrue(filterRequest.filters().containsKey("nameFilter"));
+        assertTrue(filterRequest.filters().containsKey("ageFilter"));
+        assertTrue(filterRequest.filters().containsKey("statusFilter"));
+        assertTrue(filterRequest.filters().containsKey("nullFilter"));
+        assertEquals("AND", filterRequest.combineWith());
     }
 
     @Test

@@ -2,9 +2,8 @@ package io.github.cyfko.filterql.core.model;
 
 import io.github.cyfko.filterql.core.validation.PropertyReference;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a complete filter request containing multiple filter definitions
@@ -12,46 +11,33 @@ import java.util.Map;
  * <p>
  * Each filter definition associates a property, an operator, and a value,
  * while the DSL expression {@code combineWith} defines how these filters are logically combined
- * (for example, using AND, OR operators).
+ * (example: "(f1 &amp; f2) | f3").
  * </p>
  *
  * @param <P> type of the reference property, an enum implementing {@link PropertyReference}
- *
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterRequest<P extends Enum<P> & PropertyReference> {
-
-    private final Map<String, FilterDefinition<P>> filters;
-    private final String combineWith;
+public record FilterRequest<P extends Enum<P> & PropertyReference>(Map<String, FilterDefinition<P>> filters,
+                                                                   String combineWith) {
 
     /**
      * Constructs a new filter request.
      *
-     * @param filters     a map of filter definitions identified by their keys
+     * @param filters     a list of NamedFilters
      * @param combineWith a DSL expression combining the filters
      */
-    public FilterRequest(Map<String, FilterDefinition<P>> filters, String combineWith) {
-        this.filters = filters;
-        this.combineWith = combineWith;
-    }
-
-    /**
-     * Returns the map of filter definitions.
-     *
-     * @return the immutable or mutable map of filters
-     */
-    public Map<String, FilterDefinition<P>> getFilters() {
-        return filters;
-    }
-
-    /**
-     * Returns the DSL expression defining the logical combination of filters.
-     *
-     * @return the combination DSL expression (example: "(f1 &amp; f2) | f3")
-     */
-    public String getCombineWith() {
-        return combineWith;
+    public FilterRequest(List<NamedFilter<P>> filters, String combineWith) {
+        this(filters.stream()
+                .collect(Collectors.toMap(
+                        NamedFilter::getName,
+                        f -> new FilterDefinition<>(f.getRef(), f.getOperator(), f.getValue()),
+                        (existing, duplicate) -> {
+                            throw new IllegalArgumentException(
+                                    "Duplicate filter name found: " + existing
+                            );
+                        }
+                )), combineWith);
     }
 
     @Override

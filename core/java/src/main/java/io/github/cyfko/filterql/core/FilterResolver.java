@@ -165,7 +165,7 @@ public class FilterResolver {
      *
      * <p>Steps performed:
      * <ol>
-     *   <li>Parse the DSL expression from {@link FilterRequest#getCombineWith()} into a {@link FilterTree}.</li>
+     *   <li>Parse the DSL expression from {@link FilterRequest#combineWith()} into a {@link FilterTree}.</li>
      *   <li>Register all filter definitions into the {@link Context}.</li>
      *   <li>Generate a {@link Condition} tree and adapt it into a {@link PredicateResolver}.</li>
      * </ol>
@@ -188,10 +188,10 @@ public class FilterResolver {
         Objects.requireNonNull(filterRequest, "Filter request cannot be null");
 
         // Parse DSL into a filter tree
-        FilterTree filterTree = dslParser.parse(filterRequest.getCombineWith());
+        FilterTree filterTree = dslParser.parse(filterRequest.combineWith());
 
         // Populate the context with filter definitions
-        filterRequest.getFilters().forEach(context::addCondition);
+        filterRequest.filters().forEach(context::addCondition);
 
         // Generate a condition tree and convert it into a PredicateResolver
         Condition condition = filterTree.generate(context);
