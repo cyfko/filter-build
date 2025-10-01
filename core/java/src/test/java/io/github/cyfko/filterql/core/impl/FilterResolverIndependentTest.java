@@ -100,11 +100,11 @@ public class FilterResolverIndependentTest {
      * Test property reference enum for testing
      */
     private enum TestPropertyRef implements PropertyReference {
-        NAME(String.class, Set.of(Op.LIKE, Op.EQUALS, Op.NOT_EQUALS)),
-        VALUE(Integer.class, Set.of(Op.EQUALS, Op.GREATER_THAN, Op.LESS_THAN)),
-        ACTIVE(Boolean.class, Set.of(Op.EQUALS, Op.NOT_EQUALS)),
-        STATUS(String.class, Set.of(Op.EQUALS, Op.IN)),
-        CATEGORY(String.class, Set.of(Op.EQUALS, Op.LIKE));
+        NAME(String.class, Set.of(Op.MATCHES, Op.EQ, Op.NE)),
+        VALUE(Integer.class, Set.of(Op.EQ, Op.GT, Op.LT)),
+        ACTIVE(Boolean.class, Set.of(Op.EQ, Op.NE)),
+        STATUS(String.class, Set.of(Op.EQ, Op.IN)),
+        CATEGORY(String.class, Set.of(Op.EQ, Op.MATCHES));
 
         private final Class<?> type;
         private final Set<Op> supportedOperators;
@@ -134,7 +134,7 @@ public class FilterResolverIndependentTest {
         void testValidFilterRequestResolution() throws DSLSyntaxException, FilterValidationException {
             // Create a simple filter request
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
@@ -150,8 +150,8 @@ public class FilterResolverIndependentTest {
         @DisplayName("Complex DSL expression resolves successfully")
         void testComplexDSLExpression() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
-            filters.put("valueFilter", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GREATER_THAN, 100));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
+            filters.put("valueFilter", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GT, 100));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "(nameFilter & valueFilter)");
             
@@ -166,9 +166,9 @@ public class FilterResolverIndependentTest {
         @DisplayName("Multiple filters with OR logic resolves successfully")
         void testMultipleFiltersWithOrLogic() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
-            filters.put("activeFilter", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQUALS, true));
-            filters.put("statusFilter", new FilterDefinition<>(TestPropertyRef.STATUS, Op.EQUALS, "ACTIVE"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
+            filters.put("activeFilter", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQ, true));
+            filters.put("statusFilter", new FilterDefinition<>(TestPropertyRef.STATUS, Op.EQ, "ACTIVE"));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter | (activeFilter & statusFilter)");
             
@@ -190,7 +190,7 @@ public class FilterResolverIndependentTest {
             when(mockParser.parse(anyString())).thenThrow(new DSLSyntaxException("Invalid syntax"));
             
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "invalid & &");
             
@@ -209,7 +209,7 @@ public class FilterResolverIndependentTest {
             when(mockFilterTree.generate(any(Context.class))).thenThrow(new FilterValidationException("Invalid filter"));
             
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("invalidFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("invalidFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "invalidFilter");
             
@@ -301,7 +301,7 @@ public class FilterResolverIndependentTest {
         @DisplayName("Filter resolution performance is acceptable")
         void testFilterResolutionPerformance() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
             long startTime = System.nanoTime();
@@ -322,7 +322,7 @@ public class FilterResolverIndependentTest {
         @DisplayName("Memory usage is reasonable with repeated resolutions")
         void testMemoryUsage() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
             // Perform many resolutions to check for memory leaks
@@ -343,10 +343,10 @@ public class FilterResolverIndependentTest {
         @DisplayName("Complex filter requests perform adequately")
         void testComplexFilterPerformance() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
-            filters.put("valueFilter", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GREATER_THAN, 100));
-            filters.put("activeFilter", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQUALS, true));
-            filters.put("statusFilter", new FilterDefinition<>(TestPropertyRef.STATUS, Op.EQUALS, "ACTIVE"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
+            filters.put("valueFilter", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GT, 100));
+            filters.put("activeFilter", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQ, true));
+            filters.put("statusFilter", new FilterDefinition<>(TestPropertyRef.STATUS, Op.EQ, "ACTIVE"));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(
                 filters, 
@@ -375,7 +375,7 @@ public class FilterResolverIndependentTest {
         @DisplayName("Resolve method never returns null for valid requests")
         void testNeverReturnsNullForValidRequests() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
             PredicateResolver<TestEntity> result = filterResolver.resolve(TestEntity.class, request);
@@ -387,7 +387,7 @@ public class FilterResolverIndependentTest {
         @DisplayName("FilterResolver behavior is deterministic")
         void testDeterministicBehavior() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
             // Multiple calls with the same request should behave consistently
@@ -405,9 +405,9 @@ public class FilterResolverIndependentTest {
         @DisplayName("Context population happens for all filters")
         void testContextPopulation() throws DSLSyntaxException, FilterValidationException {
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("filter1", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
-            filters.put("filter2", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GREATER_THAN, 100));
-            filters.put("filter3", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQUALS, true));
+            filters.put("filter1", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
+            filters.put("filter2", new FilterDefinition<>(TestPropertyRef.VALUE, Op.GT, 100));
+            filters.put("filter3", new FilterDefinition<>(TestPropertyRef.ACTIVE, Op.EQ, true));
             
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "filter1 & filter2 | filter3");
             
@@ -429,7 +429,7 @@ public class FilterResolverIndependentTest {
         void shouldThrowExceptionForNullEntityClass() {
             // Given
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("test", new FilterDefinition<>(TestPropertyRef.NAME, Op.EQUALS, "value"));
+            filters.put("test", new FilterDefinition<>(TestPropertyRef.NAME, Op.EQ, "value"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "test");
             
             // When & Then
@@ -459,7 +459,7 @@ public class FilterResolverIndependentTest {
             final int operationsPerThread = 50;
             
             Map<String, FilterDefinition<TestPropertyRef>> filters = new HashMap<>();
-            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.LIKE, "test%"));
+            filters.put("nameFilter", new FilterDefinition<>(TestPropertyRef.NAME, Op.MATCHES, "test%"));
             FilterRequest<TestPropertyRef> request = new FilterRequest<>(filters, "nameFilter");
             
             Thread[] threads = new Thread[threadCount];

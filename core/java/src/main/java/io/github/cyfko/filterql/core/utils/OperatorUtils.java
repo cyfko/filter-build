@@ -25,22 +25,22 @@ public final class OperatorUtils {
          * Immutable set of operators applicable to text properties (String, etc.).
          */
     public static final Set<Op> FOR_TEXT = Set.of(
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.LIKE, Op.NOT_LIKE,
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
     );
 
         /**
          * Immutable set of operators applicable to numeric properties.
          */
     public static final Set<Op> FOR_NUMBER = Set.of(
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.GREATER_THAN, Op.GREATER_THAN_OR_EQUAL,
-            Op.LESS_THAN, Op.LESS_THAN_OR_EQUAL,
-            Op.BETWEEN, Op.NOT_BETWEEN,
+            Op.EQ, Op.NE,
+            Op.GT, Op.GTE,
+            Op.LT, Op.LTE,
+            Op.RANGE, Op.NOT_RANGE,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
     );
 }
 

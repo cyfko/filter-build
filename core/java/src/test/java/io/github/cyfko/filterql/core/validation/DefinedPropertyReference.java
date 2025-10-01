@@ -6,10 +6,10 @@ import java.util.Set;
  * Test enum that implements PropertyRef for testing purposes.
  */
 public enum DefinedPropertyReference implements PropertyReference {
-    USER_NAME(String.class, Set.of(Op.EQUALS, Op.LIKE, Op.IN)),
-    USER_AGE(Integer.class, Set.of(Op.EQUALS, Op.GREATER_THAN, Op.LESS_THAN, Op.BETWEEN)),
-    USER_EMAIL(String.class, Set.of(Op.EQUALS, Op.LIKE)),
-    USER_STATUS(String.class, Set.of(Op.EQUALS, Op.NOT_EQUALS, Op.IN));
+    USER_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
+    USER_AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.RANGE)),
+    USER_EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES)),
+    USER_STATUS(String.class, Set.of(Op.EQ, Op.NE, Op.IN));
 
     private final Class<?> type;
     private final Set<Op> supportedOperators;

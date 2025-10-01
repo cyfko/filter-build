@@ -21,25 +21,6 @@ import java.util.stream.Collectors;
 public record FilterRequest<P extends Enum<P> & PropertyReference>(Map<String, FilterDefinition<P>> filters,
                                                                    String combineWith) {
 
-    /**
-     * Constructs a new filter request.
-     *
-     * @param filters     a list of NamedFilters
-     * @param combineWith a DSL expression combining the filters
-     */
-    public FilterRequest(List<NamedFilter<P>> filters, String combineWith) {
-        this(filters.stream()
-                .collect(Collectors.toMap(
-                        NamedFilter::getName,
-                        f -> new FilterDefinition<>(f.getRef(), f.getOperator(), f.getValue()),
-                        (existing, duplicate) -> {
-                            throw new IllegalArgumentException(
-                                    "Duplicate filter name found: " + existing
-                            );
-                        }
-                )), combineWith);
-    }
-
     @Override
     public String toString() {
         return String.format("FilterRequest{filters=%s, combineWith='%s'}", filters, combineWith);

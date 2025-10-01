@@ -131,11 +131,11 @@ public interface PropertyReference {
      */
     private ValidationResult validateValueForOperator(Op operator, Object value) {
         return switch (operator) {
-            case EQUALS, NOT_EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, LIKE,
-                 NOT_LIKE -> validateSingleValue(operator, value);
-            case IS_NULL, IS_NOT_NULL -> validateNullCheck(operator, value);
+            case EQ, NE, GT, GTE, LT, LTE, MATCHES,
+                 NOT_MATCHES -> validateSingleValue(operator, value);
+            case IS_NULL, NOT_NULL -> validateNullCheck(operator, value);
             case IN, NOT_IN -> validateCollectionValue(operator, value, false);
-            case BETWEEN, NOT_BETWEEN -> validateCollectionValue(operator, value, true);
+            case RANGE, NOT_RANGE -> validateCollectionValue(operator, value, true);
         };
     }
 

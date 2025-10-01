@@ -42,8 +42,8 @@ class PropertyReferenceTest {
         BasePropertyReference baseRef = BasePropertyReference.BASE;
 
         // When & Then - BASE supports no operators
-        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.EQUALS));
-        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.LIKE));
+        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.EQ));
+        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.MATCHES));
         assertThrows(NullPointerException.class, () -> baseRef.validateOperator(null));
     }
 
@@ -66,22 +66,22 @@ class PropertyReferenceTest {
     @DisplayName("Should validate operators correctly for defined properties")
     void shouldValidateOperatorsForDefinedProperties() {
         // Test USER_NAME supports string operators
-        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.EQUALS));
-        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.LIKE));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.EQ));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.MATCHES));
         assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.IN));
         
         // Test USER_NAME does not support numeric operators
         assertThrows(FilterValidationException.class,
-                    () -> DefinedPropertyReference.USER_NAME.validateOperator(Op.GREATER_THAN));
+                    () -> DefinedPropertyReference.USER_NAME.validateOperator(Op.GT));
 
         // Test USER_AGE supports numeric operators
-        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.EQUALS));
-        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.GREATER_THAN));
-        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.BETWEEN));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.EQ));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.GT));
+        assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.RANGE));
         
         // Test USER_AGE does not support string operators
         assertThrows(FilterValidationException.class,
-                    () -> DefinedPropertyReference.USER_AGE.validateOperator(Op.LIKE));
+                    () -> DefinedPropertyReference.USER_AGE.validateOperator(Op.MATCHES));
     }
 
     @Test
@@ -89,25 +89,25 @@ class PropertyReferenceTest {
     void shouldReturnCorrectSupportedOperatorsForDefinedProperties() {
         // Test USER_NAME operators
         Set<Op> userNameOps = DefinedPropertyReference.USER_NAME.getSupportedOperators();
-        assertTrue(userNameOps.contains(Op.EQUALS));
-        assertTrue(userNameOps.contains(Op.LIKE));
+        assertTrue(userNameOps.contains(Op.EQ));
+        assertTrue(userNameOps.contains(Op.MATCHES));
         assertTrue(userNameOps.contains(Op.IN));
-        assertFalse(userNameOps.contains(Op.GREATER_THAN));
+        assertFalse(userNameOps.contains(Op.GT));
 
         // Test USER_AGE operators
         Set<Op> userAgeOps = DefinedPropertyReference.USER_AGE.getSupportedOperators();
-        assertTrue(userAgeOps.contains(Op.EQUALS));
-        assertTrue(userAgeOps.contains(Op.GREATER_THAN));
-        assertTrue(userAgeOps.contains(Op.LESS_THAN));
-        assertTrue(userAgeOps.contains(Op.BETWEEN));
-        assertFalse(userAgeOps.contains(Op.LIKE));
+        assertTrue(userAgeOps.contains(Op.EQ));
+        assertTrue(userAgeOps.contains(Op.GT));
+        assertTrue(userAgeOps.contains(Op.LT));
+        assertTrue(userAgeOps.contains(Op.RANGE));
+        assertFalse(userAgeOps.contains(Op.MATCHES));
 
         // Test USER_STATUS operators
         Set<Op> userStatusOps = DefinedPropertyReference.USER_STATUS.getSupportedOperators();
-        assertTrue(userStatusOps.contains(Op.EQUALS));
-        assertTrue(userStatusOps.contains(Op.NOT_EQUALS));
+        assertTrue(userStatusOps.contains(Op.EQ));
+        assertTrue(userStatusOps.contains(Op.NE));
         assertTrue(userStatusOps.contains(Op.IN));
-        assertFalse(userStatusOps.contains(Op.LIKE));
+        assertFalse(userStatusOps.contains(Op.MATCHES));
     }
 
     @Test
@@ -129,9 +129,9 @@ class PropertyReferenceTest {
 
         // When & Then - Should not be able to modify the sets
         assertThrows(UnsupportedOperationException.class, 
-                    () -> userNameOps.add(Op.GREATER_THAN));
+                    () -> userNameOps.add(Op.GT));
         assertThrows(UnsupportedOperationException.class, 
-                    () -> baseOps.add(Op.EQUALS));
+                    () -> baseOps.add(Op.EQ));
     }
 
     @Test
@@ -186,14 +186,14 @@ class PropertyReferenceTest {
     @DisplayName("Should test supportsOperator method")
     void shouldTestSupportsOperatorMethod() {
         // When & Then
-        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.EQUALS));
-        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.LIKE));
+        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.EQ));
+        assertFalse(BasePropertyReference.BASE.supportsOperator(Op.MATCHES));
         
-        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.EQUALS));
-        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.LIKE));
-        assertFalse(DefinedPropertyReference.USER_NAME.supportsOperator(Op.GREATER_THAN));
+        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.EQ));
+        assertTrue(DefinedPropertyReference.USER_NAME.supportsOperator(Op.MATCHES));
+        assertFalse(DefinedPropertyReference.USER_NAME.supportsOperator(Op.GT));
         
-        assertTrue(DefinedPropertyReference.USER_AGE.supportsOperator(Op.GREATER_THAN));
-        assertFalse(DefinedPropertyReference.USER_AGE.supportsOperator(Op.LIKE));
+        assertTrue(DefinedPropertyReference.USER_AGE.supportsOperator(Op.GT));
+        assertFalse(DefinedPropertyReference.USER_AGE.supportsOperator(Op.MATCHES));
     }
 }

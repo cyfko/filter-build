@@ -13,7 +13,7 @@ class FilterDefinitionTest {
     void shouldCreateFilterDefinitionWithValidParameters() {
         // Given
         DefinedPropertyReference ref = DefinedPropertyReference.USER_NAME;
-        Op operator = Op.EQUALS;
+        Op operator = Op.EQ;
         Object value = "test";
 
         // When
@@ -46,15 +46,15 @@ class FilterDefinitionTest {
     @DisplayName("Should create FilterDefinition with different value types")
     void shouldCreateFilterDefinitionWithDifferentValueTypes() {
         // Test with String
-        FilterDefinition<DefinedPropertyReference> stringFilter = new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.LIKE, "pattern%");
+        FilterDefinition<DefinedPropertyReference> stringFilter = new FilterDefinition<>(DefinedPropertyReference.USER_NAME, Op.MATCHES, "pattern%");
         assertEquals("pattern%", stringFilter.value());
 
         // Test with Integer
-        FilterDefinition<DefinedPropertyReference> intFilter = new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.GREATER_THAN, 42);
+        FilterDefinition<DefinedPropertyReference> intFilter = new FilterDefinition<>(DefinedPropertyReference.USER_AGE, Op.GT, 42);
         assertEquals(42, intFilter.value());
 
         // Test with Boolean
-        FilterDefinition<DefinedPropertyReference> booleanFilter = new FilterDefinition<>(DefinedPropertyReference.USER_STATUS, Op.EQUALS, true);
+        FilterDefinition<DefinedPropertyReference> booleanFilter = new FilterDefinition<>(DefinedPropertyReference.USER_STATUS, Op.EQ, true);
         assertEquals(true, booleanFilter.value());
     }
 
@@ -64,7 +64,7 @@ class FilterDefinitionTest {
         // Given
         FilterDefinition<DefinedPropertyReference> filterDefinition = new FilterDefinition<>(
             DefinedPropertyReference.USER_NAME,
-            Op.EQUALS,
+            Op.EQ,
             "test"
         );
 
