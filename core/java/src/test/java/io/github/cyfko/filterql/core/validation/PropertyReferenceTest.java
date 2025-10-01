@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.core.validation;
 
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,8 +42,8 @@ class PropertyReferenceTest {
         BasePropertyReference baseRef = BasePropertyReference.BASE;
 
         // When & Then - BASE supports no operators
-        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Op.EQUALS));
-        assertThrows(IllegalArgumentException.class, () -> baseRef.validateOperator(Op.LIKE));
+        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.EQUALS));
+        assertThrows(FilterValidationException.class, () -> baseRef.validateOperator(Op.LIKE));
         assertThrows(NullPointerException.class, () -> baseRef.validateOperator(null));
     }
 
@@ -70,7 +71,7 @@ class PropertyReferenceTest {
         assertDoesNotThrow(() -> DefinedPropertyReference.USER_NAME.validateOperator(Op.IN));
         
         // Test USER_NAME does not support numeric operators
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(FilterValidationException.class,
                     () -> DefinedPropertyReference.USER_NAME.validateOperator(Op.GREATER_THAN));
 
         // Test USER_AGE supports numeric operators
@@ -79,7 +80,7 @@ class PropertyReferenceTest {
         assertDoesNotThrow(() -> DefinedPropertyReference.USER_AGE.validateOperator(Op.BETWEEN));
         
         // Test USER_AGE does not support string operators
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(FilterValidationException.class,
                     () -> DefinedPropertyReference.USER_AGE.validateOperator(Op.LIKE));
     }
 
