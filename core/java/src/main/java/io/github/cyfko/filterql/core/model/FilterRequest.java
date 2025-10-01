@@ -3,6 +3,7 @@ package io.github.cyfko.filterql.core.model;
 import io.github.cyfko.filterql.core.validation.PropertyReference;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**

@@ -45,7 +45,7 @@ class SpringPerformanceTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(User.class, UserPropertyRef.class, ref -> switch (ref){
+        context = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.getRef()){
             case NAME -> "name";
             case AGE -> "age";
             case EMAIL -> "email";

@@ -32,7 +32,7 @@ class SpringIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        filterContext = new FilterContext<>(User.class, UserPropertyRef.class, ref -> switch (ref) {
+        filterContext = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.getRef()) {
             case NAME -> "name";
             case AGE -> "age";
             case EMAIL -> "email";

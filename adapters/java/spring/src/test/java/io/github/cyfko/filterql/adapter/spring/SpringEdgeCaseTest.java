@@ -37,7 +37,7 @@ class SpringEdgeCaseTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class,TestPropertyRef.class, p -> switch (p) {
+        context = new FilterContext<>(TestEntity.class,TestPropertyRef.class, def -> switch (def.getRef()) {
                 case TEST_FIELD -> "testField";
         });
     }

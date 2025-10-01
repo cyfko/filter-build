@@ -46,7 +46,7 @@ class SpringUtilityTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, ref -> switch (ref){
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.getRef()){
             case TEST_FIELD -> "testField";
         });
     }

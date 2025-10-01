@@ -26,7 +26,7 @@ class SpecificationBuilderTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, p -> switch (p) {
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.getRef()) {
             case USER_NAME -> "name";
             case USER_AGE -> "age";
         });

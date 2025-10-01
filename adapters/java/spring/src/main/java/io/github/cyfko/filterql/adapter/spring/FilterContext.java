@@ -4,6 +4,7 @@ import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtils;
 import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.Context;
 import io.github.cyfko.filterql.core.domain.PredicateResolver;
+import io.github.cyfko.filterql.core.mappings.PredicateResolverMapping;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.validation.PropertyReference;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -136,7 +137,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
     // Si l'objet retourné par la fonction mapping est un String non vide alors il est utilisé comme non de propriété
     // Si c'est une instance de SpecificationMapping<E> alors la spécification est directement utilisée
     // Si c'est autre chose alors une exception IllegalStateException est levée
-    private Function<P, Object> mappingBuilder;
+    private Function<FilterDefinition<P>, Object> mappingBuilder;
 
     private final Map<String, FilterCondition<?>> filters;
 
@@ -170,7 +171,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
      *                      Must return either a String (property path) or PredicateResolverMapping
      * @throws NullPointerException if any parameter is null
      */
-    public FilterContext(Class<E> entityClass, Class<P> enumClass, Function<P, Object> mappingBuilder) {
+    public FilterContext(Class<E> entityClass, Class<P> enumClass, Function<FilterDefinition<P>, Object> mappingBuilder) {
         this.entityClass = entityClass;
         this.enumClass = enumClass;
         this.mappingBuilder = mappingBuilder;
@@ -181,7 +182,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
     // Si c'est une instance de SpecificationMapping<E> alors la spécification est directement utilisée
     // Si c'est autre chose alors une exception IllegalStateException est levée
     // cette méthode retoune le précédent builder utilisé.
-    public Function<P, Object> setMappingBuilder(Function<P, Object> mappingBuilder) {
+    public Function<FilterDefinition<P>, Object> setMappingBuilder(Function<FilterDefinition<P>, Object> mappingBuilder) {
         var prev = this.mappingBuilder;
         this.mappingBuilder = Objects.requireNonNull(mappingBuilder);
         return prev;
@@ -212,7 +213,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
             );
         }
 
-        Object mapping = mappingBuilder.apply((P) ref);
+        Object mapping = mappingBuilder.apply((FilterDefinition<P>) definition);
 
         if (mapping instanceof PredicateResolverMapping<?,?>) {
             PredicateResolver<E> resolver = ((PredicateResolverMapping<E,P>) mapping).resolve((FilterDefinition<P>) definition);
