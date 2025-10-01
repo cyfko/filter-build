@@ -198,13 +198,27 @@ public class FilterResolver {
         return context.toResolver(entityClass, condition);
     }
 
-    Parser setParser(Parser dslParser) {
+    /**
+     * Replaces the internal DSL parser and returns the previous parser instance.
+     *
+     * @param dslParser the new DSL parser (not null)
+     * @return the previous parser instance
+     * @throws NullPointerException if {@code dslParser} is null
+     */
+    public Parser setParser(Parser dslParser) {
         var prev = this.dslParser;
         this.dslParser = Objects.requireNonNull(dslParser, "DSL parser cannot be null");
         return prev;
     }
 
-    Context setContext(Context context) {
+    /**
+     * Replaces the internal context and returns the previous context instance.
+     *
+     * @param context the new context (not null)
+     * @return the previous context instance
+     * @throws NullPointerException if {@code context} is null
+     */
+    public Context setContext(Context context) {
         var prev = this.context;
         this.context = Objects.requireNonNull(context, "Context cannot be null");
         return prev;
