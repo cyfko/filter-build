@@ -46,7 +46,7 @@ class SpringUtilityTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.getRef()){
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.ref()){
             case TEST_FIELD -> "testField";
         });
     }
@@ -56,7 +56,7 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "testFilter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "testFilter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "testFilter"
         );
@@ -73,8 +73,8 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"),
-                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.LIKE, "%value2%")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%")
             ),
             "filter1 & filter2"
         );
@@ -91,8 +91,8 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"),
-                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value2")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2")
             ),
             "filter1 | filter2"
         );
@@ -109,7 +109,7 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "! filter1"
         );
@@ -126,9 +126,9 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value2"),
-                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value3")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2"),
+                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value3")
             ),
             "(filter1 & filter2) | filter3"
         );
@@ -145,10 +145,10 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value2"),
-                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value3"),
-                "filter4",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value4")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2"),
+                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value3"),
+                "filter4",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value4")
             ),
             "((filter1 & filter2) | (filter3 & filter4))"
         );
@@ -165,7 +165,7 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "filterName",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "invalid syntax"
         );
@@ -181,8 +181,8 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value2")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2")
             ),
             "(filter1 AND filter2"
         );
@@ -198,7 +198,7 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "filter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "nonExistentFilter"
         );
@@ -214,10 +214,10 @@ class SpringUtilityTest {
 
         // Test all supported operators
         Op[] operators = {
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.LIKE, Op.NOT_LIKE,
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
         };
 
         for (Op operator : operators) {
@@ -244,7 +244,7 @@ class SpringUtilityTest {
         for (Object value : values) {
             // Act
             Condition condition = context.addCondition("key", 
-                    new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, value)
+                    new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, value)
             );
 
             // Assert
@@ -257,10 +257,10 @@ class SpringUtilityTest {
     void testSpringContextAdapterWithMultiplePropertyRefs() {
         // Act
         Condition condition1 = context.addCondition("filter1", new FilterDefinition<>(
-                TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"
+                TestPropertyRef.TEST_FIELD, Op.EQ, "value1"
         ));
         Condition condition2 = context.addCondition("filter2", new FilterDefinition<>(
-                TestPropertyRef.TEST_FIELD, Op.LIKE, "%value2%"
+                TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%"
         ));
 
         // Assert
@@ -274,10 +274,10 @@ class SpringUtilityTest {
     void testSpringContextAdapterWithOverwriteCondition() {
         // Act
         context.addCondition("filter1", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Op.EQUALS, "value1"
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value1"
         ));
         context.addCondition("filter1", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Op.LIKE, "%value2%"
+            TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%"
         ));
 
         // Assert
@@ -288,10 +288,10 @@ class SpringUtilityTest {
 
     private Object getTestValueForOperator(Op operator) {
         return switch (operator) {
-            case EQUALS, NOT_EQUALS -> "testValue";
-            case LIKE, NOT_LIKE -> "%test%";
+            case EQ, NE -> "testValue";
+            case MATCHES, NOT_MATCHES -> "%test%";
             case IN, NOT_IN -> Arrays.asList("value1", "value2");
-            case IS_NULL, IS_NOT_NULL -> null;
+            case IS_NULL, NOT_NULL -> null;
             default -> "defaultValue";
         };
     }
@@ -307,10 +307,10 @@ class SpringUtilityTest {
     // Test property reference enum
     enum TestPropertyRef implements PropertyReference {
         TEST_FIELD(String.class, Set.of(
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.LIKE, Op.NOT_LIKE,
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
         ));
 
         private final Class<?> type;

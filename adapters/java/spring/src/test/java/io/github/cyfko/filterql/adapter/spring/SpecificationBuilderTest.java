@@ -26,7 +26,7 @@ class SpecificationBuilderTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.getRef()) {
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.ref()) {
             case USER_NAME -> "name";
             case USER_AGE -> "age";
         });
@@ -37,7 +37,7 @@ class SpecificationBuilderTest {
         // Arrange
         TestPropertyRef propertyRef = TestPropertyRef.USER_NAME;
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            propertyRef, Op.EQUALS, "John"
+            propertyRef, Op.EQ, "John"
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of("f1", filterDef);
@@ -57,10 +57,10 @@ class SpecificationBuilderTest {
         TestPropertyRef ageRef = TestPropertyRef.USER_AGE;
         
         FilterDefinition<TestPropertyRef> nameFilter = new FilterDefinition<>(
-            nameRef, Op.EQUALS, "John"
+            nameRef, Op.EQ, "John"
         );
         FilterDefinition<TestPropertyRef> ageFilter = new FilterDefinition<>(
-            ageRef, Op.GREATER_THAN, 25
+            ageRef, Op.GT, 25
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of(
@@ -82,7 +82,7 @@ class SpecificationBuilderTest {
         TestPropertyRef nameRef = TestPropertyRef.USER_NAME;
         
         FilterDefinition<TestPropertyRef> nameFilter = new FilterDefinition<>(
-            nameRef, Op.EQUALS, "John"
+            nameRef, Op.EQ, "John"
         );
         
         Map<String, FilterDefinition<TestPropertyRef>> filters = Map.of("f1", nameFilter);

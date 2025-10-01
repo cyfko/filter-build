@@ -32,7 +32,7 @@ class SpringIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        filterContext = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.getRef()) {
+        filterContext = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.ref()) {
             case NAME -> "name";
             case AGE -> "age";
             case EMAIL -> "email";
@@ -48,7 +48,7 @@ class SpringIntegrationTest {
     void testSimpleEqualsFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Op.EQUALS, "John Doe"
+            UserPropertyRef.NAME, Op.EQ, "John Doe"
         );
         
         // Act
@@ -65,7 +65,7 @@ class SpringIntegrationTest {
     void testLikeFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Op.LIKE, "%John%"
+            UserPropertyRef.NAME, Op.MATCHES, "%John%"
         );
         
         // Act
@@ -83,7 +83,7 @@ class SpringIntegrationTest {
     void testGreaterThanFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
         
         // Act
@@ -120,7 +120,7 @@ class SpringIntegrationTest {
         // Arrange
         List<Integer> ageRange = Arrays.asList(25, 35);
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.BETWEEN, ageRange
+            UserPropertyRef.AGE, Op.RANGE, ageRange
         );
         
         // Act
@@ -132,7 +132,7 @@ class SpringIntegrationTest {
     void testBooleanFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.ACTIVE, Op.EQUALS, true
+            UserPropertyRef.ACTIVE, Op.EQ, true
         );
         
         // Act
@@ -149,10 +149,10 @@ class SpringIntegrationTest {
     void testCombinedAndFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
-            UserPropertyRef.NAME, Op.LIKE, "%o%"
+            UserPropertyRef.NAME, Op.MATCHES, "%o%"
         );
         FilterDefinition<UserPropertyRef> ageFilter = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
         
         // Act
@@ -171,10 +171,10 @@ class SpringIntegrationTest {
     void testCombinedOrFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
-            UserPropertyRef.NAME, Op.EQUALS, "John Doe"
+            UserPropertyRef.NAME, Op.EQ, "John Doe"
         );
         FilterDefinition<UserPropertyRef> ageFilter = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.EQUALS, 22
+            UserPropertyRef.AGE, Op.EQ, 22
         );
         
         // Act
@@ -194,7 +194,7 @@ class SpringIntegrationTest {
     void testInvalidPropertyReference() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Op.EQUALS, "test"
+            UserPropertyRef.NAME, Op.EQ, "test"
         );
 
         // Act & Assert - Test invalid enum compatibility

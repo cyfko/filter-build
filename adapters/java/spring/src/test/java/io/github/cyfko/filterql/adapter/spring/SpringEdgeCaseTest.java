@@ -31,7 +31,7 @@ class SpringEdgeCaseTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class,TestPropertyRef.class, def -> switch (def.getRef()) {
+        context = new FilterContext<>(TestEntity.class,TestPropertyRef.class, def -> switch (def.ref()) {
                 case TEST_FIELD -> "testField";
         });
     }
@@ -153,7 +153,7 @@ class SpringEdgeCaseTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "invalid DSL syntax"
         );
@@ -169,7 +169,7 @@ class SpringEdgeCaseTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQUALS, "value")
+                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "nonExistentFilter"
         );
@@ -192,7 +192,7 @@ class SpringEdgeCaseTest {
     void testFilterContextAddConditionWithEmptyKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Op.EQUALS, "value"
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value"
         );
 
         // Act & Assert - Empty keys should be rejected
@@ -205,7 +205,7 @@ class SpringEdgeCaseTest {
     void testFilterContextAddConditionWithWhitespaceKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Op.EQUALS, "value"
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value"
         );
 
         // Act & Assert - Whitespace-only keys should be rejected
@@ -225,7 +225,7 @@ class SpringEdgeCaseTest {
     @Test
     void testFilterContextWithUnsupportedOperator() {
         // Arrange
-        FilterDefinition<TestPropertyRef> definition = new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GREATER_THAN, "stringValue");
+        FilterDefinition<TestPropertyRef> definition = new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GT, "stringValue");
 
         // Assert - La validation se fait lors de l'utilisation de la création de la condition
         assertThrows(FilterValidationException.class, () -> context.addCondition("someKey", definition));
@@ -255,7 +255,7 @@ class SpringEdgeCaseTest {
     void testFilterContextWithInvalidBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
         assertThrows(FilterValidationException.class, () -> {
-            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN, Arrays.asList("singleValue")));
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE, Arrays.asList("singleValue")));
         });
     }
 
@@ -263,7 +263,7 @@ class SpringEdgeCaseTest {
     void testFilterContextWithTooManyBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
         assertThrows(FilterValidationException.class, () -> {
-            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN,
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE,
                 Arrays.asList("value1", "value2", "value3")));
         });
     }
@@ -272,7 +272,7 @@ class SpringEdgeCaseTest {
     void testFilterContextWithNullBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation null
         assertThrows(FilterValidationException.class, () -> {
-            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.BETWEEN, null));
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE, null));
         });
     }
 
@@ -280,7 +280,7 @@ class SpringEdgeCaseTest {
     void testFilterContextWithInvalidTypeCast() {
         // Act & Assert - Le builder n'effectue pas de validation de type au niveau du cast
         assertThrows(FilterValidationException.class, () -> {
-            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GREATER_THAN, "stringValue"));
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GT, "stringValue"));
         });
     }
 
@@ -295,10 +295,10 @@ class SpringEdgeCaseTest {
     // Test property reference enum
     enum TestPropertyRef implements PropertyReference {
         TEST_FIELD(String.class, Set.of(
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.LIKE, Op.NOT_LIKE,
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
         ));
 
         private final Class<?> type;

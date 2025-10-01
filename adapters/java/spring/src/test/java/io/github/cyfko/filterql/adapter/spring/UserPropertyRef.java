@@ -11,35 +11,35 @@ import java.util.Set;
  */
 public enum UserPropertyRef implements PropertyReference {
     NAME(String.class, Set.of(
-        Op.EQUALS, Op.NOT_EQUALS,
-        Op.LIKE, Op.NOT_LIKE,
+        Op.EQ, Op.NE,
+        Op.MATCHES, Op.NOT_MATCHES,
         Op.IN, Op.NOT_IN,
-        Op.IS_NULL, Op.IS_NOT_NULL
+        Op.IS_NULL, Op.NOT_NULL
     )),
     AGE(Integer.class, Set.of(
-        Op.EQUALS, Op.NOT_EQUALS,
-        Op.GREATER_THAN, Op.GREATER_THAN_OR_EQUAL,
-        Op.LESS_THAN, Op.LESS_THAN_OR_EQUAL,
+        Op.EQ, Op.NE,
+        Op.GT, Op.GTE,
+        Op.LT, Op.LTE,
         Op.IN, Op.NOT_IN,
-        Op.IS_NULL, Op.IS_NOT_NULL,
-        Op.BETWEEN, Op.NOT_BETWEEN
+        Op.IS_NULL, Op.NOT_NULL,
+        Op.RANGE, Op.NOT_RANGE
     )),
     EMAIL(String.class, Set.of(
-        Op.EQUALS, Op.NOT_EQUALS,
-        Op.LIKE, Op.NOT_LIKE,
+        Op.EQ, Op.NE,
+        Op.MATCHES, Op.NOT_MATCHES,
         Op.IN, Op.NOT_IN,
-        Op.IS_NULL, Op.IS_NOT_NULL
+        Op.IS_NULL, Op.NOT_NULL
     )),
     ACTIVE(Boolean.class, Set.of(
-        Op.EQUALS, Op.NOT_EQUALS,
-        Op.IS_NULL, Op.IS_NOT_NULL
+        Op.EQ, Op.NE,
+        Op.IS_NULL, Op.NOT_NULL
     )),
     CREATED_AT(java.time.LocalDateTime.class, Set.of(
-        Op.EQUALS, Op.NOT_EQUALS,
-        Op.GREATER_THAN, Op.GREATER_THAN_OR_EQUAL,
-        Op.LESS_THAN, Op.LESS_THAN_OR_EQUAL,
-        Op.IS_NULL, Op.IS_NOT_NULL,
-        Op.BETWEEN, Op.NOT_BETWEEN
+        Op.EQ, Op.NE,
+        Op.GT, Op.GTE,
+        Op.LT, Op.LTE,
+        Op.IS_NULL, Op.NOT_NULL,
+        Op.RANGE, Op.NOT_RANGE
     ));
 
     private final Class<?> type;
@@ -79,14 +79,14 @@ public enum UserPropertyRef implements PropertyReference {
                     throw new IllegalArgumentException("IN/NOT_IN operator requires a non-empty collection");
                 }
                 break;
-            case BETWEEN:
-            case NOT_BETWEEN:
+            case RANGE:
+            case NOT_RANGE:
                 if (value == null || !(value instanceof java.util.Collection)) {
-                    throw new IllegalArgumentException("BETWEEN operator requires a collection");
+                    throw new IllegalArgumentException("RANGE operator requires a collection");
                 }
                 java.util.Collection<?> betweenValues = (java.util.Collection<?>) value;
                 if (betweenValues.size() != 2) {
-                    throw new IllegalArgumentException("BETWEEN operator requires exactly 2 values");
+                    throw new IllegalArgumentException("RANGE operator requires exactly 2 values");
                 }
                 break;
             default:

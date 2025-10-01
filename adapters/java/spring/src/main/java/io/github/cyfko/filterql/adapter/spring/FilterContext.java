@@ -51,7 +51,7 @@ import java.util.function.Function;
  *     EMAIL(String.class, OperatorUtils.FOR_TEXT),
  *     AGE(Integer.class, OperatorUtils.FOR_NUMBER),
  *     CITY(String.class, OperatorUtils.FOR_TEXT),
- *     FULL_NAME_SEARCH(String.class, Set.of(Op.LIKE));
+ *     FULL_NAME_SEARCH(String.class, Set.of(Op.MATCHES));
  * 
  *     // Standard PropertyReference implementation...
  * }
@@ -85,9 +85,9 @@ import java.util.function.Function;
  * 
  * // 4. Add filter definitions
  * FilterDefinition<UserPropertyRef> nameFilter = 
- *     new FilterDefinition<>(UserPropertyRef.NAME, Op.LIKE, "John%");
+ *     new FilterDefinition<>(UserPropertyRef.NAME, Op.MATCHES, "John%");
  * FilterDefinition<UserPropertyRef> ageFilter = 
- *     new FilterDefinition<>(UserPropertyRef.AGE, Op.GREATER_THAN, 25);
+ *     new FilterDefinition<>(UserPropertyRef.AGE, Op.GT, 25);
  * 
  * context.addCondition("nameFilter", nameFilter);
  * context.addCondition("ageFilter", ageFilter);
@@ -203,7 +203,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
             throw new IllegalArgumentException("Filter key cannot be null or empty");
         }
         
-        Enum<?> ref = definition.getRef();
+        Enum<?> ref = definition.ref();
 
         // Ensure definition is for the same property reference enumeration
         if (! enumClass.isAssignableFrom(ref.getClass())) {
@@ -272,33 +272,33 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
      */
     private static <E, P extends Enum<P> & PropertyReference> Specification<E> getSpecificationFromPath(String pathName, FilterDefinition<P> definition) {
         // Ensure value type compatibility for the given operator
-        Objects.requireNonNull(definition).getRef().validateOperatorForValue(definition.getOperator(), definition.getValue());
+        Objects.requireNonNull(definition).ref().validateOperatorForValue(definition.operator(), definition.value());
 
         return (Root<E> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            Object value = definition.getValue();
+            Object value = definition.value();
 
             // Resolve criteria path from path mapping
             Path<?> path = PathResolverUtils.resolvePath(root, pathName);
 
             // Switch on supported operators to construct a predicate
-            return switch (definition.getOperator()) {
-                case EQUALS -> cb.equal(path, value);
-                case NOT_EQUALS -> cb.notEqual(path, value);
-                case GREATER_THAN -> cb.gt((Path<Number>) path, (Number) value);
-                case GREATER_THAN_OR_EQUAL -> cb.ge((Path<Number>) path, (Number) value);
-                case LESS_THAN -> cb.lt((Path<Number>) path, (Number) value);
-                case LESS_THAN_OR_EQUAL -> cb.le((Path<Number>) path, (Number) value);
-                case LIKE -> cb.like((Path<String>) path, (String) value);
-                case NOT_LIKE -> cb.notLike((Path<String>) path, (String) value);
+            return switch (definition.operator()) {
+                case EQ -> cb.equal(path, value);
+                case NE -> cb.notEqual(path, value);
+                case GT -> cb.gt((Path<Number>) path, (Number) value);
+                case GTE -> cb.ge((Path<Number>) path, (Number) value);
+                case LT -> cb.lt((Path<Number>) path, (Number) value);
+                case LTE -> cb.le((Path<Number>) path, (Number) value);
+                case MATCHES -> cb.like((Path<String>) path, (String) value);
+                case NOT_MATCHES -> cb.notLike((Path<String>) path, (String) value);
                 case IN -> path.in((Collection<?>) value);
                 case NOT_IN -> cb.not(path.in((Collection<?>) value));
                 case IS_NULL -> cb.isNull(path);
-                case IS_NOT_NULL -> cb.isNotNull(path);
-                case BETWEEN -> {
+                case NOT_NULL -> cb.isNotNull(path);
+                case RANGE -> {
                     Object[] valuesToCompare = ((Collection<?>) value).toArray();
                     yield cb.between((Path<Comparable>) path, (Comparable) valuesToCompare[0], (Comparable) valuesToCompare[1]);
                 }
-                case NOT_BETWEEN -> {
+                case NOT_RANGE -> {
                     Object[] valuesToCompare = ((Collection<?>) value).toArray();
                     yield cb.not(cb.between((Path<Comparable>) path, (Comparable) valuesToCompare[0], (Comparable) valuesToCompare[1]));
                 }

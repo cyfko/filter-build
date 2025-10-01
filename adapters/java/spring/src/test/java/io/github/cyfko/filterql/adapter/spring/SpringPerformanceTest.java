@@ -45,7 +45,7 @@ class SpringPerformanceTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.getRef()){
+        context = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.ref()){
             case NAME -> "name";
             case AGE -> "age";
             case EMAIL -> "email";
@@ -61,7 +61,7 @@ class SpringPerformanceTest {
     void testPerformanceWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
         Condition condition = context.addCondition("ageFilter", filterDef);
 
@@ -88,10 +88,10 @@ class SpringPerformanceTest {
         // Arrange
         FilterRequest<UserPropertyRef> filterRequest = new FilterRequest<UserPropertyRef>(
             Map.of(
-                "ageFilter1", new FilterDefinition<>(UserPropertyRef.AGE, Op.GREATER_THAN, 20),
-                "ageFilter2", new FilterDefinition<>(UserPropertyRef.AGE, Op.LESS_THAN, 50),
-                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Op.LIKE, "%User%"),
-                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Op.IS_NOT_NULL, null)
+                "ageFilter1", new FilterDefinition<>(UserPropertyRef.AGE, Op.GT, 20),
+                "ageFilter2", new FilterDefinition<>(UserPropertyRef.AGE, Op.LT, 50),
+                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Op.MATCHES, "%User%"),
+                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Op.NOT_NULL, null)
             ),
             "(ageFilter1 & ageFilter2) & (nameFilter | emailFilter)"
         );
@@ -119,7 +119,7 @@ class SpringPerformanceTest {
         List<FilterDefinition<UserPropertyRef>> filters = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             filters.add(new FilterDefinition<>(
-                UserPropertyRef.AGE, Op.GREATER_THAN, i * 5
+                UserPropertyRef.AGE, Op.GT, i * 5
             ));
         }
 
@@ -191,7 +191,7 @@ class SpringPerformanceTest {
         // Arrange
         List<Integer> ageRange = Arrays.asList(25, 35);
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.BETWEEN, ageRange
+            UserPropertyRef.AGE, Op.RANGE, ageRange
         );
         Condition condition = context.addCondition("ageFilter", filterDef);
 
@@ -205,18 +205,18 @@ class SpringPerformanceTest {
         assertNotNull(results);
         
         long executionTime = endTime - startTime;
-        System.out.println("Execution time for BETWEEN operator: " + executionTime + "ms");
+        System.out.println("Execution time for RANGE operator: " + executionTime + "ms");
         System.out.println("Number of results: " + results.size());
         
         // Vérifier que le temps d'exécution est raisonnable
-        assertTrue(executionTime < 5000, "BETWEEN operator execution time should be less than 5 seconds");
+        assertTrue(executionTime < 5000, "RANGE operator execution time should be less than 5 seconds");
     }
 
     @Test
     void testMemoryUsageWithLargeDataset() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
         Condition condition = context.addCondition("ageFilter", filterDef);
 
@@ -245,7 +245,7 @@ class SpringPerformanceTest {
     void testConcurrentAccess() throws InterruptedException {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Op.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
         Condition condition = context.addCondition("ageFilter", filterDef);
 

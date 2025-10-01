@@ -42,7 +42,7 @@ class FilterContextTest {
 
     @BeforeEach
     void setUp() {
-        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.getRef()){
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.ref()){
             case USER_NAME -> "name";
             case USER_AGE -> "age";
         });
@@ -59,7 +59,7 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQ, "testValue"
         );
         when(mockedContext.addCondition(filterKey,filterDef)).thenReturn(mockedFilterCondition);
         
@@ -75,7 +75,7 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            USER_NAME, Op.GREATER_THAN, "testValue" // Unsupported operator
+            USER_NAME, Op.GT, "testValue" // Unsupported operator
         );
         
         // Act & Assert
@@ -89,7 +89,7 @@ class FilterContextTest {
     void testAddConditionWithNullFilterKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQ, "testValue"
         );
         
         // Act & Assert
@@ -112,7 +112,7 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQ, "testValue"
         );
         when(mockedContext.getCondition(filterKey)).thenReturn(mockedFilterCondition);
         
@@ -144,7 +144,7 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "testValue"
+            USER_NAME, Op.EQ, "testValue"
         );
         
         // Act
@@ -195,10 +195,10 @@ class FilterContextTest {
         String filterKey2 = "filter2";
         
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "value1"
+            USER_NAME, Op.EQ, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            USER_AGE, Op.GREATER_THAN, 25
+            USER_AGE, Op.GT, 25
         );
         
         // Act
@@ -223,10 +223,10 @@ class FilterContextTest {
         // Arrange
         String filterKey = "testFilter";
         FilterDefinition<TestPropertyRef> filterDef1 = new FilterDefinition<>(
-            USER_NAME, Op.EQUALS, "value1"
+            USER_NAME, Op.EQ, "value1"
         );
         FilterDefinition<TestPropertyRef> filterDef2 = new FilterDefinition<>(
-            USER_NAME, Op.LIKE, "%value2%"
+            USER_NAME, Op.MATCHES, "%value2%"
         );
         
         // Act
@@ -247,10 +247,10 @@ class FilterContextTest {
     void testDifferentOperators() {
         // Test only operators supported by USER_NAME
         Op[] supportedOperators = {
-            Op.EQUALS, Op.NOT_EQUALS,
-            Op.LIKE, Op.NOT_LIKE,
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
             Op.IN, Op.NOT_IN,
-            Op.IS_NULL, Op.IS_NOT_NULL
+            Op.IS_NULL, Op.NOT_NULL
         };
         
         for (int i = 0; i < supportedOperators.length; i++) {
@@ -271,11 +271,11 @@ class FilterContextTest {
 
     private Object getTestValueForOperator(Op operator) {
         return switch (operator) {
-            case EQUALS, NOT_EQUALS, LIKE, NOT_LIKE -> "testValue";
-            case GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL -> 100;
+            case EQ, NE, MATCHES, NOT_MATCHES -> "testValue";
+            case GT, GTE, LT, LTE -> 100;
             case IN, NOT_IN -> java.util.List.of("value1", "value2");
-            case IS_NULL, IS_NOT_NULL -> null;
-            case BETWEEN, NOT_BETWEEN -> java.util.List.of(10, 20);
+            case IS_NULL, NOT_NULL -> null;
+            case RANGE, NOT_RANGE -> java.util.List.of(10, 20);
         };
     }
 
