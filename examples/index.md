@@ -751,10 +751,34 @@ public class FinancialAnalyticsService {
         return logic.toString();
     }
     
-    // Méthodes d'analyse spécialisées
+    // Méthodes d'analyse spécialisées avec mapping moderne
     public List<Transaction> findAnomalousTransactions(LocalDate from, LocalDate to) {
         BigDecimal averageAmount = calculateAverageTransactionAmount(from, to);
         BigDecimal threshold = averageAmount.multiply(new BigDecimal("3")); // 3x la moyenne
+        
+        // Mapping function avec closure
+        Function<FilterDefinition<TransactionPropertyRef>, Object> mappingFunction = definition -> {
+            return switch (definition.ref()) {
+                case TRANSACTION_DATE -> "transactionDate";
+                case AMOUNT -> "amount";  
+                case STATUS -> "status";
+                case ANOMALY_DETECTION -> new PredicateResolverMapping<Transaction, TransactionPropertyRef>() {
+                    @Override
+                    public PredicateResolver<Transaction> resolve() {
+                        // definition accessible via closure
+                        BigDecimal thresholdValue = (BigDecimal) definition.getValue();
+                        return (root, query, cb) -> {
+                            // Logique complexe d'anomalie
+                            return cb.and(
+                                cb.gt(root.get("amount"), thresholdValue),
+                                cb.equal(root.get("status"), TransactionStatus.COMPLETED),
+                                // Conditions supplémentaires...
+                            );
+                        };
+                    }
+                };
+            };
+        };
         
         FilterRequest<TransactionPropertyRef> request = FilterRequest.<TransactionPropertyRef>builder()
             .filter("dateRange", new FilterDefinition<>(
@@ -762,9 +786,9 @@ public class FinancialAnalyticsService {
                 Op.RANGE, 
                 Arrays.asList(from, to)
             ))
-            .filter("highAmount", new FilterDefinition<>(
-                TransactionPropertyRef.AMOUNT, 
-                Op.GT, 
+            .filter("anomalyCheck", new FilterDefinition<>(
+                TransactionPropertyRef.ANOMALY_DETECTION, 
+                Op.CUSTOM, 
                 threshold
             ))
             .filter("completed", new FilterDefinition<>(
@@ -772,7 +796,7 @@ public class FinancialAnalyticsService {
                 Op.EQ, 
                 TransactionStatus.COMPLETED
             ))
-            .combineWith("dateRange & highAmount & completed")
+            .combineWith("dateRange & anomalyCheck & completed")
             .build();
         
         return transactionRepository.findAll(filterResolver.resolve(request));

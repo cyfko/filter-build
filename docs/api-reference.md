@@ -394,12 +394,12 @@ Interface for providing custom predicate resolution logic.
 public interface PredicateResolverMapping<E, P extends Enum<P> & PropertyReference> {
     
     /**
-     * Resolves a filter definition into a PredicateResolver.
+     * Resolves this mapping into a PredicateResolver.
+     * The FilterDefinition is accessible through closure from the mapping function.
      * 
-     * @param definition The filter definition to resolve
-     * @return A PredicateResolver for this definition
+     * @return A PredicateResolver for this mapping
      */
-    PredicateResolver<E> resolve(FilterDefinition<P> definition);
+    PredicateResolver<E> resolve();
 }
 ```
 

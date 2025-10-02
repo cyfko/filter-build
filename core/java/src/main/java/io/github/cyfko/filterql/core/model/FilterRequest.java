@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @param <P> type of the reference property, an enum implementing {@link PropertyReference}
  * @param filters map of filter definitions keyed by filter names
  * @param combineWith DSL expression defining how filters are logically combined 
- *                   (e.g., "(f1 & f2) | f3", "filter1 & filter2", "!filter1")
+ *                   (e.g., "(f1 &amp; f2) | f3", "filter1 &amp; filter2", "!filter1")
  * @author Frank KOSSI
  * @since 2.0.0
  */

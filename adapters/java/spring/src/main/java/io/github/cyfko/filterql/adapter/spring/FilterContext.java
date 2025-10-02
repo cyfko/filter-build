@@ -64,7 +64,7 @@ import java.util.function.Function;
  *     case CITY -> "address.city.name";       // Nested path
  *     case FULL_NAME_SEARCH -> new PredicateResolverMapping<User, UserPropertyRef>() {
  *         @Override
- *         public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
+ *         public PredicateResolver<User> resolve() {
  *             return (root, query, cb) -> {
  *                 String searchTerm = (String) definition.getValue();
  *                 return cb.or(
@@ -222,7 +222,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
         Object mapping = mappingBuilder.apply((FilterDefinition<P>) definition);
 
         if (mapping instanceof PredicateResolverMapping<?,?>) {
-            PredicateResolver<E> resolver = ((PredicateResolverMapping<E,P>) mapping).resolve((FilterDefinition<P>) definition);
+            PredicateResolver<E> resolver = ((PredicateResolverMapping<E,P>) mapping).resolve();
             FilterCondition<E> condition = new FilterCondition<>(resolver::resolve);
             filters.put(filterKey, condition);
             return condition;

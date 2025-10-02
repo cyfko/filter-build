@@ -36,7 +36,7 @@ package io.github.cyfko.filterql.core.mappings;
  * // 2. Complex specification mapping
  * public class FullNameSpecificationMapping implements PredicateResolverMapping<User, UserPropertyRef> {
  *     @Override
- *     public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
+ *     public PredicateResolver<User> resolve() {
  *         return (root, query, cb) -> {
  *             // Complex logic combining firstName and lastName
  *             return cb.or(

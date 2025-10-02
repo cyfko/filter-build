@@ -31,7 +31,7 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  * <pre>{@code
  * public class FullNameMapping implements PredicateResolverMapping<User, UserPropertyRef> {
  *     @Override
- *     public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
+ *     public PredicateResolver<User> resolve() {
  *         return (root, query, cb) -> {
  *             String searchTerm = (String) definition.getValue();
  *             
@@ -53,7 +53,7 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  * <pre>{@code
  * public class AgeRangeMapping implements PredicateResolverMapping<User, UserPropertyRef> {
  *     @Override
- *     public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
+ *     public PredicateResolver<User> resolve() {
  *         return (root, query, cb) -> {
  *             int targetAge = (Integer) definition.getValue();
  *             LocalDate now = LocalDate.now();
@@ -70,7 +70,7 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  * <pre>{@code
  * public class ActiveOrdersMapping implements PredicateResolverMapping<Customer, CustomerPropertyRef> {
  *     @Override
- *     public PredicateResolver<Customer> resolve(FilterDefinition<CustomerPropertyRef> definition) {
+ *     public PredicateResolver<Customer> resolve() {
  *         return (root, query, cb) -> {
  *             Integer minOrderCount = (Integer) definition.getValue();
  *             
@@ -122,16 +122,17 @@ public interface PredicateResolverMapping<E, P extends Enum<P> & PropertyReferen
         extends ReferenceMapping<E> {
 
     /**
-     * Resolves the given filter definition into a {@link PredicateResolver}.
+     * Resolves this mapping into a {@link PredicateResolver}.
      * <p>
-     * This method transforms a filter definition (containing property reference, operator, and value)
+     * This method transforms the mapping (with access to the filter definition through closure)
      * into an executable predicate resolver. The resolver can later be used to generate
      * JPA predicates when provided with a criteria context.
      * </p>
      * 
      * <p><strong>Implementation Guidelines:</strong></p>
      * <ul>
-     *   <li>Validate the input definition and its components</li>
+     *   <li>Access filter definition through closure capture from mappingBuilder</li>
+     *   <li>Validate the captured definition and its components during resolve()</li>
      *   <li>Handle type conversions and operator-specific logic</li>
      *   <li>Return a thread-safe, stateless PredicateResolver</li>
      *   <li>Provide meaningful error messages for invalid inputs</li>
@@ -139,34 +140,39 @@ public interface PredicateResolverMapping<E, P extends Enum<P> & PropertyReferen
      * 
      * <p><strong>Example Implementation:</strong></p>
      * <pre>{@code
-     * @Override
-     * public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
-     *     // Validate inputs
-     *     if (definition.getOperator() != Op.LIKE) {
-     *         throw new IllegalArgumentException("Only LIKE operator supported for full name search");
-     *     }
-     *     
-     *     String searchValue = (String) definition.getValue();
-     *     if (searchValue == null || searchValue.trim().isEmpty()) {
-     *         throw new IllegalArgumentException("Search value cannot be empty");
-     *     }
-     *     
-     *     // Return predicate resolver
-     *     return (root, query, cb) -> {
-     *         String pattern = "%" + searchValue.toLowerCase() + "%";
-     *         return cb.or(
-     *             cb.like(cb.lower(root.get("firstName")), pattern),
-     *             cb.like(cb.lower(root.get("lastName")), pattern)
-     *         );
+     * // In mapping function
+     * Function<FilterDefinition<UserPropertyRef>, Object> mappingBuilder = definition -> {
+     *     return switch (definition.ref()) {
+     *         case FULL_NAME -> new PredicateResolverMapping<User, UserPropertyRef>() {
+     *             @Override
+     *             public PredicateResolver<User> resolve() {
+     *                 // Access definition from closure
+     *                 if (definition.getOperator() != Op.LIKE) {
+     *                     throw new IllegalArgumentException("Only LIKE operator supported for full name search");
+     *                 }
+     *                 
+     *                 String searchValue = (String) definition.getValue();
+     *                 if (searchValue == null || searchValue.trim().isEmpty()) {
+     *                     throw new IllegalArgumentException("Search value cannot be empty");
+     *                 }
+     *                 
+     *                 // Return predicate resolver
+     *                 return (root, query, cb) -> {
+     *                     String pattern = "%" + searchValue.toLowerCase() + "%";
+     *                     return cb.or(
+     *                         cb.like(cb.lower(root.get("firstName")), pattern),
+     *                         cb.like(cb.lower(root.get("lastName")), pattern)
+     *                     );
+     *                 };
+     *             }
+     *         };
      *     };
-     * }
+     * };
      * }</pre>
      * 
-     * @param definition the filter definition containing the property reference, operator, and value
      * @return a {@link PredicateResolver} that can produce a JPA {@link jakarta.persistence.criteria.Predicate}
-     * @throws IllegalArgumentException if the definition is invalid or incompatible with this mapping
-     * @throws NullPointerException if definition is null
+     * @throws IllegalArgumentException if the captured definition is invalid or incompatible with this mapping
      */
-    PredicateResolver<E> resolve(FilterDefinition<P> definition);
+    PredicateResolver<E> resolve();
 }
 

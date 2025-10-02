@@ -110,10 +110,10 @@ public enum Op {
     /** Greater than or equal operator: ">=" */
     GTE(">=", "GTE"),
 
-    /** Less than operator: "<" */
+    /** Less than operator: "&lt;" */
     LT("<", "LT"),
 
-    /** Less than or equal operator: "<=" */
+    /** Less than or equal operator: "&lt;=" */
     LTE("<=", "LTE"),
 
     /** Pattern matching operator: "LIKE" */

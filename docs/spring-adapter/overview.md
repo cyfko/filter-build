@@ -107,9 +107,10 @@ For complex business logic that can't be expressed as simple paths:
 ```java
 case FULL_NAME_SEARCH -> new PredicateResolverMapping<User, UserPropertyRef>() {
     @Override
-    public PredicateResolver<User> resolve(FilterDefinition<UserPropertyRef> definition) {
+    public PredicateResolver<User> resolve() {
+        // Access definition from closure
+        String searchTerm = (String) definition.value();
         return (root, query, cb) -> {
-            String searchTerm = (String) definition.value();
             return cb.or(
                 cb.like(cb.lower(root.get("firstName")), "%" + searchTerm.toLowerCase() + "%"),
                 cb.like(cb.lower(root.get("lastName")), "%" + searchTerm.toLowerCase() + "%"),
