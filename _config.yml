@@ -1,0 +1,112 @@
+# FilterQL Documentation Site
+
+title: "FilterQL Documentation"
+description: "Dynamic Query Filtering Made Simple - A powerful Java library for dynamic filtering with intuitive DSL"
+url: "https://cyfko.github.io"
+baseurl: "/filter-build"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Plugin configuration
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-github-metadata
+
+# Navigation structure
+header_pages:
+  - README.md
+  - docs/getting-started.md
+  - docs/core-concepts.md
+  - docs/spring-adapter.md
+  - docs/jpa-adapter.md
+  - docs/ARCHITECTURE.md
+
+# Site metadata
+author:
+  name: "cyfko"
+  email: ""
+
+github:
+  username: cyfko
+  repository_name: filter-build
+
+# SEO settings
+twitter:
+  username: 
+  card: summary
+
+social:
+  name: FilterQL
+  links:
+    - https://github.com/cyfko/filter-build
+
+# Collections for organizing documentation
+collections:
+  guides:
+    output: true
+    permalink: /:collection/:name/
+  examples:
+    output: true
+    permalink: /:collection/:name/
+
+# Default layouts for different content types
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "cyfko"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"
+  - scope:
+      path: "docs"
+      type: "pages"
+    values:
+      layout: "page"
+      nav_order: 1
+  - scope:
+      path: ""
+      type: "guides"
+    values:
+      layout: "guide"
+  - scope:
+      path: ""
+      type: "examples"
+    values:
+      layout: "example"
+
+# Kramdown configuration for better code highlighting
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+    span:
+      line_numbers: false
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - target/
+  - .git/
+  - .gitignore
+  - .vscode/
+
+# Include in processing
+include:
+  - _pages

@@ -1,0 +1,27 @@
+---
+layout: default
+---
+
+<article class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+    {%- if page.description -%}
+      <p class="post-description">{{ page.description }}</p>
+    {%- endif -%}
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+
+  {%- if page.nav_order -%}
+    <div class="page-navigation">
+      {%- assign pages = site.pages | where: "nav_order", true | sort: "title" -%}
+      {%- for p in pages -%}
+        {%- if p.url != page.url -%}
+          <a href="{{ p.url | relative_url }}" class="btn btn-outline">{{ p.title }}</a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</article>
