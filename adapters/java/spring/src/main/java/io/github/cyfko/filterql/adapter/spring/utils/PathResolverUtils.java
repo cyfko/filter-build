@@ -89,7 +89,7 @@ public class PathResolverUtils {
                     currentClass = field.getType();
                 }
             } else {
-                // Dernier segment du chemin : récupérer la propriété en tant que Path
+                // Last segment of the path: get the property as a Path
                 return current.get(part);
             }
         }

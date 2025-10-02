@@ -134,9 +134,9 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
     private final Class<E> entityClass;
     private final Class<P> enumClass;
 
-    // Si l'objet retourné par la fonction mapping est un String non vide alors il est utilisé comme non de propriété
-    // Si c'est une instance de SpecificationMapping<E> alors la spécification est directement utilisée
-    // Si c'est autre chose alors une exception IllegalStateException est levée
+    // If the object returned by the mapping function is a non-empty String then it is used as a property name
+    // If it's an instance of SpecificationMapping<E> then the specification is directly used
+    // If it's something else then an IllegalStateException is thrown
     private Function<FilterDefinition<P>, Object> mappingBuilder;
 
     private final Map<String, FilterCondition<?>> filters;
@@ -178,10 +178,10 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
         this.filters = new HashMap<>();
     }
 
-    // Si l'objet retourné par la fonction mapping est un String non vide alors il est utilisé comme non de propriété
-    // Si c'est une instance de SpecificationMapping<E> alors la spécification est directement utilisée
-    // Si c'est autre chose alors une exception IllegalStateException est levée
-    // cette méthode retoune le précédent builder utilisé.
+    // If the object returned by the mapping function is a non-empty String then it is used as a property name
+    // If it's an instance of SpecificationMapping<E> then the specification is directly used
+    // If it's something else then an IllegalStateException is thrown
+    // This method returns the previous builder used.
     public Function<FilterDefinition<P>, Object> setMappingBuilder(Function<FilterDefinition<P>, Object> mappingBuilder) {
         var prev = this.mappingBuilder;
         this.mappingBuilder = Objects.requireNonNull(mappingBuilder);

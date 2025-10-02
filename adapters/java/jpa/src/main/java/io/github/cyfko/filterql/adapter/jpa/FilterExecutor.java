@@ -2,7 +2,7 @@ package io.github.cyfko.filterql.adapter.jpa;
 
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.model.FilterRequest;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 
 import java.util.List;
 

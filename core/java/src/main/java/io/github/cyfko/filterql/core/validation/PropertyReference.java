@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
  * <p><b>Usage example:</b></p>
  * <pre>{@code
  * public enum UserPropertyRef implements PropertyReference {
- *     USER_NAME(String.class, Set.of(LIKE, EQUALS, IN)),
- *     USER_AGE(Integer.class, Set.of(EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, BETWEEN)),
- *     USER_STATUS(UserStatus.class, Set.of(EQUALS, NOT_EQUALS, IN));
+ *     USER_NAME(String.class, Set.of(Op.MATCHES, Op.EQ, Op.IN)),
+ *     USER_AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
+ *     USER_STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN));
  *
  *     private final Class<?> type;
- *     private final Set<Operator> supportedOperators;
+ *     private final Set<Op> supportedOperators;
  *
- *     UserPropertyRef(Class<?> type, Set<Operator> supportedOperators) {
+ *     UserPropertyRef(Class<?> type, Set<Op> supportedOperators) {
  *         this.type = type;
  *         this.supportedOperators = Set.copyOf(supportedOperators);
  *     }
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  *     public Class<?> getType() { return type; }
  *
  *     @Override
- *     public Set<Operator> getSupportedOperators() { return supportedOperators; }
+ *     public Set<Op> getSupportedOperators() { return supportedOperators; }
  * }
  * }
  * </pre>
@@ -111,10 +111,10 @@ public interface PropertyReference {
     default void validateOperatorForValue(Op operator, Object value) {
         Objects.requireNonNull(operator, "Operator cannot be null");
 
-        // Validation de l'opérateur pour cette propriété
+        // Validate the operator for this property
         validateOperator(operator);
 
-        // Validation spécifique selon le type d'opérateur
+        // Specific validation according to the operator type
         ValidationResult result = validateValueForOperator(operator, value);
         if (!result.isValid()) {
             throw new FilterValidationException(result.getErrorMessage());
@@ -165,8 +165,8 @@ public interface PropertyReference {
      * Validates null-check operators.
      */
     private ValidationResult validateNullCheck(Op operator, Object value) {
-        // Pour IS_NULL et IS_NOT_NULL, la valeur devrait être null ou absente
-        // mais on peut être tolérant et accepter toute valeur
+        // For IS_NULL and IS_NOT_NULL, the value should be null or absent
+        // but we can be tolerant and accept any value
         return ValidationResult.success();
     }
 
@@ -202,7 +202,7 @@ public interface PropertyReference {
             );
         }
 
-        // Vérifier la compatibilité des types des éléments
+        // Check type compatibility of elements
         if (!ClassUtils.allCompatible(getType(), collection)) {
             return ValidationResult.failure(
                     String.format("Collection elements are not compatible with property type %s for operator %s",
@@ -218,12 +218,12 @@ public interface PropertyReference {
      * Handles primitive types and their wrappers.
      */
     private boolean isCompatibleType(Class<?> valueType, Class<?> expectedType) {
-        // Assignabilité directe
+        // Direct assignability
         if (expectedType.isAssignableFrom(valueType)) {
             return true;
         }
 
-        // Gestion des primitives et leurs wrappers
+        // Handle primitives and their wrappers
         return isPrimitiveCompatible(valueType, expectedType);
     }
 

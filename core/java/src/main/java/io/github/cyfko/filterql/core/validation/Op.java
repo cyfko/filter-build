@@ -20,6 +20,59 @@ package io.github.cyfko.filterql.core.validation;
  * if (op.supportsMultipleValues()) {
  *     // handle collection or range values
  * }
+ * 
+ * // Example with filter definitions
+ * FilterDefinition<UserPropertyRef> equalFilter = 
+ *     new FilterDefinition<>(UserPropertyRef.NAME, Op.EQ, "John");
+ * FilterDefinition<UserPropertyRef> likeFilter = 
+ *     new FilterDefinition<>(UserPropertyRef.NAME, Op.MATCHES, "John%");
+ * FilterDefinition<UserPropertyRef> rangeFilter = 
+ *     new FilterDefinition<>(UserPropertyRef.AGE, Op.RANGE, List.of(18, 65));
+ * FilterDefinition<UserPropertyRef> nullCheckFilter = 
+ *     new FilterDefinition<>(UserPropertyRef.EMAIL, Op.IS_NULL, null);
+ * }</pre>
+ *
+ * <p><strong>Operator Categories and Examples:</strong></p>
+ * 
+ * <p><em>Comparison Operators:</em></p>
+ * <pre>{@code
+ * // Equality and inequality
+ * user.age == 25          -> Op.EQ
+ * user.status != ACTIVE   -> Op.NE
+ * 
+ * // Numerical comparisons  
+ * user.age > 18           -> Op.GT
+ * user.age >= 21          -> Op.GTE
+ * user.salary < 50000     -> Op.LT
+ * user.experience <= 5    -> Op.LTE
+ * }</pre>
+ * 
+ * <p><em>Text Matching:</em></p>
+ * <pre>{@code
+ * // Pattern matching (SQL LIKE)
+ * user.name LIKE 'John%'     -> Op.MATCHES
+ * user.email NOT LIKE '%test%' -> Op.NOT_MATCHES
+ * }</pre>
+ * 
+ * <p><em>Collection Operations:</em></p>
+ * <pre>{@code
+ * // Set membership
+ * user.status IN ('ACTIVE', 'PENDING')     -> Op.IN
+ * user.role NOT IN ('ADMIN', 'MODERATOR')  -> Op.NOT_IN
+ * }</pre>
+ * 
+ * <p><em>Null Checks:</em></p>
+ * <pre>{@code
+ * // Null value checks (no value parameter needed)
+ * user.deletedAt IS NULL      -> Op.IS_NULL
+ * user.email IS NOT NULL      -> Op.NOT_NULL
+ * }</pre>
+ * 
+ * <p><em>Range Operations:</em></p>
+ * <pre>{@code
+ * // Range checks (requires exactly 2 values)
+ * user.age BETWEEN 18 AND 65     -> Op.RANGE
+ * user.salary NOT BETWEEN 30000 AND 50000 -> Op.NOT_RANGE
  * }</pre>
  *
  * <p><strong>HTML-style operator mappings:</strong></p>
