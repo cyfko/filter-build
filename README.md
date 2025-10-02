@@ -4,7 +4,125 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.java.net/)
 
----
+## What is FilterQL?
+
+FilterQL is a framework-agnostic Java library that transforms complex, dynamic filtering requirements into simple, secure, and maintainable solutions. It provides a Domain-Specific Language (DSL) for building complex filter conditions while maintaining type safety and preventing SQL injection.
+
+## Why Use FilterQL?
+
+- 🔒 **Security First**: Abstract property references prevent direct database field exposure
+- ⚡ **Dynamic Composition**: Build complex filter conditions with AND, OR, NOT operations
+- 🎯 **Type Safety**: Compile-time validation with enum-based property definitions
+- 🔧 **Framework Integration**: Native Spring Data JPA support with extensible adapter pattern
+- 📊 **Performance Optimized**: Generates efficient native queries preserving ORM features
+
+## Quick Start
+
+### Installation
+
+**Maven:**
+```xml
+<!-- Core module -->
+<dependency>
+    <groupId>io.github.cyfko</groupId>
+    <artifactId>filterql-core</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
+<!-- Spring Data JPA integration -->
+<dependency>
+    <groupId>io.github.cyfko</groupId>
+    <artifactId>filterql-spring-adapter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**Gradle:**
+```gradle
+// Core module
+implementation 'io.github.cyfko:filterql-core:1.0.0'
+
+// Spring Data JPA integration  
+implementation 'io.github.cyfko:filterql-spring-adapter:1.0.0'
+```
+
+### Your First FilterQL Application
+
+```java
+import io.github.cyfko.filterql.core.FilterResolver;
+import io.github.cyfko.filterql.core.model.FilterRequest;
+import io.github.cyfko.filterql.core.model.FilterDefinition;
+import io.github.cyfko.filterql.core.validation.Op;
+import java.util.Map;
+
+public class QuickStart {
+    public static void main(String[] args) {
+        // Step 1: Create filter definitions using VERIFIED constructor
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME,
+            Op.MATCHES,
+            "John%"
+        );
+        
+        FilterDefinition<UserPropertyRef> statusFilter = new FilterDefinition<>(
+            UserPropertyRef.STATUS,
+            Op.EQ,
+            "ACTIVE"
+        );
+        
+        // Step 2: Create filter request using VERIFIED Builder API
+        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
+            .filter("nameSearch", nameFilter)
+            .filter("activeStatus", statusFilter)
+            .combineWith("nameSearch & activeStatus")
+            .build();
+        
+        // Step 3: Resolve the filter using VERIFIED API
+        FilterResolver resolver = FilterResolver.of(context);
+        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
+        
+        System.out.println("Filter request created: " + request);
+    }
+}
+```
+
+**What's happening:**
+1. **Filter Definitions**: We create individual filter conditions using the record constructor with property references, operators, and values
+2. **Request Building**: The `FilterRequest.builder()` provides a fluent API to combine filters with DSL expressions
+3. **Resolution**: FilterQL parses the expression and creates an executable predicate resolver
+
+### Property Reference Definition
+
+```java
+import io.github.cyfko.filterql.core.validation.PropertyReference;
+import io.github.cyfko.filterql.core.validation.Op;
+import java.util.Set;
+
+public enum UserPropertyRef implements PropertyReference {
+    NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
+    EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
+    AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
+    STATUS(String.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN));
+
+    private final Class<?> type;
+    private final Set<Op> supportedOperators;
+
+    UserPropertyRef(Class<?> type, Set<Op> supportedOperators) {
+        this.type = type;
+        this.supportedOperators = Set.copyOf(supportedOperators);
+    }
+
+    @Override
+    public Class<?> getType() {
+        return type;
+    }
+
+    @Override
+    public Set<Op> getSupportedOperators() {
+        return supportedOperators;
+    }
+}
+```
 
 ## 🎯 The Problem
 
