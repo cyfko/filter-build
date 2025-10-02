@@ -36,8 +36,8 @@ jobs:
         
       - name: Install dependencies
         run: |
-          gem install bundler
-          bundle install
+          gem install bundler jekyll
+          bundle install --jobs 4 --retry 3
           
       - name: Build Jekyll site
         run: |

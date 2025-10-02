@@ -8,8 +8,7 @@ baseurl: "/filter-build"
 # Build settings
 markdown: kramdown
 highlighter: rouge
-theme: null
-remote_theme: pmarsceill/just-the-docs
+theme: just-the-docs
 
 # Configuration Just-the-Docs
 color_scheme: light
@@ -47,89 +46,6 @@ header_pages:
   - docs/spring-adapter.md
   - docs/jpa-adapter.md
   - docs/ARCHITECTURE.md
-
-# Site metadata
-author:
-  name: "cyfko"
-  email: ""
-
-github:
-  username: cyfko
-  repository_name: filter-build
-
-# SEO settings
-twitter:
-  username: 
-  card: summary
-
-social:
-  name: FilterQL
-  links:
-    - https://github.com/cyfko/filter-build
-
-# Collections for organizing documentation
-collections:
-  core:
-    output: true
-    permalink: /core/:path/
-    title: "Core Module"
-  spring:
-    output: true
-    permalink: /spring/:path/
-    title: "Spring Adapter"
-  guides:
-    output: true
-    permalink: /guides/:path/
-    title: "Guides"
-  examples:
-    output: true
-    permalink: /examples/:path/
-    title: "Examples"
-
-# Default layouts for different content types
-defaults:
-  - scope:
-      path: ""
-    values:
-      layout: "default"
-  - scope:
-      path: "getting-started"
-    values:
-      layout: "page"
-      parent: "Getting Started"
-  - scope:
-      path: "core-module"
-    values:
-      layout: "page"
-      parent: "Core Module"
-  - scope:
-      path: "spring-adapter"
-    values:
-      layout: "page"
-      parent: "Spring Adapter"
-  - scope:
-      path: "docs"
-    values:
-      layout: "page"
-  - scope:
-      path: ""
-      type: "guides"
-    values:
-      layout: "page"
-      parent: "Guides"
-  - scope:
-      path: ""
-      type: "examples"
-    values:
-      layout: "page"
-      parent: "Examples"
-
-# Kramdown configuration for better code highlighting
-kramdown:
-  syntax_highlighter: rouge
-  syntax_highlighter_opts:
-    block:
-      line_numbers: false
 
 # Site metadata
 author:
