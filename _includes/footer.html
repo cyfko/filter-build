@@ -1,0 +1,188 @@
+<footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>FilterQL</h4>
+            <p>Bibliothèque Java moderne pour le filtrage flexible et type-safe.</p>
+            <div class="social-links">
+                <a href="https://github.com/cyfko/filter-build" target="_blank" aria-label="GitHub">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Documentation</h4>
+            <ul>
+                <li><a href="{{ '/docs/getting-started/' | relative_url }}">Guide de démarrage</a></li>
+                <li><a href="{{ '/docs/core-concepts/' | relative_url }}">Concepts fondamentaux</a></li>
+                <li><a href="{{ '/docs/api-reference/' | relative_url }}">Référence API</a></li>
+                <li><a href="{{ '/docs/advanced-usage/' | relative_url }}">Usage avancé</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Adapters</h4>
+            <ul>
+                <li><a href="{{ '/docs/spring-adapter/' | relative_url }}">Spring Adapter</a></li>
+                <li><a href="{{ '/docs/jpa-adapter/' | relative_url }}">JPA Adapter</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Ressources</h4>
+            <ul>
+                <li><a href="{{ '/examples/' | relative_url }}">Exemples</a></li>
+                <li><a href="{{ '/guides/best-practices/' | relative_url }}">Bonnes pratiques</a></li>
+                <li><a href="{{ '/guides/migration-guide/' | relative_url }}">Guide de migration</a></li>
+                <li><a href="https://github.com/cyfko/filter-build/issues" target="_blank">Support</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <p>&copy; {{ 'now' | date: "%Y" }} FilterQL. Sous licence <a href="https://github.com/cyfko/filter-build/blob/main/LICENSE" target="_blank">MIT</a>.</p>
+            <p>Documentation générée avec <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> et hébergée sur <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.</p>
+        </div>
+        
+        <div class="footer-meta">
+            <span class="version">v{{ site.filterql.version | default: "2.0.0" }}</span>
+            {% if site.github.build_revision %}
+            <span class="build">Build {{ site.github.build_revision | slice: 0, 7 }}</span>
+            {% endif %}
+            <span class="updated">Mis à jour le {{ site.time | date: "%d/%m/%Y" }}</span>
+        </div>
+    </div>
+</footer>
+
+<style>
+.site-footer {
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    margin-top: 4rem;
+    padding: 3rem 0 1rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.footer-section h4 {
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.footer-section p {
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-section ul li a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-section ul li a:hover {
+    color: var(--color-accent);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-links a {
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.social-links a:hover {
+    color: var(--color-accent);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    padding: 1rem 2rem 0;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-info p {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+}
+
+.footer-info a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.footer-info a:hover {
+    text-decoration: underline;
+}
+
+.footer-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.footer-meta span {
+    display: flex;
+    align-items: center;
+}
+
+.version {
+    background: var(--color-accent);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>

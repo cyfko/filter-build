@@ -3,25 +3,99 @@ layout: default
 ---
 
 <article class="post">
-  <header class="post-header">
-    <h1 class="post-title">{{ page.title | escape }}</h1>
-    {%- if page.description -%}
-      <p class="post-description">{{ page.description }}</p>
-    {%- endif -%}
-  </header>
-
-  <div class="post-content">
-    {{ content }}
-  </div>
-
-  {%- if page.nav_order -%}
-    <div class="page-navigation">
-      {%- assign pages = site.pages | where: "nav_order", true | sort: "title" -%}
-      {%- for p in pages -%}
-        {%- if p.url != page.url -%}
-          <a href="{{ p.url | relative_url }}" class="btn btn-outline">{{ p.title }}</a>
-        {%- endif -%}
-      {%- endfor -%}
+    <header class="post-header">
+        <h1 class="post-title">{{ page.title | escape }}</h1>
+        
+        {% if page.description %}
+        <p class="post-description">{{ page.description }}</p>
+        {% endif %}
+        
+        {% if page.badges %}
+        <div class="badges">
+            {% for badge in page.badges %}
+            <span class="badge badge-{{ badge.type }}">{{ badge.text }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if page.nav_order and page.parent %}
+        <nav class="breadcrumb">
+            <a href="/">🏠 Accueil</a>
+            {% if page.grand_parent %}
+            &gt; <a href="{{ page.grand_parent_link }}">{{ page.grand_parent }}</a>
+            {% endif %}
+            {% if page.parent %}
+            &gt; <a href="{{ page.parent_link }}">{{ page.parent }}</a>
+            {% endif %}
+            &gt; {{ page.title }}
+        </nav>
+        {% endif %}
+    </header>
+    
+    {% if page.show_toc and content contains '<h' %}
+    <div class="toc">
+        <h4>📋 Table des matières</h4>
+        <div class="toc-content">
+            <!-- La table sera générée automatiquement par Jekyll TOC plugin -->
+        </div>
     </div>
-  {%- endif -%}
+    {% endif %}
+    
+    <div class="post-content">
+        {{ content }}
+    </div>
+    
+    {% if page.tags and page.tags.size > 0 %}
+    <div class="tags">
+        <h4>🏷️ Tags</h4>
+        {% for tag in page.tags %}
+        <span class="tag">#{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% assign pages_with_order = site.pages | where_exp: "p", "p.nav_order" | sort: "nav_order" %}
+    {% assign current_index = nil %}
+    {% for p in pages_with_order %}
+        {% if p.url == page.url %}
+            {% assign current_index = forloop.index0 %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if current_index %}
+        {% assign prev_page = nil %}
+        {% assign next_page = nil %}
+        {% if current_index > 0 %}
+            {% assign prev_index = current_index | minus: 1 %}
+            {% assign prev_page = pages_with_order[prev_index] %}
+        {% endif %}
+        {% assign next_index = current_index | plus: 1 %}
+        {% if next_index < pages_with_order.size %}
+            {% assign next_page = pages_with_order[next_index] %}
+        {% endif %}
+        
+        {% if prev_page or next_page %}
+        <nav class="page-nav">
+            {% if prev_page %}
+            <a href="{{ prev_page.url | relative_url }}" class="btn btn-secondary">
+                ← {{ prev_page.title }}
+            </a>
+            {% endif %}
+            {% if next_page %}
+            <a href="{{ next_page.url | relative_url }}" class="btn btn-primary">
+                {{ next_page.title }} →
+            </a>
+            {% endif %}
+        </nav>
+        {% endif %}
+    {% endif %}
+    
+    {% if page.edit_source %}
+    <div class="edit-page">
+        <a href="{{ page.edit_source }}" target="_blank" class="btn btn-outline">
+            ✏️ Modifier cette page
+        </a>
+    </div>
+    {% endif %}
 </article>

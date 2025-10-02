@@ -1,6 +1,6 @@
 # FilterQL Documentation Site
 
-title: "FilterQL Documentation"
+title: "FilterQL"
 description: "Dynamic Query Filtering Made Simple - A powerful Java library for dynamic filtering with intuitive DSL"
 url: "https://cyfko.github.io"
 baseurl: "/filter-build"
@@ -8,7 +8,27 @@ baseurl: "/filter-build"
 # Build settings
 markdown: kramdown
 highlighter: rouge
-theme: minima
+theme: null
+remote_theme: pmarsceill/just-the-docs
+
+# Configuration Just-the-Docs
+color_scheme: light
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Navigation externe
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/cyfko/filter-build
+  - title: Maven Central
+    url: https://search.maven.org/artifact/io.github.cyfko/filterql-core
 
 # Plugin configuration
 plugins:
@@ -16,6 +36,8 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
   - jekyll-github-metadata
+  - jekyll-relative-links
+  - jemoji
 
 # Navigation structure
 header_pages:
@@ -47,51 +69,81 @@ social:
 
 # Collections for organizing documentation
 collections:
+  core:
+    output: true
+    permalink: /core/:path/
+    title: "Core Module"
+  spring:
+    output: true
+    permalink: /spring/:path/
+    title: "Spring Adapter"
   guides:
     output: true
-    permalink: /:collection/:name/
+    permalink: /guides/:path/
+    title: "Guides"
   examples:
     output: true
-    permalink: /:collection/:name/
+    permalink: /examples/:path/
+    title: "Examples"
 
 # Default layouts for different content types
 defaults:
   - scope:
       path: ""
-      type: "posts"
     values:
-      layout: "post"
-      author: "cyfko"
+      layout: "default"
   - scope:
-      path: ""
-      type: "pages"
+      path: "getting-started"
     values:
       layout: "page"
+      parent: "Getting Started"
+  - scope:
+      path: "core-module"
+    values:
+      layout: "page"
+      parent: "Core Module"
+  - scope:
+      path: "spring-adapter"
+    values:
+      layout: "page"
+      parent: "Spring Adapter"
   - scope:
       path: "docs"
-      type: "pages"
     values:
       layout: "page"
-      nav_order: 1
   - scope:
       path: ""
       type: "guides"
     values:
-      layout: "guide"
+      layout: "page"
+      parent: "Guides"
   - scope:
       path: ""
       type: "examples"
     values:
-      layout: "example"
+      layout: "page"
+      parent: "Examples"
 
 # Kramdown configuration for better code highlighting
 kramdown:
   syntax_highlighter: rouge
   syntax_highlighter_opts:
     block:
-      line_numbers: true
-    span:
       line_numbers: false
+
+# Site metadata
+author:
+  name: "Frank KOSSI"
+
+github:
+  username: cyfko
+  repository_name: filter-build
+
+# SEO settings
+social:
+  name: FilterQL
+  links:
+    - https://github.com/cyfko/filter-build
 
 # Exclude from processing
 exclude:
@@ -106,6 +158,13 @@ exclude:
   - .git/
   - .gitignore
   - .vscode/
+  - .idea/
+  - core/
+  - adapters/
+  - "*.jar"
+  - "*.log"
+  - rapport-conformite-documentation-code.md
+  - corrections-documentation-filterql.md
 
 # Include in processing
 include:

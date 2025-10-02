@@ -1,79 +1,103 @@
-# FilterQL Documentation Index
+---
+layout: page
+title: Documentation
+description: Guide complet pour utiliser FilterQL efficacement
+nav_order: 2
+category: docs
+permalink: /docs/
+show_toc: true
+badges:
+  - type: version
+    text: v2.0.0
+  - type: java
+    text: Java 21+
+---
 
-Welcome to the complete FilterQL documentation. FilterQL is a type-safe, framework-agnostic Java library for building dynamic filters with Spring Data JPA integration.
+# 📚 Documentation FilterQL
 
-## 📚 Documentation Structure
+Bienvenue dans la documentation complète de FilterQL, une bibliothèque Java moderne pour le filtrage flexible et type-safe.
 
-### Getting Started
-- **[Quick Start Guide](getting-started/quick-start.md)** - Get up and running with FilterQL in 10 minutes
-- **[Installation](getting-started/installation.md)** - Dependency management and setup instructions
-- **[Core Concepts](core-concepts.md)** - Understanding FilterQL's fundamental concepts
+## 🚀 Démarrage rapide
 
-### Core Documentation
-- **[Core Module Overview](core-module/overview.md)** - Framework-agnostic filtering engine
-- **[Spring Adapter](spring-adapter/overview.md)** - Spring Data JPA integration
-- **[API Reference](api-reference.md)** - Complete API documentation
+{% include alert.html type="tip" title="Première utilisation ?" content="Consultez notre [Guide de démarrage rapide](/docs/getting-started/) pour être opérationnel en quelques minutes." %}
 
-### Practical Guides
-- **[Best Practices](guides/best-practices.md)** - Comprehensive best practices and patterns
-- **[Migration Guide](guides/migration-guide.md)** - Migrating from other query solutions
-- **[Troubleshooting](guides/troubleshooting.md)** - Common issues and solutions
+<div class="grid">
+    <div class="grid-item">
+        <h3>🏁 Guide de démarrage</h3>
+        <p>Installation, configuration de base et premiers pas avec FilterQL.</p>
+        <a href="/docs/getting-started/" class="btn btn-primary">Commencer →</a>
+    </div>
+    
+    <div class="grid-item">
+        <h3>🧠 Concepts fondamentaux</h3>
+        <p>Comprenez les concepts clés : FilterRequest, Context, Operators et plus.</p>
+        <a href="/docs/core-concepts/" class="btn btn-secondary">Explorer →</a>
+    </div>
+    
+    <div class="grid-item">
+        <h3>🔧 Référence API</h3>
+        <p>Documentation complète de toutes les classes et méthodes publiques.</p>
+        <a href="/docs/api-reference/" class="btn btn-secondary">Consulter →</a>
+    </div>
+    
+    <div class="grid-item">
+        <h3>⚡ Usage avancé</h3>
+        <p>Fonctionnalités avancées, optimisations et cas d'usage complexes.</p>
+        <a href="/docs/advanced-usage/" class="btn btn-secondary">Approfondir →</a>
+    </div>
+</div>
 
-### Examples & Use Cases
-- **[Comprehensive Examples](examples/comprehensive-examples.md)** - Real-world implementation examples
-- **[Repository Integration](examples/repository-integration.md)** - Spring Data integration patterns
-- **[Performance Optimization](examples/performance-optimization.md)** - Query optimization techniques
+## 🔌 Adapters disponibles
 
-### Advanced Topics
-- **[Architecture](ARCHITECTURE.md)** - Detailed architecture documentation
-- **[Advanced Usage](advanced-usage.md)** - Complex scenarios and customizations
-- **[Security Considerations](guides/security.md)** - Security best practices
+FilterQL propose plusieurs adapters pour s'intégrer facilement dans votre écosystème :
 
-## 🚀 Quick Navigation
+### Spring Adapter
+- **Version** : 2.0.0
+- **Compatibilité** : Spring Boot 3.x, Spring Framework 6.x
+- **Fonctionnalités** : Intégration transparente avec Spring Data
+- [📖 Documentation Spring](/docs/spring-adapter/)
 
-### For Beginners
-1. Start with [Quick Start Guide](getting-started/quick-start.md)
-2. Read [Core Concepts](core-concepts.md)
-3. Try [Basic Examples](examples/comprehensive-examples.md#basic-filtering-examples)
+### JPA Adapter  
+- **Version** : 1.0.1
+- **Compatibilité** : JPA 3.x, Hibernate 6.x
+- **Fonctionnalités** : Génération automatique de requêtes Criteria API
+- [📖 Documentation JPA](/docs/jpa-adapter/)
 
-### For Existing Projects
-1. Check [Migration Guide](guides/migration-guide.md)
-2. Review [Best Practices](guides/best-practices.md)
-3. Implement [Performance Optimizations](examples/performance-optimization.md)
+## 🏗️ Architecture
 
-### For Advanced Users
-1. Study [Architecture](ARCHITECTURE.md)
-2. Explore [Advanced Usage](advanced-usage.md)
-3. Review [API Reference](api-reference.md)
+FilterQL suit une architecture hexagonale claire :
 
-## 📖 Key Features
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     Client      │    │   FilterQL      │    │    Adapters     │
+│   Application   │◄──►│      Core       │◄──►│  (Spring/JPA)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
-### Type Safety
-- **Compile-time validation** of filter properties and operators
-- **Generic type parameters** throughout the API
-- **Enum-based property references** for IntelliSense support
+{% include alert.html type="info" content="L'architecture modulaire permet d'ajouter facilement de nouveaux adapters selon vos besoins." %}
 
-### Framework Integration
-- **Spring Data JPA** adapter with Specification support
-- **Framework-agnostic** core for other persistence solutions
-- **Seamless integration** with existing Spring applications
+## � Structure de la documentation
 
-### Powerful Querying
-- **Boolean logic** with AND, OR, NOT operations
-- **Range queries** for dates, numbers, and other comparable types
-- **Pattern matching** with SQL LIKE support
-- **Custom business logic** through flexible mapping functions
+- **[Guide de démarrage](/docs/getting-started/)** - Installation et premiers pas
+- **[Concepts fondamentaux](/docs/core-concepts/)** - Bases théoriques 
+- **[Référence API](/docs/api-reference/)** - Documentation technique complète
+- **[Usage avancé](/docs/advanced-usage/)** - Techniques avancées
+- **[Spring Adapter](/docs/spring-adapter/)** - Intégration Spring
+- **[JPA Adapter](/docs/jpa-adapter/)** - Intégration JPA
 
-### Performance
-- **Query optimization** with fetch joins and efficient SQL generation
-- **Caching support** for frequently used filters
-- **Stateless design** for high-concurrency applications
+## 💡 Exemples pratiques
 
-## 🔧 Common Use Cases
+Découvrez des exemples concrets d'utilisation :
 
-### E-commerce Search
+- [Exemples complets](/examples/) - Cas d'usage réels
+- [Bonnes pratiques](/guides/best-practices/) - Recommandations
+- [Guide de migration](/guides/migration-guide/) - Migration depuis d'autres solutions
+
+## 🔧 Cas d'usage courants
+
+### Recherche e-commerce
+{% include code_block.html title="Recherche produits avec critères multiples" language="java" %}
 ```java
-// Product search with multiple criteria
 FilterRequest<ProductPropertyRef> request = FilterRequest.<ProductPropertyRef>builder()
     .filter("category", new FilterDefinition<>(ProductPropertyRef.CATEGORY, Op.IN, categories))
     .filter("priceRange", new FilterDefinition<>(ProductPropertyRef.PRICE, Op.RANGE, Arrays.asList(min, max)))
@@ -82,9 +106,9 @@ FilterRequest<ProductPropertyRef> request = FilterRequest.<ProductPropertyRef>bu
     .build();
 ```
 
-### HR Management
+### Gestion RH
+{% include code_block.html title="Recherche employés avec critères complexes" language="java" %}
 ```java
-// Employee search with complex criteria
 FilterRequest<EmployeePropertyRef> request = FilterRequest.<EmployeePropertyRef>builder()
     .filter("department", new FilterDefinition<>(EmployeePropertyRef.DEPARTMENT, Op.EQ, "Engineering"))
     .filter("experience", new FilterDefinition<>(EmployeePropertyRef.YEARS_EXPERIENCE, Op.GTE, 5))
@@ -93,73 +117,33 @@ FilterRequest<EmployeePropertyRef> request = FilterRequest.<EmployeePropertyRef>
     .build();
 ```
 
-### Financial Analytics
-```java
-// Transaction analysis with date ranges and amounts
-FilterRequest<TransactionPropertyRef> request = FilterRequest.<TransactionPropertyRef>builder()
-    .filter("dateRange", new FilterDefinition<>(TransactionPropertyRef.DATE, Op.RANGE, Arrays.asList(start, end)))
-    .filter("highValue", new FilterDefinition<>(TransactionPropertyRef.AMOUNT, Op.GT, threshold))
-    .filter("international", new FilterDefinition<>(TransactionPropertyRef.IS_INTERNATIONAL, Op.EQ, true))
-    .combineWith("dateRange & (highValue | international)")
-    .build();
-```
+## 🎯 Principes de conception
 
-## 🎯 Design Principles
-
-### Simplicity
-FilterQL prioritizes **developer experience** with intuitive APIs and minimal boilerplate code.
+### Simplicité
+FilterQL privilégie l'**expérience développeur** avec des APIs intuitives et un minimum de code boilerplate.
 
 ### Type Safety
-**Compile-time validation** prevents runtime errors and provides excellent IDE support.
+La **validation au moment de la compilation** prévient les erreurs runtime et offre un excellent support IDE.
 
 ### Performance
-Optimized for **high-performance** applications with efficient query generation and caching.
+Optimisé pour les **applications haute performance** avec génération de requêtes efficaces et mise en cache.
 
-### Flexibility
-**Extensible architecture** supports custom business logic and complex filtering requirements.
+### Flexibilité
+L'**architecture extensible** supporte la logique métier personnalisée et les exigences de filtrage complexes.
 
-### Integration
-**Framework-friendly** design works seamlessly with Spring and other Java frameworks.
+## 📋 Informations sur la version
 
-## 📋 Version Information
+- **Version actuelle** : 2.0.0
+- **Version Java minimale** : 21
+- **Compatibilité Spring Boot** : 3.3.4+
+- **Jakarta Persistence API** : 3.1.0+
 
-- **Current Version**: 2.0.0
-- **Minimum Java Version**: 21
-- **Spring Boot Compatibility**: 3.3.4+
-- **Jakarta Persistence API**: 3.1.0+
+## 🆘 Besoin d'aide ?
 
-## 🤝 Community & Support
-
-### Getting Help
-- **[Troubleshooting Guide](guides/troubleshooting.md)** - Common issues and solutions
-- **[Best Practices](guides/best-practices.md)** - Recommended patterns and approaches
-- **[API Reference](api-reference.md)** - Complete method documentation
-
-### Contributing
-- Follow the coding standards outlined in the documentation
-- Add comprehensive tests for new features
-- Update documentation for any API changes
-
-### License
-FilterQL is distributed under the Apache License 2.0. See LICENSE file for details.
-
-## 📈 Roadmap
-
-### Version 2.1 (Planned)
-- Enhanced validation framework
-- Additional operator support (REGEX, CONTAINS)
-- Performance improvements
-
-### Version 2.2 (Planned)
-- GraphQL integration adapter
-- MongoDB adapter
-- Advanced caching strategies
-
-### Future Versions
-- Multi-database support
-- Query plan optimization
-- Real-time filtering capabilities
+- 🐛 [Signaler un bug](https://github.com/cyfko/filter-build/issues)
+- 💬 [Poser une question](https://github.com/cyfko/filter-build/discussions)
+- 📧 [Contact direct](mailto:support@filterql.dev)
 
 ---
 
-**Ready to get started?** Begin with the [Quick Start Guide](getting-started/quick-start.md) or explore [comprehensive examples](examples/comprehensive-examples.md) for your use case.
+{% include alert.html type="success" title="Documentation mise à jour" content="Cette documentation est automatiquement synchronisée avec le code source pour garantir sa précision." %}
