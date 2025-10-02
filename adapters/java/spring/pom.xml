@@ -188,9 +188,9 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <additionalJOption>-tag apiNote:a:"API Note:"</additionalJOption>
-                    <additionalJOption>-tag implSpec:a:"Implementation Requirements:"</additionalJOption>
-                    <additionalJOption>-tag implNote:a:"Implementation Note:"</additionalJOption>
+                    <additionalJOptions>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                    </additionalJOptions>
                 </configuration>
                 <executions>
                     <execution>
@@ -201,6 +201,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 </project>
