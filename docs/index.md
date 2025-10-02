@@ -8,7 +8,7 @@ permalink: /docs/
 show_toc: true
 badges:
   - type: version
-    text: v2.0.0
+    text: v3.0.0
   - type: java
     text: Java 21+
 ---
@@ -52,7 +52,7 @@ Bienvenue dans la documentation complète de FilterQL, une bibliothèque Java mo
 FilterQL propose plusieurs adapters pour s'intégrer facilement dans votre écosystème :
 
 ### Spring Adapter
-- **Version** : 2.0.0
+- **Version** : 3.0.0
 - **Compatibilité** : Spring Boot 3.x, Spring Framework 6.x
 - **Fonctionnalités** : Intégration transparente avec Spring Data
 - [📖 Documentation Spring](/docs/spring-adapter/)
@@ -133,7 +133,7 @@ L'**architecture extensible** supporte la logique métier personnalisée et les 
 
 ## 📋 Informations sur la version
 
-- **Version actuelle** : 2.0.0
+- **Version actuelle** : 3.0.0
 - **Version Java minimale** : 21
 - **Compatibilité Spring Boot** : 3.3.4+
 - **Jakarta Persistence API** : 3.1.0+

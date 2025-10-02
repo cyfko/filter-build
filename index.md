@@ -46,21 +46,21 @@ Le module Core n'a aucune dépendance externe pour une intégration flexible.
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-core</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 
 <!-- Pour Spring Boot -->
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-spring</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
 **Gradle**
 ```gradle
-implementation 'io.github.cyfko:filterql-core:2.0.0'
-implementation 'io.github.cyfko:filterql-spring:2.0.0'
+implementation 'io.github.cyfko:filterql-core:3.0.0'
+implementation 'io.github.cyfko:filterql-spring:3.0.0'
 ```
 
 </div>
