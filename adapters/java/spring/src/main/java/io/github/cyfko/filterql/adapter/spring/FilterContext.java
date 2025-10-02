@@ -219,6 +219,10 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
             );
         }
 
+        // Ensure value type compatibility for the given operator
+        ((PropertyReference) ref).validateOperatorForValue(definition.operator(), definition.value());
+
+        // Transform definition into a filter condition using the mapping function
         Object mapping = mappingBuilder.apply((FilterDefinition<P>) definition);
 
         if (mapping instanceof PredicateResolverMapping<?,?>) {
@@ -278,7 +282,7 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
      */
     private static <E, P extends Enum<P> & PropertyReference> Specification<E> getSpecificationFromPath(String pathName, FilterDefinition<P> definition) {
         // Ensure value type compatibility for the given operator
-        Objects.requireNonNull(definition).ref().validateOperatorForValue(definition.operator(), definition.value());
+        Objects.requireNonNull(definition);
 
         return (Root<E> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Object value = definition.value();

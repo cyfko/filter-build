@@ -110,6 +110,11 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  *   <li>Document business logic and expected value types</li>
  * </ul>
  *
+ * <p><strong>Version Compatibility:</strong></p>
+ * <p><em>Breaking Change in 3.0.0:</em> The {@code resolve(FilterDefinition)} method has been 
+ * simplified to {@code resolve()} to leverage closure capture. Existing implementations 
+ * must be updated to use closure-captured filter definitions instead of method parameters.</p>
+ *
  * @param <E> the entity type this mapping applies to
  * @param <P> the enum type representing logical property references
  * @see ReferenceMapping
@@ -172,6 +177,7 @@ public interface PredicateResolverMapping<E, P extends Enum<P> & PropertyReferen
      * 
      * @return a {@link PredicateResolver} that can produce a JPA {@link jakarta.persistence.criteria.Predicate}
      * @throws IllegalArgumentException if the captured definition is invalid or incompatible with this mapping
+     * @since 3.0.0
      */
     PredicateResolver<E> resolve();
 }

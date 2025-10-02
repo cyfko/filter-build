@@ -1,6 +1,41 @@
 # FilterQL API Reference
 
-Complete API reference documentation for FilterQL 2.0.0
+Complete API reference documentation for FilterQL 3.0.0
+
+## 🚨 Breaking Changes in Version 3.0.0
+
+### PredicateResolverMapping Interface Simplification
+
+**What Changed:**
+- Method signature changed from `resolve(FilterDefinition<P> definition)` to `resolve()`
+- Filter definition is now accessed through closure capture instead of method parameter
+
+**Migration Required:**
+
+```java
+// ❌ Before (v2.x)
+public class MyMapping implements PredicateResolverMapping<User, UserProperty> {
+    @Override
+    public PredicateResolver<User> resolve(FilterDefinition<UserProperty> definition) {
+        String value = (String) definition.getValue();
+        return (root, query, cb) -> cb.like(root.get("name"), "%" + value + "%");
+    }
+}
+
+// ✅ After (v3.x)
+public class MyMapping implements PredicateResolverMapping<User, UserProperty> {
+    @Override
+    public PredicateResolver<User> resolve() {
+        // definition is captured from closure in mappingBuilder
+        String value = (String) definition.getValue();
+        return (root, query, cb) -> cb.like(root.get("name"), "%" + value + "%");
+    }
+}
+```
+
+**Rationale:** Eliminates redundant parameter passing since `FilterDefinition` is already available through closure capture in the mapping builder function.
+
+---
 
 ## Table of Contents
 

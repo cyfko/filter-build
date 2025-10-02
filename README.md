@@ -230,24 +230,24 @@ Add FilterQL to your project in under 2 minutes:
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-core</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 
 <!-- Spring Data JPA adapter (for Spring projects) -->
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-spring</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
 ### Gradle
 ```gradle
 // Core module (required)
-implementation 'io.github.cyfko:filterql-core:2.0.0'
+implementation 'io.github.cyfko:filterql-core:3.0.0'
 
 // Spring Data JPA adapter (for Spring projects)
-implementation 'io.github.cyfko:filterql-spring:2.0.0'
+implementation 'io.github.cyfko:filterql-spring:3.0.0'
 ```
 
 **Requirements**: Java 21+, Spring Boot 3.3.4+ (for Spring adapter)
