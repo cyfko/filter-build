@@ -34,7 +34,6 @@ plugins:
   - jekyll-feed
   - jekyll-sitemap
   - jekyll-seo-tag
-  - jekyll-github-metadata
   - jekyll-relative-links
   - jemoji
 
@@ -46,6 +45,9 @@ header_pages:
   - docs/spring-adapter.md
   - docs/jpa-adapter.md
   - docs/ARCHITECTURE.md
+
+# Repository information for GitHub metadata
+repository: cyfko/filter-build
 
 # Site metadata
 author:
