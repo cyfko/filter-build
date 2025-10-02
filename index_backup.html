@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>FilterQL - Dynamic Query Filtering Made Simple</title>
+    <meta name="description" content="A powerful Java library for dynamic filtering with intuitive DSL">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px 0;
+            border-bottom: 2px solid #e1e4e8;
+        }
+        .logo {
+            font-size: 3em;
+            font-weight: bold;
+            color: #0366d6;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            font-size: 1.3em;
+            color: #586069;
+            margin-bottom: 20px;
+        }
+        .badges {
+            margin: 20px 0;
+        }
+        .badge {
+            margin: 0 5px;
+        }
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .quick-link {
+            padding: 20px;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #24292e;
+            transition: border-color 0.2s;
+        }
+        .quick-link:hover {
+            border-color: #0366d6;
+            text-decoration: none;
+        }
+        .quick-link h3 {
+            margin: 0 0 10px 0;
+            color: #0366d6;
+        }
+        .quick-link p {
+            margin: 0;
+            color: #586069;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        .feature {
+            text-align: center;
+            padding: 20px;
+        }
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        .code-example {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 30px 0;
+            overflow-x: auto;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #e1e4e8;
+            color: #586069;
+        }
+    </style>
+</head>
+<body class="markdown-body">
+    <div class="header">
+        <div class="logo">🔍 FilterQL</div>
+        <div class="tagline">Dynamic Query Filtering Made Simple</div>
+        <div class="badges">
+            <img src="https://img.shields.io/badge/Java-21+-orange" alt="Java 21+" class="badge">
+            <img src="https://img.shields.io/badge/Spring%20Boot-3.3.4+-green" alt="Spring Boot" class="badge">
+            <img src="https://img.shields.io/badge/License-Apache%202.0-blue" alt="License" class="badge">
+            <img src="https://img.shields.io/badge/Version-2.0.0-brightgreen" alt="Version" class="badge">
+        </div>
+        <p>A powerful, type-safe Java library for building dynamic filters with Spring Data JPA integration.</p>
+    </div>
+
+    <div class="quick-links">
+        <a href="docs/" class="quick-link">
+            <h3>📚 Documentation</h3>
+            <p>Complete guides, API reference, and examples</p>
+        </a>
+        <a href="docs/getting-started/quick-start.html" class="quick-link">
+            <h3>🚀 Quick Start</h3>
+            <p>Get up and running in 10 minutes</p>
+        </a>
+        <a href="docs/ARCHITECTURE.html" class="quick-link">
+            <h3>🏗️ Architecture</h3>
+            <p>Deep dive into FilterQL's design and patterns</p>
+        </a>
+        <a href="docs/examples/comprehensive-examples.html" class="quick-link">
+            <h3>💡 Examples</h3>
+            <p>Real-world usage scenarios and patterns</p>
+        </a>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature">
+            <div class="feature-icon">🛡️</div>
+            <h3>Type Safe</h3>
+            <p>Compile-time validation with enum-based property references and generic type parameters</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🔗</div>
+            <h3>Framework Agnostic</h3>
+            <p>Core library works with any persistence technology, Spring adapter included</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">⚡</div>
+            <h3>High Performance</h3>
+            <p>Optimized query generation with caching and efficient SQL output</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🎯</div>
+            <h3>Intuitive DSL</h3>
+            <p>Boolean logic with AND, OR, NOT operations and proper precedence</p>
+        </div>
+    </div>
+
+    <div class="code-example">
+        <h3>Simple Example</h3>
+        <pre><code>// Define your filterable properties
+public enum UserPropertyRef implements PropertyReference {
+    NAME(String.class, Set.of(Op.EQ, Op.MATCHES)),
+    AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
+    STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN));
+}
+
+// Build dynamic filters with type safety
+FilterRequest&lt;UserPropertyRef&gt; request = FilterRequest.&lt;UserPropertyRef&gt;builder()
+    .filter("adults", new FilterDefinition&lt;&gt;(UserPropertyRef.AGE, Op.GTE, 18))
+    .filter("active", new FilterDefinition&lt;&gt;(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
+    .filter("namePattern", new FilterDefinition&lt;&gt;(UserPropertyRef.NAME, Op.MATCHES, "John%"))
+    .combineWith("(adults &amp; active) | namePattern")
+    .build();
+
+// Execute with Spring Data JPA
+FilterContext&lt;User, UserPropertyRef&gt; context = new FilterContext&lt;&gt;(User.class, UserPropertyRef.class);
+Specification&lt;User&gt; spec = context.buildSpecification(request);
+List&lt;User&gt; users = userRepository.findAll(spec);</code></pre>
+    </div>
+
+    <div style="text-align: center; margin: 50px 0;">
+        <h2>Ready to Get Started?</h2>
+        <p>
+            <a href="docs/getting-started/quick-start.html" style="background: #0366d6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">View Quick Start Guide</a>
+            <a href="https://github.com/cyfko/filter-build" style="background: #f6f8fa; color: #24292e; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-left: 10px; border: 1px solid #e1e4e8;">View on GitHub</a>
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 FilterQL. Licensed under the Apache License 2.0.</p>
+        <p>Built with ❤️ for the Java community</p>
+    </div>
+
+    <script>
+        // Redirect to docs if accessing via GitHub Pages domain patterns
+        if (window.location.hostname.includes('github.io') && window.location.pathname === '/filter-build/') {
+            window.location.href = window.location.href + 'docs/';
+        }
+    </script>
+</body>
+</html>
