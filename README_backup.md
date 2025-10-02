@@ -1,30 +1,17 @@
-# FilterQL - Test Deployment# FilterQL — Dynamic Filter Builder
+# FilterQL — Dynamic Filter Builder
 
-
-
-This is a test to verify GitHub Pages deployment is working.[![Maven Central](https://img.shields.io/maven-central/v/io.github.cyfko/filterql-core.svg)](https://central.sonatype.com/namespace/io.github.cyfko)
-
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.cyfko/filterql-core.svg)](https://central.sonatype.com/namespace/io.github.cyfko)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.java.net/)
 
-**Expected URL:** https://cyfko.github.io/filter-build/[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.java.net/)
+---
 
+## 🎯 The Problem
 
-
-If you can see this README, but not the HTML pages, there's likely a GitHub Pages configuration issue.---
-
-
-
-## Quick Test Links## 🎯 The Problem
-
-
-
-- [Main Page](https://cyfko.github.io/filter-build/)Modern web applications often need **dynamic, user-driven search and filtering**. Traditional approaches have significant limitations:
-
-- [Test Page](https://cyfko.github.io/filter-build/test.html)
+Modern web applications often need **dynamic, user-driven search and filtering**. Traditional approaches have significant limitations:
 
 **❌ Static Filters**: Hard-coded conditions that can't adapt to user needs
-
-*Generated: October 2, 2025*```java
+```java
 // Inflexible - what if users want OR logic instead of AND?
 public List<User> findUsers(String name, UserStatus status, Integer minAge) {
     return repository.findByNameAndStatusAndAgeGreaterThan(name, status, minAge);
