@@ -12,24 +12,24 @@ package io.github.cyfko.filterql.core.exception;
  * </p>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public class DSLSyntaxException extends RuntimeException {
 
     /**
-     * Constructeur avec un message explicatif de l'erreur.
+     * Constructor with an explanatory error message.
      *
-     * @param message le message décrivant la cause de l'exception
+     * @param message the message describing the cause of the exception
      */
     public DSLSyntaxException(String message) {
         super(message);
     }
 
     /**
-     * Constructeur avec un message explicatif et une cause sous-jacente.
+     * Constructor with an explanatory message and an underlying cause.
      *
-     * @param message le message décrivant la cause de l'exception
-     * @param cause   la cause originelle de cette exception
+     * @param message the message describing the cause of the exception
+     * @param cause   the original cause of this exception
      */
     public DSLSyntaxException(String message, Throwable cause) {
         super(message, cause);

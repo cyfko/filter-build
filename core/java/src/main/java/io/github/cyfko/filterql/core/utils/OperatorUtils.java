@@ -1,6 +1,6 @@
 package io.github.cyfko.filterql.core.utils;
 
-import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.Op;
 
 import java.util.Set;
 
@@ -24,23 +24,23 @@ public final class OperatorUtils {
         /**
          * Immutable set of operators applicable to text properties (String, etc.).
          */
-    public static final Set<Operator> FOR_TEXT = Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+    public static final Set<Op> FOR_TEXT = Set.of(
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.NOT_NULL
     );
 
         /**
          * Immutable set of operators applicable to numeric properties.
          */
-    public static final Set<Operator> FOR_NUMBER = Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.GREATER_THAN, Operator.GREATER_THAN_OR_EQUAL,
-            Operator.LESS_THAN, Operator.LESS_THAN_OR_EQUAL,
-            Operator.BETWEEN, Operator.NOT_BETWEEN,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+    public static final Set<Op> FOR_NUMBER = Set.of(
+            Op.EQ, Op.NE,
+            Op.GT, Op.GTE,
+            Op.LT, Op.LTE,
+            Op.RANGE, Op.NOT_RANGE,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.NOT_NULL
     );
 }
 

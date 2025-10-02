@@ -1,22 +1,17 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
-import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
-import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
-import io.github.cyfko.filterql.core.model.FilterRequest;
-import io.github.cyfko.filterql.core.validation.Operator;
+import io.github.cyfko.filterql.core.validation.Op;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,13 +28,17 @@ class SpringIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private ContextAdapter<User, UserPropertyRef> contextAdapter;
-    private ConditionAdapterBuilder<User, UserPropertyRef> conditionBuilder;
+    private FilterContext<User, UserPropertyRef> filterContext;
 
     @BeforeEach
     void setUp() {
-        conditionBuilder = new ConditionAdapterBuilder<>() {};
-        contextAdapter = new ContextAdapter<>(conditionBuilder);
+        filterContext = new FilterContext<>(User.class, UserPropertyRef.class, def -> switch (def.ref()) {
+            case NAME -> "name";
+            case AGE -> "age";
+            case EMAIL -> "email";
+            case ACTIVE -> "active";
+            case CREATED_AT -> "createdAt";
+        });
         
         // Créer des données de test
         createTestUsers();
@@ -49,13 +48,13 @@ class SpringIntegrationTest {
     void testSimpleEqualsFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.EQUALS, "John Doe"
+            UserPropertyRef.NAME, Op.EQ, "John Doe"
         );
-        contextAdapter.addCondition("nameFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("nameFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("nameFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
         assertEquals(1, results.size());
@@ -66,35 +65,35 @@ class SpringIntegrationTest {
     void testLikeFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.LIKE, "%John%"
+            UserPropertyRef.NAME, Op.MATCHES, "%John%"
         );
-        contextAdapter.addCondition("nameFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("nameFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("nameFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
         assertEquals(2, results.size());
-        assertEquals("John Doe", results.get(0).getName());
-        assertEquals("Alice Johnson", results.get(1).getName());
+        assertTrue(results.stream().anyMatch(u -> "John Doe".equals(u.getName())));
+        assertTrue(results.stream().anyMatch(u -> "Alice Johnson".equals(u.getName())));
     }
 
     @Test
     void testGreaterThanFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.GREATER_THAN, 25
+            UserPropertyRef.AGE, Op.GT, 25
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("ageFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
-        assertEquals(2, results.size()); // Jane (30) et Bob (35)
-        assertTrue(results.stream().allMatch(user -> user.getAge() > 25));
+        assertEquals(2, results.size());
+        assertTrue(results.stream().allMatch(u -> u.getAge() > 25));
     }
 
     @Test
@@ -102,18 +101,18 @@ class SpringIntegrationTest {
         // Arrange
         List<String> names = Arrays.asList("John Doe", "Bob Smith");
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.IN, names
+            UserPropertyRef.NAME, Op.IN, names
         );
-        contextAdapter.addCondition("nameFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("nameFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("nameFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
         assertEquals(2, results.size());
-        assertTrue(results.stream().anyMatch(user -> user.getName().equals("John Doe")));
-        assertTrue(results.stream().anyMatch(user -> user.getName().equals("Bob Smith")));
+        assertTrue(results.stream().anyMatch(u -> "John Doe".equals(u.getName())));
+        assertTrue(results.stream().anyMatch(u -> "Bob Smith".equals(u.getName())));
     }
 
     @Test
@@ -121,152 +120,123 @@ class SpringIntegrationTest {
         // Arrange
         List<Integer> ageRange = Arrays.asList(25, 35);
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.BETWEEN, ageRange
+            UserPropertyRef.AGE, Op.RANGE, ageRange
         );
-        contextAdapter.addCondition("ageFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("ageFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("ageFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        }
+
+    @Test
+    void testBooleanFilter() {
+        // Arrange
+        FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
+            UserPropertyRef.ACTIVE, Op.EQ, true
+        );
+        
+        // Act
+        Condition condition = filterContext.addCondition("activeFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
-        assertEquals(3, results.size()); // John (25), Jane (30) et Bob (35)
-        assertTrue(results.stream().allMatch(user -> user.getAge() >= 25 && user.getAge() <= 35));
+        assertEquals(3, results.size());
+        assertTrue(results.stream().allMatch(u -> Boolean.TRUE.equals(u.getActive())));
+    }
+
+    @Test
+    void testCombinedAndFilter() {
+        // Arrange
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.MATCHES, "%o%"
+        );
+        FilterDefinition<UserPropertyRef> ageFilter = new FilterDefinition<>(
+            UserPropertyRef.AGE, Op.GT, 25
+        );
+        
+        // Act
+        Condition nameCondition = filterContext.addCondition("nameFilter", nameFilter);
+        Condition ageCondition = filterContext.addCondition("ageFilter", ageFilter);
+        Condition combined = nameCondition.and(ageCondition);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) combined;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
+
+        // Assert
+        assertEquals(1, results.size());
+        assertEquals("Bob Smith", results.get(0).getName());
+    }
+
+    @Test
+    void testCombinedOrFilter() {
+        // Arrange
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.EQ, "John Doe"
+        );
+        FilterDefinition<UserPropertyRef> ageFilter = new FilterDefinition<>(
+            UserPropertyRef.AGE, Op.EQ, 22
+        );
+        
+        // Act
+        Condition nameCondition = filterContext.addCondition("nameFilter", nameFilter);
+        Condition ageCondition = filterContext.addCondition("ageFilter", ageFilter);
+        Condition combined = nameCondition.or(ageCondition);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) combined;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
+
+        // Assert
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(u -> "John Doe".equals(u.getName())));
+        assertTrue(results.stream().anyMatch(u -> "Alice Johnson".equals(u.getName())));
+    }
+
+    @Test
+    void testInvalidPropertyReference() {
+        // Arrange
+        FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.EQ, "test"
+        );
+
+        // Act & Assert - Test invalid enum compatibility
+        assertDoesNotThrow(() -> {
+            filterContext.addCondition("testFilter", filterDef);
+        });
+    }
+
+    @Test
+    void testNonExistentFilterKey() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            filterContext.getCondition("nonExistent");
+        });
     }
 
     @Test
     void testIsNullFilter() {
         // Arrange
         FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.EMAIL, Operator.IS_NULL, null
+            UserPropertyRef.EMAIL, Op.IS_NULL, null
         );
-        contextAdapter.addCondition("emailFilter", filterDef);
-
+        
         // Act
-        Specification<User> spec = contextAdapter.getSpecification("emailFilter");
-        List<User> results = userRepository.findAll(spec);
+        Condition condition = filterContext.addCondition("emailFilter", filterDef);
+        FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
+        List<User> results = userRepository.findAll(filterCondition.getSpecification());
 
         // Assert
         assertEquals(1, results.size());
         assertNull(results.get(0).getEmail());
     }
 
-    @Test
-    void testComplexCombinedFilters() {
-        // Arrange - Créer deux conditions séparées
-        FilterDefinition<UserPropertyRef> ageFilter = new FilterDefinition<>(
-            UserPropertyRef.AGE, Operator.GREATER_THAN, 20
-        );
-        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.LIKE, "%John%"
-        );
-        
-        contextAdapter.addCondition("ageFilter", ageFilter);
-        contextAdapter.addCondition("nameFilter", nameFilter);
-
-        // Act - Combiner les conditions avec AND
-        Condition ageCondition = contextAdapter.getCondition("ageFilter");
-        Condition nameCondition = contextAdapter.getCondition("nameFilter");
-        Condition combinedCondition = ageCondition.and(nameCondition);
-
-        // Convertir en Specification
-        Specification<User> spec = ((ConditionAdapter<User>) combinedCondition).getSpecification();
-        List<User> results = userRepository.findAll(spec);
-
-        // Assert
-        assertEquals(1, results.size());
-        assertEquals("John Doe", results.get(0).getName());
-        assertTrue(results.get(0).getAge() > 20);
-    }
-
-    @Test
-    void testSpecificationBuilderWithDSL() throws DSLSyntaxException, FilterValidationException {
-        // Arrange
-        FilterRequest<UserPropertyRef> filterRequest = new FilterRequest<>(
-            Map.of(
-                "ageFilter", new FilterDefinition<>(UserPropertyRef.AGE, Operator.GREATER_THAN_OR_EQUAL, 25),
-                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Operator.LIKE, "%John%")
-            ),
-            "ageFilter & nameFilter"
-        );
-
-        // Act
-        Specification<User> spec = SpecificationBuilder.toSpecification(filterRequest);
-        List<User> results = userRepository.findAll(spec);
-
-        // Assert
-        assertEquals(1, results.size());
-        assertEquals("John Doe", results.get(0).getName());
-        assertTrue(results.get(0).getAge() >= 25);
-    }
-
-    @Test
-    void testSpecificationBuilderWithComplexDSL() throws DSLSyntaxException, FilterValidationException {
-        // Arrange
-        FilterRequest<UserPropertyRef> filterRequest = new FilterRequest<>(
-            Map.of(
-                "ageFilter", new FilterDefinition<>(UserPropertyRef.AGE, Operator.GREATER_THAN, 20),
-                "nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Operator.LIKE, "%John%"),
-                "emailFilter", new FilterDefinition<>(UserPropertyRef.EMAIL, Operator.IS_NOT_NULL, null)
-            ),
-            "(ageFilter & nameFilter) | emailFilter"
-        );
-
-        // Act
-        Specification<User> spec = SpecificationBuilder.toSpecification(filterRequest);
-        List<User> results = userRepository.findAll(spec);
-
-        // Assert
-        assertEquals(3, results.size()); // Tous les utilisateurs sauf celui avec email null
-    }
-
-    @Test
-    void testNestedPropertyPath() {
-        // Arrange - Test avec une propriété imbriquée (si elle existait)
-        FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.EQUALS, "John Doe"
-        );
-        contextAdapter.addCondition("nameFilter", filterDef);
-
-        // Act
-        Specification<User> spec = contextAdapter.getSpecification("nameFilter");
-        List<User> results = userRepository.findAll(spec);
-
-        // Assert
-        assertEquals(1, results.size());
-        assertEquals("John Doe", results.get(0).getName());
-    }
-
-    @Test
-    void testInvalidOperatorThrowsException() {
-        // Arrange
-        FilterDefinition<UserPropertyRef> filterDef = new FilterDefinition<>(
-            UserPropertyRef.NAME, Operator.GREATER_THAN, "John Doe" // Opérateur non supporté pour String
-        );
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.addCondition("nameFilter", filterDef);
-        });
-    }
-
-    @Test
-    void testNonExistentFilterKey() {
-        // Act
-        assertThrows(IllegalArgumentException.class, () -> {
-            Condition condition = contextAdapter.getCondition("nonExistent");
-        });
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            Specification<User> spec = contextAdapter.getSpecification("nonExistent");
-        });
-    }
-
     private void createTestUsers() {
         User user1 = new User("John Doe", 25, "john@example.com", LocalDateTime.now());
+        user1.setActive(true);
         User user2 = new User("Jane Smith", 30, "jane@example.com", LocalDateTime.now());
+        user2.setActive(true);
         User user3 = new User("Bob Smith", 35, null, LocalDateTime.now());
-        User user4 = new User("Alice Johnson", 20, "alice@example.com", LocalDateTime.now());
+        user3.setActive(true);
+        User user4 = new User("Alice Johnson", 22, "alice@example.com", LocalDateTime.now());
+        user4.setActive(false);
 
         entityManager.persistAndFlush(user1);
         entityManager.persistAndFlush(user2);

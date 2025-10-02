@@ -1,5 +1,6 @@
 package io.github.cyfko.filterql.core.validation;
 
+import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.utils.ClassUtils;
 
 import java.util.Collection;
@@ -15,22 +16,22 @@ import java.util.stream.Collectors;
  * the accessible properties and their characteristics on their entities.
  * </p>
  * <p>
- * {@code PropertyRef} only contains the logical definition of the property (type, supported operators).
+ * {@code PropertyReference} only contains the logical definition of the property (type, supported operators).
  * Each adapter is responsible for interpreting this interface and building the appropriate conditions.
  * This distinction offers great flexibility, allowing for example a single property reference
  * to correspond to multiple fields or complex conditions.
  * </p>
  * <p><b>Usage example:</b></p>
  * <pre>{@code
- * public enum UserPropertyRef implements PropertyRef {
- *     USER_NAME(String.class, Set.of(LIKE, EQUALS, IN)),
- *     USER_AGE(Integer.class, Set.of(EQUALS, GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, BETWEEN)),
- *     USER_STATUS(UserStatus.class, Set.of(EQUALS, NOT_EQUALS, IN));
+ * public enum UserPropertyRef implements PropertyReference {
+ *     USER_NAME(String.class, Set.of(Op.MATCHES, Op.EQ, Op.IN)),
+ *     USER_AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
+ *     USER_STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN));
  *
  *     private final Class<?> type;
- *     private final Set<Operator> supportedOperators;
+ *     private final Set<Op> supportedOperators;
  *
- *     UserPropertyRef(Class<?> type, Set<Operator> supportedOperators) {
+ *     UserPropertyRef(Class<?> type, Set<Op> supportedOperators) {
  *         this.type = type;
  *         this.supportedOperators = Set.copyOf(supportedOperators);
  *     }
@@ -39,15 +40,15 @@ import java.util.stream.Collectors;
  *     public Class<?> getType() { return type; }
  *
  *     @Override
- *     public Set<Operator> getSupportedOperators() { return supportedOperators; }
+ *     public Set<Op> getSupportedOperators() { return supportedOperators; }
  * }
  * }
  * </pre>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
-public interface PropertyRef {
+public interface PropertyReference {
 
     /**
      * Returns the Java type of the represented property.
@@ -61,7 +62,7 @@ public interface PropertyRef {
      *
      * @return an immutable {@link Set} of operators supported by the property
      */
-    Set<Operator> getSupportedOperators();
+    Set<Op> getSupportedOperators();
 
     /**
      * Indicates whether the given operator is supported for this property.
@@ -70,23 +71,23 @@ public interface PropertyRef {
      * @return {@code true} if the operator is supported, {@code false} otherwise
      * @throws NullPointerException if {@code operator} is {@code null}
      */
-    default boolean supportsOperator(Operator operator) {
+    default boolean supportsOperator(Op operator) {
         Objects.requireNonNull(operator, "Operator cannot be null");
         return getSupportedOperators().contains(operator);
     }
 
     /**
      * Validates that the given operator is supported by this property.
-     * Throws an {@link IllegalArgumentException} if not.
+     * Throws an {@link FilterValidationException} if not.
      *
      * @param operator the operator to validate, not null
-     * @throws IllegalArgumentException if the operator is not supported
+     * @throws FilterValidationException if the operator is not supported
      * @throws NullPointerException     if {@code operator} is {@code null}
      */
-    default void validateOperator(Operator operator) {
+    default void validateOperator(Op operator) {
         Objects.requireNonNull(operator, "Operator cannot be null");
         if (!supportsOperator(operator)) {
-            throw new IllegalArgumentException(
+            throw new FilterValidationException(
                     String.format("Operator %s is not supported for property %s. Supported operators: %s",
                             operator, this, getSupportedOperators()));
         }
@@ -104,19 +105,19 @@ public interface PropertyRef {
      *
      * @param operator the operator to validate, not null
      * @param value    the value to which the operator applies, may be null for some operators
-     * @throws IllegalArgumentException if the operator is not applicable for the given value
+     * @throws FilterValidationException if the operator is not applicable for the given value
      * @throws NullPointerException     if {@code operator} is {@code null}
      */
-    default void validateOperatorForValue(Operator operator, Object value) {
+    default void validateOperatorForValue(Op operator, Object value) {
         Objects.requireNonNull(operator, "Operator cannot be null");
 
-        // Validation de l'opérateur pour cette propriété
+        // Validate the operator for this property
         validateOperator(operator);
 
-        // Validation spécifique selon le type d'opérateur
+        // Specific validation according to the operator type
         ValidationResult result = validateValueForOperator(operator, value);
         if (!result.isValid()) {
-            throw new IllegalArgumentException(result.getErrorMessage());
+            throw new FilterValidationException(result.getErrorMessage());
         }
     }
 
@@ -128,41 +129,20 @@ public interface PropertyRef {
      * @param value the value to validate
      * @return the validation result
      */
-    private ValidationResult validateValueForOperator(Operator operator, Object value) {
-        switch (operator) {
-            case EQUALS:
-            case NOT_EQUALS:
-            case GREATER_THAN:
-            case GREATER_THAN_OR_EQUAL:
-            case LESS_THAN:
-            case LESS_THAN_OR_EQUAL:
-            case LIKE:
-            case NOT_LIKE:
-                return validateSingleValue(operator, value);
-
-            case IS_NULL:
-            case IS_NOT_NULL:
-                return validateNullCheck(operator, value);
-
-            case IN:
-            case NOT_IN:
-                return validateCollectionValue(operator, value, false);
-
-            case BETWEEN:
-            case NOT_BETWEEN:
-                return validateCollectionValue(operator, value, true);
-
-            default:
-                return ValidationResult.failure(
-                        String.format("Unsupported operator: %s", operator)
-                );
-        }
+    private ValidationResult validateValueForOperator(Op operator, Object value) {
+        return switch (operator) {
+            case EQ, NE, GT, GTE, LT, LTE, MATCHES,
+                 NOT_MATCHES -> validateSingleValue(operator, value);
+            case IS_NULL, NOT_NULL -> validateNullCheck(operator, value);
+            case IN, NOT_IN -> validateCollectionValue(operator, value, false);
+            case RANGE, NOT_RANGE -> validateCollectionValue(operator, value, true);
+        };
     }
 
     /**
      * Validates a single value for comparison operators.
      */
-    private ValidationResult validateSingleValue(Operator operator, Object value) {
+    private ValidationResult validateSingleValue(Op operator, Object value) {
         if (value == null) {
             return ValidationResult.failure(
                     String.format("Operator %s requires a non-null value", operator)
@@ -184,16 +164,16 @@ public interface PropertyRef {
     /**
      * Validates null-check operators.
      */
-    private ValidationResult validateNullCheck(Operator operator, Object value) {
-        // Pour IS_NULL et IS_NOT_NULL, la valeur devrait être null ou absente
-        // mais on peut être tolérant et accepter toute valeur
+    private ValidationResult validateNullCheck(Op operator, Object value) {
+        // For IS_NULL and IS_NOT_NULL, the value should be null or absent
+        // but we can be tolerant and accept any value
         return ValidationResult.success();
     }
 
     /**
      * Validates a collection value for IN and BETWEEN operators.
      */
-    private ValidationResult validateCollectionValue(Operator operator, Object value, boolean requiresExactlyTwo) {
+    private ValidationResult validateCollectionValue(Op operator, Object value, boolean requiresExactlyTwo) {
         if (value == null) {
             return ValidationResult.failure(
                     String.format("Operator %s requires a non-null collection value", operator)
@@ -222,7 +202,7 @@ public interface PropertyRef {
             );
         }
 
-        // Vérifier la compatibilité des types des éléments
+        // Check type compatibility of elements
         if (!ClassUtils.allCompatible(getType(), collection)) {
             return ValidationResult.failure(
                     String.format("Collection elements are not compatible with property type %s for operator %s",
@@ -238,12 +218,12 @@ public interface PropertyRef {
      * Handles primitive types and their wrappers.
      */
     private boolean isCompatibleType(Class<?> valueType, Class<?> expectedType) {
-        // Assignabilité directe
+        // Direct assignability
         if (expectedType.isAssignableFrom(valueType)) {
             return true;
         }
 
-        // Gestion des primitives et leurs wrappers
+        // Handle primitives and their wrappers
         return isPrimitiveCompatible(valueType, expectedType);
     }
 
@@ -279,7 +259,7 @@ public interface PropertyRef {
      * @return true if all operators are supported
      * @throws NullPointerException if operators is null
      */
-    default boolean supportsAllOperators(Collection<Operator> operators) {
+    default boolean supportsAllOperators(Collection<Op> operators) {
         Objects.requireNonNull(operators, "Operators collection cannot be null");
         return getSupportedOperators().containsAll(operators);
     }
@@ -292,7 +272,7 @@ public interface PropertyRef {
      * @return set of unsupported operators (may be empty)
      * @throws NullPointerException if operators is null
      */
-    default Set<Operator> getUnsupportedOperators(Collection<Operator> operators) {
+    default Set<Op> getUnsupportedOperators(Collection<Op> operators) {
         Objects.requireNonNull(operators, "Operators collection cannot be null");
         return operators.stream()
                 .filter(op -> !supportsOperator(op))
@@ -348,7 +328,7 @@ public interface PropertyRef {
      * }
      * }</pre>
      */
-    class ValidationResult {
+    static class ValidationResult {
 
         private final boolean valid;
         private final String errorMessage;

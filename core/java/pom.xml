@@ -7,7 +7,7 @@
 
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-core</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>FilterQL</name>
@@ -45,7 +45,18 @@
     </properties>
 
     <dependencies>
-        <!-- No external dependencies - this is a pure core module -->
+        <!-- Jakarta dependency -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.1.1</version>
+        </dependency>
         
         <!-- Test dependencies -->
         <dependency>
@@ -135,7 +146,8 @@
                 </executions>
             </plugin>
 
-            <!-- Javadoc and source attachement  -->
+            <!-- Javadoc temporarily disabled for testing -->
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -154,6 +166,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 

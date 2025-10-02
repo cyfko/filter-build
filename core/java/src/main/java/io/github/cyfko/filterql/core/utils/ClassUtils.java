@@ -29,11 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * }</pre>
  *
  * @author Frank KOSSI
- * @since 1.1.0
+ * @since 2.0.0
  */
 public final class ClassUtils {
 
-    // Cache pour améliorer les performances des recherches répétitives
+    // Cache to improve performance of repetitive searches
     private static final Map<String, Optional<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Class<?>> SUPERCLASS_CACHE = new ConcurrentHashMap<>();
 
@@ -104,7 +104,7 @@ public final class ClassUtils {
 
         Type targetType = typeArgs[paramIndex];
 
-        // Gestion des différents types de paramètres génériques
+        // Handle different types of generic parameters
         if (targetType instanceof WildcardType) {
             return handleWildcardType((WildcardType) targetType);
         } else if (targetType instanceof GenericArrayType) {
@@ -123,17 +123,17 @@ public final class ClassUtils {
         Type[] upperBounds = wildcardType.getUpperBounds();
         Type[] lowerBounds = wildcardType.getLowerBounds();
 
-        // ? extends Type -> prendre la borne supérieure
+        // ? extends Type -> take the upper bound
         if (upperBounds.length > 0 && upperBounds[0] != Object.class) {
             return Optional.of(upperBounds[0]);
         }
 
-        // ? super Type -> prendre la borne inférieure
+        // ? super Type -> take the lower bound
         if (lowerBounds.length > 0) {
             return Optional.of(lowerBounds[0]);
         }
 
-        // ? seul -> Object
+        // ? alone -> Object
         return Optional.of(Object.class);
     }
 
@@ -150,7 +150,7 @@ public final class ClassUtils {
      */
     private static Optional<Type> handleTypeVariable(TypeVariable<?> typeVar) {
         Type[] bounds = typeVar.getBounds();
-        // Retourner la première borne (généralement Object si pas de contrainte)
+        // Return the first bound (usually Object if no constraint)
         return bounds.length > 0 ? Optional.of(bounds[0]) : Optional.of(Object.class);
     }
 
@@ -171,7 +171,7 @@ public final class ClassUtils {
             throw new IllegalArgumentException("Collection must not be empty");
         }
 
-        // Collecter tous les types uniques
+        // Collect all unique types
         Set<Class<?>> uniqueTypes = new LinkedHashSet<>();
         for (T element : collection) {
             if (element != null) {
@@ -187,7 +187,7 @@ public final class ClassUtils {
             return (Class<? super T>) uniqueTypes.iterator().next();
         }
 
-        // Calculer la classe commune avec cache
+        // Compute common class with cache
         String cacheKey = uniqueTypes.stream()
                 .map(Class::getName)
                 .sorted()
@@ -227,7 +227,7 @@ public final class ClassUtils {
             return class2;
         }
 
-        // Remonter la hiérarchie de class1 jusqu'à trouver un ancêtre commun
+        // Traverse the hierarchy of class1 until finding a common ancestor
         Class<?> current = class1;
         while (current != null && current != Object.class) {
             if (current.isAssignableFrom(class2)) {
@@ -357,7 +357,7 @@ public final class ClassUtils {
 
         @SuppressWarnings("unchecked")
         protected TypeReference() {
-            // Validation de sécurité contre l'héritage multiple
+            // Security validation against multiple inheritance
             Class<?> thisClass = getClass();
             if (!thisClass.getName().contains("$") && thisClass != TypeReference.class) {
                 throw new IllegalStateException("TypeReference ne doit pas être étendu par une classe nommée. Utilisez une classe anonyme.");
@@ -377,7 +377,7 @@ public final class ClassUtils {
 
             this.type = typeArgs[0];
 
-            // Résolution du type réel
+            // Resolution of the actual type
             if (type instanceof Class<?>) {
                 this.typeClass = (Class<T>) type;
             } else if (type instanceof ParameterizedType) {

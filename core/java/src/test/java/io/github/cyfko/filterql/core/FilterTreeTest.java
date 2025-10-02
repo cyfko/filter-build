@@ -1,5 +1,7 @@
 package io.github.cyfko.filterql.core;
 
+import io.github.cyfko.filterql.core.domain.PredicateResolver;
+import io.github.cyfko.filterql.core.model.FilterDefinition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,8 +117,18 @@ class FilterTreeTest {
         }
 
         @Override
+        public Condition addCondition(String filterKey, FilterDefinition<?> definition) {
+            return conditions.put(filterKey, null);
+        }
+
+        @Override
         public Condition getCondition(String key) {
             return conditions.get(key);
+        }
+
+        @Override
+        public <E> PredicateResolver<E> toResolver(Class<E> entityClass, Condition condition) {
+            return null;
         }
     }
 

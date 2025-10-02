@@ -15,24 +15,24 @@ package io.github.cyfko.filterql.core.exception;
  * }</pre>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public class FilterValidationException extends RuntimeException {
 
     /**
-     * Crée une exception avec un message explicatif.
+     * Creates an exception with an explanatory message.
      *
-     * @param message la description de la cause de l'exception
+     * @param message the description of the cause of the exception
      */
     public FilterValidationException(String message) {
         super(message);
     }
 
     /**
-     * Crée une exception avec un message explicatif et une cause sous-jacente.
+     * Creates an exception with an explanatory message and an underlying cause.
      *
-     * @param message la description de la cause de l'exception
-     * @param cause   la cause originelle de l'exception
+     * @param message the description of the cause of the exception
+     * @param cause   the original cause of the exception
      */
     public FilterValidationException(String message, Throwable cause) {
         super(message, cause);

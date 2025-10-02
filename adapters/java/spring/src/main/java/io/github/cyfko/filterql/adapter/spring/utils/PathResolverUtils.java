@@ -17,7 +17,7 @@ import java.util.*;
  * <p>It also handles collections by joining entity relationships and dynamically determining the generic types of collections.</p>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  *
  * <p><b>Note:</b> This resolution is designed for use in dynamic queries built with the Criteria API (javax.persistence.criteria).</p>
  *
@@ -89,7 +89,7 @@ public class PathResolverUtils {
                     currentClass = field.getType();
                 }
             } else {
-                // Dernier segment du chemin : récupérer la propriété en tant que Path
+                // Last segment of the path: get the property as a Path
                 return current.get(part);
             }
         }

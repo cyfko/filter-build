@@ -1,9 +1,9 @@
 package io.github.cyfko.filterql.core.model;
 
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a complete filter request containing multiple filter definitions
@@ -11,47 +11,15 @@ import java.util.Map;
  * <p>
  * Each filter definition associates a property, an operator, and a value,
  * while the DSL expression {@code combineWith} defines how these filters are logically combined
- * (for example, using AND, OR operators).
+ * (example: "(f1 &amp; f2) | f3").
  * </p>
  *
- * @param <P> type of the reference property, an enum implementing {@link PropertyRef}
- *
+ * @param <P> type of the reference property, an enum implementing {@link PropertyReference}
  * @author Frank KOSSI
  * @since 1.0
  */
-public class FilterRequest<P extends Enum<P> & PropertyRef> {
-
-    private final Map<String, FilterDefinition<P>> filters;
-    private final String combineWith;
-
-    /**
-     * Constructs a new filter request.
-     *
-     * @param filters     a map of filter definitions identified by their keys
-     * @param combineWith a DSL expression combining the filters
-     */
-    public FilterRequest(Map<String, FilterDefinition<P>> filters, String combineWith) {
-        this.filters = filters;
-        this.combineWith = combineWith;
-    }
-
-    /**
-     * Returns the map of filter definitions.
-     *
-     * @return the immutable or mutable map of filters
-     */
-    public Map<String, FilterDefinition<P>> getFilters() {
-        return filters;
-    }
-
-    /**
-     * Returns the DSL expression defining the logical combination of filters.
-     *
-     * @return the combination DSL expression (example: "(f1 &amp; f2) | f3")
-     */
-    public String getCombineWith() {
-        return combineWith;
-    }
+public record FilterRequest<P extends Enum<P> & PropertyReference>(Map<String, FilterDefinition<P>> filters,
+                                                                   String combineWith) {
 
     @Override
     public String toString() {
@@ -65,10 +33,10 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
      * for constructing {@link FilterRequest} objects with a fluent API.
      * </p>
      *
-     * @param <R> the enum type representing filterable properties, which must extend {@code Enum} and implement {@link PropertyRef}
+     * @param <R> the enum type representing filterable properties, which must extend {@code Enum} and implement {@link PropertyReference}
      * @return a new builder instance
      */
-    public static <R extends Enum<R> & PropertyRef> Builder<R> builder() {
+    public static <R extends Enum<R> & PropertyReference> Builder<R> builder() {
         return new Builder<>();
     }
 
@@ -80,9 +48,9 @@ public class FilterRequest<P extends Enum<P> & PropertyRef> {
      * </p>
      *
      * @param <P> the enum type representing filterable properties,
-     *            which must extend {@code Enum} and implement {@link PropertyRef}
+     *            which must extend {@code Enum} and implement {@link PropertyReference}
      */
-    public static class Builder<P extends Enum<P> & PropertyRef> {
+    public static class Builder<P extends Enum<P> & PropertyReference> {
 
         private final Map<String, FilterDefinition<P>> filters = new HashMap<>();
         private String combineWith;

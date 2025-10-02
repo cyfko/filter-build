@@ -1,18 +1,20 @@
 package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.core.Condition;
+import io.github.cyfko.filterql.core.FilterResolver;
+import io.github.cyfko.filterql.core.domain.PredicateResolver;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 import jakarta.persistence.criteria.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.*;
 
@@ -40,21 +42,27 @@ class SpringUtilityTest {
     @Mock
     private Predicate predicate;
 
-    // Les tests de PathResolverUtils sont maintenant dans PathResolverUtilsTest
-    // pour éviter la duplication et assurer la cohérence
+    private FilterContext<TestEntity,TestPropertyRef> context;
+
+    @BeforeEach
+    void setUp() {
+        context = new FilterContext<>(TestEntity.class, TestPropertyRef.class, def -> switch (def.ref()){
+            case TEST_FIELD -> "testField";
+        });
+    }
 
     @Test
     void testSpecificationBuilderWithSimpleDSL() throws DSLSyntaxException, FilterValidationException {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "testFilter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "testFilter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "testFilter"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -65,14 +73,14 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"),
-                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.LIKE, "%value2%")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%")
             ),
             "filter1 & filter2"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -83,14 +91,14 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"),
-                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value2")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2")
             ),
             "filter1 | filter2"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -101,13 +109,13 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "filter1", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "! filter1"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -118,15 +126,15 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value2"),
-                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value3")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2"),
+                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value3")
             ),
             "(filter1 & filter2) | filter3"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -137,16 +145,16 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value2"),
-                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value3"),
-                "filter4",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value4")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2"),
+                "filter3",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value3"),
+                "filter4",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value4")
             ),
             "((filter1 & filter2) | (filter3 & filter4))"
         );
 
         // Act
-        Specification<TestEntity> spec = SpecificationBuilder.toSpecification(filterRequest);
+        PredicateResolver<TestEntity> spec = FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
 
         // Assert
         assertNotNull(spec);
@@ -157,14 +165,14 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "filterName",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "invalid syntax"
         );
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -173,15 +181,15 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"),
-                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value2")
+                "filter1",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value1"),
+                "filter2",new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value2")
             ),
             "(filter1 AND filter2"
         );
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -190,51 +198,42 @@ class SpringUtilityTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "filter", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "nonExistentFilter"
         );
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
     @Test
     void testSpringConditionAdapterBuilderWithAllOperators() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
 
         // Test all supported operators
-        Operator[] operators = {
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+        Op[] operators = {
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.NOT_NULL
         };
 
-        for (Operator operator : operators) {
+        for (Op operator : operators) {
             // Act
-            ConditionAdapter<TestEntity> adapter = builder.build(
-                TestPropertyRef.TEST_FIELD, 
-                operator, 
-                getTestValueForOperator(operator)
+            Condition condition = context.addCondition("key",
+                    new FilterDefinition<>(TestPropertyRef.TEST_FIELD, operator, getTestValueForOperator(operator))
             );
 
             // Assert
-            assertNotNull(adapter);
-            assertNotNull(adapter.getSpecification());
+            assertNotNull(condition);
+            assertNotNull(context.toResolver(TestEntity.class, condition));
         }
     }
 
     @Test
     void testSpringConditionAdapterBuilderWithDifferentValueTypes() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
         // Test with different value types
         Object[] values = {
             "stringValue",
@@ -244,76 +243,57 @@ class SpringUtilityTest {
 
         for (Object value : values) {
             // Act
-            ConditionAdapter<TestEntity> adapter = builder.build(
-                TestPropertyRef.TEST_FIELD, 
-                Operator.EQUALS, 
-                value
+            Condition condition = context.addCondition("key", 
+                    new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, value)
             );
 
             // Assert
-            assertNotNull(adapter);
-            assertNotNull(adapter.getSpecification());
+            assertNotNull(condition);
+            assertNotNull(context.toResolver(TestEntity.class, condition));
         }
     }
 
     @Test
     void testSpringContextAdapterWithMultiplePropertyRefs() {
-        // Arrange
-        ContextAdapter<TestEntity, TestPropertyRef> contextAdapter =
-            new ContextAdapter<>(new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
-
         // Act
-        contextAdapter.addCondition("filter1", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"
+        Condition condition1 = context.addCondition("filter1", new FilterDefinition<>(
+                TestPropertyRef.TEST_FIELD, Op.EQ, "value1"
         ));
-        contextAdapter.addCondition("filter2", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.LIKE, "%value2%"
+        Condition condition2 = context.addCondition("filter2", new FilterDefinition<>(
+                TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%"
         ));
 
         // Assert
-        assertNotNull(contextAdapter.getCondition("filter1"));
-        assertNotNull(contextAdapter.getCondition("filter2"));
-        assertNotNull(contextAdapter.getSpecification("filter1"));
-        assertNotNull(contextAdapter.getSpecification("filter2"));
+        assertNotNull(condition1);
+        assertNotNull(condition2);
+        assertNotNull(context.toResolver(TestEntity.class, condition1));
+        assertNotNull(context.toResolver(TestEntity.class, condition2));
     }
 
     @Test
     void testSpringContextAdapterWithOverwriteCondition() {
-        // Arrange
-        ContextAdapter<TestEntity, TestPropertyRef> contextAdapter =
-            new ContextAdapter<>(new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {});
-
         // Act
-        contextAdapter.addCondition("filter1", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value1"
+        context.addCondition("filter1", new FilterDefinition<>(
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value1"
         ));
-        contextAdapter.addCondition("filter1", new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.LIKE, "%value2%"
+        context.addCondition("filter1", new FilterDefinition<>(
+            TestPropertyRef.TEST_FIELD, Op.MATCHES, "%value2%"
         ));
 
         // Assert
-        Condition condition = contextAdapter.getCondition("filter1");
+        Condition condition = context.getCondition("filter1");
         assertNotNull(condition);
         // The condition should be the second one (overwritten)
     }
 
-    private Object getTestValueForOperator(Operator operator) {
-        switch (operator) {
-            case EQUALS:
-            case NOT_EQUALS:
-                return "testValue";
-            case LIKE:
-            case NOT_LIKE:
-                return "%test%";
-            case IN:
-            case NOT_IN:
-                return Arrays.asList("value1", "value2");
-            case IS_NULL:
-            case IS_NOT_NULL:
-                return null;
-            default:
-                return "defaultValue";
-        }
+    private Object getTestValueForOperator(Op operator) {
+        return switch (operator) {
+            case EQ, NE -> "testValue";
+            case MATCHES, NOT_MATCHES -> "%test%";
+            case IN, NOT_IN -> Arrays.asList("value1", "value2");
+            case IS_NULL, NOT_NULL -> null;
+            default -> "defaultValue";
+        };
     }
 
     // Test entity class
@@ -325,27 +305,20 @@ class SpringUtilityTest {
     }
 
     // Test property reference enum
-    enum TestPropertyRef implements PropertyRef, PathShape {
-        TEST_FIELD("testField", String.class, Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+    enum TestPropertyRef implements PropertyReference {
+        TEST_FIELD(String.class, Set.of(
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.NOT_NULL
         ));
 
-        private final String path;
         private final Class<?> type;
-        private final Set<Operator> supportedOperators;
+        private final Set<Op> supportedOperators;
 
-        TestPropertyRef(String path, Class<?> type, Set<Operator> supportedOperators) {
-            this.path = path;
+        TestPropertyRef(Class<?> type, Set<Op> supportedOperators) {
             this.type = type;
             this.supportedOperators = supportedOperators;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
         }
 
         @Override
@@ -354,19 +327,19 @@ class SpringUtilityTest {
         }
 
         @Override
-        public Set<Operator> getSupportedOperators() {
+        public Set<Op> getSupportedOperators() {
             return supportedOperators;
         }
 
         @Override
-        public void validateOperator(Operator operator) {
+        public void validateOperator(Op operator) {
             if (!supportedOperators.contains(operator)) {
-                throw new IllegalArgumentException("Operator " + operator + " not supported for " + this);
+                throw new IllegalArgumentException("Op " + operator + " not supported for " + this);
             }
         }
 
         @Override
-        public void validateOperatorForValue(Operator operator, Object value) {
+        public void validateOperatorForValue(Op operator, Object value) {
             validateOperator(operator);
             // Additional value validation could be added here
         }

@@ -2,12 +2,13 @@ package io.github.cyfko.filterql.adapter.spring;
 
 import io.github.cyfko.filterql.adapter.spring.utils.PathResolverUtils;
 import io.github.cyfko.filterql.core.Condition;
+import io.github.cyfko.filterql.core.FilterResolver;
 import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
 import io.github.cyfko.filterql.core.exception.FilterValidationException;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
-import io.github.cyfko.filterql.core.validation.Operator;
-import io.github.cyfko.filterql.core.validation.PropertyRef;
+import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,26 +27,19 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SpringEdgeCaseTest {
 
-    @Mock
-    private ConditionAdapterBuilder<TestEntity, TestPropertyRef> conditionBuilder;
-
-    @Mock
-    private ConditionAdapter<TestEntity> conditionAdapter;
-
-    @Mock
-    private ConditionAdapter<TestEntity> otherConditionAdapter;
-
-    private ContextAdapter<TestEntity, TestPropertyRef> contextAdapter;
+    private FilterContext<TestEntity,TestPropertyRef> context;
 
     @BeforeEach
     void setUp() {
-        contextAdapter = new ContextAdapter<>(conditionBuilder);
+        context = new FilterContext<>(TestEntity.class,TestPropertyRef.class, def -> switch (def.ref()) {
+                case TEST_FIELD -> "testField";
+        });
     }
 
     @Test
     void testSpringConditionAdapterWithNullSpecification() {
         // Arrange
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(null);
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(null);
 
         // Act & Assert - Le constructeur n'effectue pas de validation null
         assertDoesNotThrow(() -> {
@@ -56,7 +50,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterAndWithNullCondition() {
         // Arrange
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(mock(org.springframework.data.jpa.domain.Specification.class));
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
@@ -67,7 +61,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterAndWithNonSpringCondition() {
         // Arrange
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(mock(org.springframework.data.jpa.domain.Specification.class));
         Condition nonSpringCondition = mock(Condition.class);
 
         // Act & Assert
@@ -79,7 +73,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterOrWithNullCondition() {
         // Arrange
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(mock(org.springframework.data.jpa.domain.Specification.class));
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
@@ -90,7 +84,7 @@ class SpringEdgeCaseTest {
     @Test
     void testSpringConditionAdapterOrWithNonSpringCondition() {
         // Arrange
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(mock(org.springframework.data.jpa.domain.Specification.class));
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(mock(org.springframework.data.jpa.domain.Specification.class));
         Condition nonSpringCondition = mock(Condition.class);
 
         // Act & Assert
@@ -103,14 +97,14 @@ class SpringEdgeCaseTest {
     void testSpringConditionAdapterNot() {
         // Arrange
         org.springframework.data.jpa.domain.Specification<TestEntity> spec = mock(org.springframework.data.jpa.domain.Specification.class);
-        ConditionAdapter<TestEntity> adapter = new ConditionAdapter<>(spec);
+        FilterCondition<TestEntity> adapter = new FilterCondition<>(spec);
 
         // Act
         Condition notCondition = adapter.not();
 
         // Assert
         assertNotNull(notCondition);
-        assertTrue(notCondition instanceof ConditionAdapter);
+        assertTrue(notCondition instanceof FilterCondition);
     }
 
     @Test
@@ -136,7 +130,7 @@ class SpringEdgeCaseTest {
     void testSpecificationBuilderWithNullFilterRequest() {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
-            SpecificationBuilder.toSpecification(null);
+            FilterResolver.of(context).resolve(TestEntity.class, null);
         });
     }
 
@@ -150,7 +144,7 @@ class SpringEdgeCaseTest {
 
         // Act & Assert - L'expression "true" fait référence à un filtre inexistant
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -159,14 +153,14 @@ class SpringEdgeCaseTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "invalid DSL syntax"
         );
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
@@ -175,175 +169,118 @@ class SpringEdgeCaseTest {
         // Arrange
         FilterRequest<TestPropertyRef> filterRequest = new FilterRequest<>(
             Map.of(
-                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value")
+                "filterName", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.EQ, "value")
             ),
             "nonExistentFilter"
         );
 
         // Act & Assert
         assertThrows(DSLSyntaxException.class, () -> {
-            SpecificationBuilder.toSpecification(filterRequest);
+            FilterResolver.of(context).resolve(TestEntity.class, filterRequest);
         });
     }
 
     @Test
-    void testSpringContextAdapterWithNullBuilder() {
-        // Act
-        ContextAdapter<TestEntity, TestPropertyRef> adapter =
-            new ContextAdapter<>(null);
-
-        // Assert
-        assertNotNull(adapter);
-        // Le constructeur ne vérifie pas les nulls, donc pas d'exception
-    }
-
-    @Test
-    void testSpringContextAdapterAddConditionWithNullDefinition() {
+    void testFilterContextAddConditionWithNullDefinition() {
         // Act & Assert
         assertThrows(NullPointerException.class, () -> {
-            contextAdapter.addCondition("key", null);
+            context.addCondition("key", null);
         });
     }
 
     @Test
-    void testSpringContextAdapterAddConditionWithEmptyKey() {
+    void testFilterContextAddConditionWithEmptyKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value"
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value"
         );
 
-        // Act
-        contextAdapter.addCondition("", filterDef);
-
-        // Assert - SpringContextAdapter accepte les clés vides mais la condition n'existe pas
+        // Act & Assert - Empty keys should be rejected
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.getCondition("");
-        });
+            context.addCondition("", filterDef);
+        }, "Filter key cannot be null or empty");
     }
 
     @Test
-    void testSpringContextAdapterAddConditionWithWhitespaceKey() {
+    void testFilterContextAddConditionWithWhitespaceKey() {
         // Arrange
         FilterDefinition<TestPropertyRef> filterDef = new FilterDefinition<>(
-            TestPropertyRef.TEST_FIELD, Operator.EQUALS, "value"
+            TestPropertyRef.TEST_FIELD, Op.EQ, "value"
         );
 
-        // Act
-        contextAdapter.addCondition("   ", filterDef);
-
-        // Assert - SpringContextAdapter accepte les clés avec des espaces mais la condition n'existe pas
+        // Act & Assert - Whitespace-only keys should be rejected
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.getCondition("   ");
-        });
+            context.addCondition("   ", filterDef);
+        }, "Filter key cannot be null or empty");
     }
 
     @Test
-    void testSpringContextAdapterGetSpecificationWithNonExistentKey() {
-        // Act
-        assertThrows(IllegalArgumentException.class, () -> {
-            org.springframework.data.jpa.domain.Specification<TestEntity> spec =
-                    contextAdapter.getSpecification("nonExistent");
-        });
-    }
-
-    @Test
-    void testSpringContextAdapterGetConditionWithNonExistentKey() {
+    void testFilterContextGetConditionWithNonExistentKey() {
         // Act & Assert - SpringContextAdapter lance une exception pour les clés inexistantes
         assertThrows(IllegalArgumentException.class, () -> {
-            contextAdapter.getCondition("nonExistent");
+            context.getCondition("nonExistent");
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithUnsupportedOperator() {
+    void testFilterContextWithUnsupportedOperator() {
         // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-        jakarta.persistence.criteria.Root<TestEntity> root = mock(jakarta.persistence.criteria.Root.class);
-        jakarta.persistence.criteria.CriteriaQuery<?> query = mock(jakarta.persistence.criteria.CriteriaQuery.class);
-        jakarta.persistence.criteria.CriteriaBuilder cb = mock(jakarta.persistence.criteria.CriteriaBuilder.class);
+        FilterDefinition<TestPropertyRef> definition = new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GT, "stringValue");
 
-        // Act
-        ConditionAdapter<TestEntity> adapter = builder.build(TestPropertyRef.TEST_FIELD, Operator.GREATER_THAN, "stringValue");
-
-        // Assert - La validation se fait lors de l'utilisation de la spécification
-        assertThrows(IllegalArgumentException.class, () -> {
-            adapter.getSpecification().toPredicate(root, query, cb);
-        });
+        // Assert - La validation se fait lors de l'utilisation de la création de la condition
+        assertThrows(FilterValidationException.class, () -> context.addCondition("someKey", definition));
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithNullValue() {
+    void testFilterContextWithNullValue() {
         // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
+        FilterDefinition<TestPropertyRef> definition = new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.IS_NULL, null);
 
         // Act
-        ConditionAdapter<TestEntity> adapter =
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.IS_NULL, null);
+        context.addCondition("someKey", definition);
+        Condition condition = context.getCondition("someKey");
 
         // Assert
-        assertNotNull(adapter);
+        assertNotNull(condition);
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithEmptyCollection() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
-        // Act & Assert - Le builder n'effectue pas de validation des collections vides
-        assertDoesNotThrow(() -> {
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.IN, Collections.emptyList());
+    void testFilterContextWithEmptyCollection() {
+        assertThrows(FilterValidationException.class, () -> {
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.IN, Collections.emptyList()));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithInvalidBetweenValues() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
+    void testFilterContextWithInvalidBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
-        assertDoesNotThrow(() -> {
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.BETWEEN, Arrays.asList("singleValue"));
+        assertThrows(FilterValidationException.class, () -> {
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE, Arrays.asList("singleValue")));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithTooManyBetweenValues() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
+    void testFilterContextWithTooManyBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation du nombre d'éléments
-        assertDoesNotThrow(() -> {
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.BETWEEN, 
-                Arrays.asList("value1", "value2", "value3"));
+        assertThrows(FilterValidationException.class, () -> {
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE,
+                Arrays.asList("value1", "value2", "value3")));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithNullBetweenValues() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
+    void testFilterContextWithNullBetweenValues() {
         // Act & Assert - Le builder n'effectue pas de validation null
-        assertDoesNotThrow(() -> {
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.BETWEEN, null);
+        assertThrows(FilterValidationException.class, () -> {
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.RANGE, null));
         });
     }
 
     @Test
-    void testSpringConditionAdapterBuilderWithInvalidTypeCast() {
-        // Arrange
-        ConditionAdapterBuilder<TestEntity, TestPropertyRef> builder =
-            new ConditionAdapterBuilder<TestEntity, TestPropertyRef>() {};
-
+    void testFilterContextWithInvalidTypeCast() {
         // Act & Assert - Le builder n'effectue pas de validation de type au niveau du cast
-        assertDoesNotThrow(() -> {
-            builder.build(TestPropertyRef.TEST_FIELD, Operator.GREATER_THAN, "stringValue");
+        assertThrows(FilterValidationException.class, () -> {
+            context.addCondition("someKey", new FilterDefinition<>(TestPropertyRef.TEST_FIELD, Op.GT, "stringValue"));
         });
     }
 
@@ -356,27 +293,20 @@ class SpringEdgeCaseTest {
     }
 
     // Test property reference enum
-    enum TestPropertyRef implements PropertyRef, PathShape {
-        TEST_FIELD("testField", String.class, Set.of(
-            Operator.EQUALS, Operator.NOT_EQUALS,
-            Operator.LIKE, Operator.NOT_LIKE,
-            Operator.IN, Operator.NOT_IN,
-            Operator.IS_NULL, Operator.IS_NOT_NULL
+    enum TestPropertyRef implements PropertyReference {
+        TEST_FIELD(String.class, Set.of(
+            Op.EQ, Op.NE,
+            Op.MATCHES, Op.NOT_MATCHES,
+            Op.IN, Op.NOT_IN,
+            Op.IS_NULL, Op.NOT_NULL
         ));
 
-        private final String path;
         private final Class<?> type;
-        private final Set<Operator> supportedOperators;
+        private final Set<Op> supportedOperators;
 
-        TestPropertyRef(String path, Class<?> type, Set<Operator> supportedOperators) {
-            this.path = path;
+        TestPropertyRef(Class<?> type, Set<Op> supportedOperators) {
             this.type = type;
             this.supportedOperators = supportedOperators;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
         }
 
         @Override
@@ -385,40 +315,8 @@ class SpringEdgeCaseTest {
         }
 
         @Override
-        public Set<Operator> getSupportedOperators() {
+        public Set<Op> getSupportedOperators() {
             return supportedOperators;
-        }
-
-        @Override
-        public void validateOperator(Operator operator) {
-            if (!supportedOperators.contains(operator)) {
-                throw new IllegalArgumentException("Operator " + operator + " not supported for " + this);
-            }
-        }
-
-        @Override
-        public void validateOperatorForValue(Operator operator, Object value) {
-            validateOperator(operator);
-            
-            // Validation spécifique pour certains opérateurs
-            switch (operator) {
-                case IN:
-                case NOT_IN:
-                    if (value == null || !(value instanceof Collection) || ((Collection<?>) value).isEmpty()) {
-                        throw new IllegalArgumentException("IN/NOT_IN operator requires a non-empty collection");
-                    }
-                    break;
-                case BETWEEN:
-                case NOT_BETWEEN:
-                    if (value == null || !(value instanceof Collection)) {
-                        throw new IllegalArgumentException("BETWEEN operator requires a collection");
-                    }
-                    Collection<?> values = (Collection<?>) value;
-                    if (values.size() != 2) {
-                        throw new IllegalArgumentException("BETWEEN operator requires exactly 2 values");
-                    }
-                    break;
-            }
         }
     }
 }
