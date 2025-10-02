@@ -3,9 +3,6 @@
 This guide helps you create your first application using FilterQL in less than 10 minutes. All examples are verified and use only existing, tested APIs.
 
 ## Prerequisites
-- Java 21 or higher
-- Maven or Gradle
-- Spring Boot 3.x (if using Spring integration)
 
 ## Step 1: Add Dependency
 
@@ -14,19 +11,19 @@ This guide helps you create your first application using FilterQL in less than 1
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-core</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
 </dependency>
 <dependency>
     <groupId>io.github.cyfko</groupId>
-    <artifactId>filterql-spring-adapter</artifactId>
-    <version>1.0.0</version>
+    <artifactId>filterql-spring</artifactId>
+    <version>3.0.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.cyfko:filterql-core:1.0.0'
-implementation 'io.github.cyfko:filterql-spring-adapter:1.0.0'
+implementation 'io.github.cyfko:filterql-core:3.0.0'
+implementation 'io.github.cyfko:filterql-spring:3.0.0'
 ```
 
 ## Step 2: Define Property Reference Enum
@@ -95,6 +92,3 @@ Specification<User> spec = ((FilterCondition<User>) context.getCondition("name")
 ```
 
 ## What's Next?
-- [Core Module Architecture](../core-module/overview.md)
-- [Spring Adapter Integration](../spring-adapter/overview.md)
-- [API Reference](../core-module/overview.md)

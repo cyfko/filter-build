@@ -1,7 +1,5 @@
----
 layout: default
 title: Troubleshooting
----
 
 # Troubleshooting
 
@@ -20,3 +18,4 @@ All solutions are based on actual codebase error handling and validation.
 ### Unknown Filter Key
 **Symptom:** `IllegalArgumentException: filterKey not found`
 **Solution:** Ensure you add the filter definition to the context before referencing it.
+

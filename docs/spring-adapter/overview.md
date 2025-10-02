@@ -4,12 +4,9 @@ The FilterQL Spring Adapter integrates the core filtering engine with Spring Dat
 
 ## Architecture
 
-- **FilterContext**: Spring Data JPA implementation of the Context interface. Verified constructor:
   ```java
   FilterContext<User, UserPropertyRef> context = new FilterContext<>(User.class, UserPropertyRef.class, mappingFunction);
   ```
-- **FilterCondition**: Represents a Spring-compatible filter condition. Created via context methods.
-- **PathResolverUtils**: Utility for resolving nested JPA property paths.
 
 ## Example: Integrating with Spring Data JPA
 
@@ -71,6 +68,4 @@ public class UserController {
 ```
 
 ## References
-- [FilterContext](../../adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/FilterContext.java)
-- [FilterCondition](../../adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/FilterCondition.java)
-- [PathResolverUtils](../../adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/utils/PathResolverUtils.java)
+```

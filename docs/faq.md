@@ -1,7 +1,5 @@
----
 layout: default
 title: FAQ
----
 
 # FAQ
 
@@ -25,3 +23,4 @@ All operators in the `Op` enum: EQ, NE, GT, GTE, LT, LTE, MATCHES, NOT_MATCHES, 
 
 ## Is FilterQL thread-safe?
 Core types are immutable/stateless. Context implementations should be used per request or made thread-safe for concurrent use.
+

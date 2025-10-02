@@ -198,24 +198,24 @@ public class UserController {
         Page<User> users = userRepository.findAll(spec, pageable);
         
         // 4. Return results
-        return users.map(userMapper::toDTO);
+                <version>3.0.0</version>
     }
 }
 ```
 
 **Result**: Clean, maintainable code that's secure, type-safe, and preserves all framework features!
 
-## ✨ Key Features & Benefits
+                <version>3.0.0</version>
 
 | Feature | Traditional Approach | FilterQL Approach |
 |---------|---------------------|-------------------|
 | **🎯 Type Safety** | Runtime errors from wrong types | Compile-time validation with enums |
 | **🔒 Security** | Direct field exposure risks | Controlled property mapping only |
 | **🔧 Flexibility** | Fixed method signatures | Dynamic filter composition |
-| **💡 Complexity** | Complex conditional logic | Intuitive DSL expressions |
+            implementation 'io.github.cyfko:filterql-core:3.0.0'
 | **⚡ Performance** | Custom query building | Framework-native optimization |
 | **🛡️ Validation** | Manual parameter checking | Built-in type & operator validation |
-| **🚀 Integration** | Framework-specific solutions | Universal core + adapters |
+            implementation 'io.github.cyfko:filterql-spring:3.0.0'
 | **📈 Maintainability** | Method explosion | Single endpoint + configuration |
 
 ### Core Capabilities
