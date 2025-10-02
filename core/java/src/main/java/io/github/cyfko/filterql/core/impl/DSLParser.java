@@ -48,11 +48,18 @@ import java.util.regex.Pattern;
  * }</pre>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public class DSLParser implements Parser {
 
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
+
+    /**
+     * Default constructor for DSLParser.
+     */
+    public DSLParser() {
+        // Default constructor
+    }
 
     /**
      * Parses a DSL expression string and returns the corresponding {@link FilterTree}.

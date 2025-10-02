@@ -12,14 +12,14 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  * </p>
  * <p>
  * The filter definition consists of:
+ * </p>
  * <ul>
  *   <li>{@code ref}: the property reference (enum implementing {@link PropertyReference})</li>
  *   <li>{@code operator}: the comparison or logical operator</li>
  *   <li>{@code value}: the value used in the filter, which may be a simple object or a collection depending on the operator</li>
  * </ul>
- * </p>
  *
- * <h3>Example Usage</h3>
+ * <h2>Example Usage</h2>
  * <pre>{@code
  * // Assume an enum implementing PropertyReference:
  * public enum UserPropertyRef implements PropertyReference {
@@ -53,8 +53,11 @@ import io.github.cyfko.filterql.core.validation.PropertyReference;
  * }</pre>
  *
  * @param <P> type of the reference property (enum implementing {@link PropertyReference})
+ * @param ref the property reference (enum implementing {@link PropertyReference})
+ * @param operator the comparison or logical operator to apply
+ * @param value the value used in the filter condition
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public record FilterDefinition<P extends Enum<P> & PropertyReference>(P ref, Op operator, Object value) {
 

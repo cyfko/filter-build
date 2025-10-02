@@ -38,6 +38,13 @@ public final class ClassUtils {
     private static final Map<String, Class<?>> SUPERCLASS_CACHE = new ConcurrentHashMap<>();
 
     /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private ClassUtils() {
+        // Utility class - no instantiation allowed
+    }
+
+    /**
      * Recursively searches for a named field in the class and its superclasses.
      * The returned field can be used for introspection (getType, getGenericType, getName, etc.)
      * but not for value manipulation.
@@ -355,6 +362,10 @@ public final class ClassUtils {
         private final Class<T> typeClass;
         private final Type type;
 
+        /**
+         * Protected constructor for TypeReference.
+         * Must be called from an anonymous subclass to capture the generic type parameter.
+         */
         @SuppressWarnings("unchecked")
         protected TypeReference() {
             // Security validation against multiple inheritance

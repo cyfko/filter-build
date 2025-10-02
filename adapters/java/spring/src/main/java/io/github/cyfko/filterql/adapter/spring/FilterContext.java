@@ -182,6 +182,12 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
     // If it's an instance of SpecificationMapping<E> then the specification is directly used
     // If it's something else then an IllegalStateException is thrown
     // This method returns the previous builder used.
+    /**
+     * Sets the mapping builder function for transforming filter definitions.
+     * 
+     * @param mappingBuilder the function to transform filter definitions
+     * @return the previous mapping builder that was set
+     */
     public Function<FilterDefinition<P>, Object> setMappingBuilder(Function<FilterDefinition<P>, Object> mappingBuilder) {
         var prev = this.mappingBuilder;
         this.mappingBuilder = Objects.requireNonNull(mappingBuilder);

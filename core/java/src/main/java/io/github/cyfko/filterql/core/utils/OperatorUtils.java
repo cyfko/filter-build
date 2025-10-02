@@ -17,9 +17,16 @@ import java.util.Set;
  * </p>
  *
  * @author Frank KOSSI
- * @since 1.2
+ * @since 2.0.0
  */
 public final class OperatorUtils {
+
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private OperatorUtils() {
+        // Utility class - no instantiation allowed
+    }
 
         /**
          * Immutable set of operators applicable to text properties (String, etc.).

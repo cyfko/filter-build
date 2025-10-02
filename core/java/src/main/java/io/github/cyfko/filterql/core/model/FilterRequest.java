@@ -15,8 +15,10 @@ import java.util.stream.Collectors;
  * </p>
  *
  * @param <P> type of the reference property, an enum implementing {@link PropertyReference}
+ * @param filters map of filter definitions keyed by filter names
+ * @param combineWith logical operator to combine multiple filters ("AND" or "OR")
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public record FilterRequest<P extends Enum<P> & PropertyReference>(Map<String, FilterDefinition<P>> filters,
                                                                    String combineWith) {
@@ -49,11 +51,19 @@ public record FilterRequest<P extends Enum<P> & PropertyReference>(Map<String, F
      *
      * @param <P> the enum type representing filterable properties,
      *            which must extend {@code Enum} and implement {@link PropertyReference}
+     * @since 2.0.0
      */
     public static class Builder<P extends Enum<P> & PropertyReference> {
 
         private final Map<String, FilterDefinition<P>> filters = new HashMap<>();
         private String combineWith;
+
+        /**
+         * Default constructor for Builder.
+         */
+        public Builder() {
+            // Default constructor
+        }
 
         /**
          * Adds a single filter definition to the builder.

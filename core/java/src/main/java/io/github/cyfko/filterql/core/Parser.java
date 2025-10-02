@@ -12,6 +12,7 @@ import io.github.cyfko.filterql.core.exception.DSLSyntaxException;
  * 
  * <p><strong>Supported DSL Syntax:</strong></p>
  * <table border="1">
+ * <caption>DSL Operator Reference</caption>
  * <tr><th>Operator</th><th>Symbol</th><th>Example</th><th>Description</th></tr>
  * <tr><td>AND</td><td>&amp;</td><td>filter1 &amp; filter2</td><td>Logical AND</td></tr>
  * <tr><td>OR</td><td>|</td><td>filter1 | filter2</td><td>Logical OR</td></tr>

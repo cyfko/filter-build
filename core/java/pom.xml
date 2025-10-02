@@ -146,8 +146,7 @@
                 </executions>
             </plugin>
 
-            <!-- Javadoc temporarily disabled for testing -->
-            <!--
+            <!-- Javadoc plugin for Maven Central compliance -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -166,7 +165,6 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
         </plugins>
     </build>
 
