@@ -89,7 +89,7 @@ import jakarta.persistence.criteria.Root;
  * @see jakarta.persistence.criteria.CriteriaBuilder
  * @see io.github.cyfko.filterql.core.FilterResolver
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 @FunctionalInterface
 public interface PredicateResolver<E> {

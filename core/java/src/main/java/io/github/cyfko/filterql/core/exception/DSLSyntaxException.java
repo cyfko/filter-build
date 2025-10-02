@@ -12,7 +12,7 @@ package io.github.cyfko.filterql.core.exception;
  * </p>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public class DSLSyntaxException extends RuntimeException {
 

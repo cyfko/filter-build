@@ -128,7 +128,7 @@ import java.util.function.Function;
  * @see PredicateResolverMapping
  * @see org.springframework.data.jpa.domain.Specification
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public class FilterContext<E,P extends Enum<P> & PropertyReference> implements Context {
     private final Class<E> entityClass;

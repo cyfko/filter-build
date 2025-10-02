@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * </pre>
  *
  * @author Frank KOSSI
- * @since 1.0
+ * @since 2.0.0
  */
 public interface PropertyReference {
 
