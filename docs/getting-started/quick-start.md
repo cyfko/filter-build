@@ -1,64 +1,108 @@
-# Getting Started with FilterQL
+# Quick Start Guide
 
-Welcome to FilterQL! This guide will walk you through setting up and using FilterQL in your Java application.
+Get up and running with FilterQL in under 5 minutes! This guide will walk you through creating your first dynamic filter.
+
+## What You'll Build
+
+By the end of this guide, you'll have a working Spring Boot application that can filter users with a flexible, type-safe API.
+
+```java
+// This is what you'll achieve:
+FilterRequest<UserPropertyRef> request = FilterRequest.builder()
+    .filter("nameFilter", new FilterDefinition<>(UserPropertyRef.NAME, Op.MATCHES, "John%"))
+    .filter("ageFilter", new FilterDefinition<>(UserPropertyRef.AGE, Op.GT, 25))
+    .combineWith("nameFilter & ageFilter")
+    .build();
+
+Page<User> results = userService.search(request, pageable);
+```
 
 ## Prerequisites
 
-- Java 21 or higher
-- Maven 3.6+ or Gradle 7+
-- Basic understanding of JPA/Hibernate (for Spring adapter)
+- Java 21+
+- Maven or Gradle
+- 10 minutes of your time
 
-## Installation
+## Step 1: Create a Spring Boot Project
 
-### Option 1: Core Module Only
+### Using Spring Initializr
 
-If you want to use FilterQL with a custom adapter or build your own integration:
+1. Go to [start.spring.io](https://start.spring.io)
+2. Configure your project:
+   - **Project**: Maven or Gradle
+   - **Language**: Java
+   - **Spring Boot**: 3.3.4 or later
+   - **Java**: 21
+   - **Dependencies**: Spring Web, Spring Data JPA, H2 Database
 
-**Maven:**
+3. Generate and download the project
+
+### Or use this `pom.xml`
+
 ```xml
-<dependency>
-    <groupId>io.github.cyfko</groupId>
-    <artifactId>filterql-core</artifactId>
-    <version>2.0.0</version>
-</dependency>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+    
+    <groupId>com.example</groupId>
+    <artifactId>filterql-quickstart</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+    
+    <dependencies>
+        <!-- Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        
+        <!-- FilterQL -->
+        <dependency>
+            <groupId>io.github.cyfko</groupId>
+            <artifactId>filterql-core</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.cyfko</groupId>
+            <artifactId>filterql-spring</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        
+        <!-- Database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+</project>
 ```
 
-**Gradle:**
-```gradle
-implementation 'io.github.cyfko:filterql-core:2.0.0'
-```
+## Step 2: Create Your Entity
 
-### Option 2: With Spring Data JPA (Recommended)
-
-For Spring Boot applications using JPA:
-
-**Maven:**
-```xml
-<dependency>
-    <groupId>io.github.cyfko</groupId>
-    <artifactId>filterql-core</artifactId>
-    <version>2.0.0</version>
-</dependency>
-<dependency>
-    <groupId>io.github.cyfko</groupId>
-    <artifactId>filterql-spring</artifactId>
-    <version>2.0.0</version>
-</dependency>
-```
-
-**Gradle:**
-```gradle
-implementation 'io.github.cyfko:filterql-core:2.0.0'
-implementation 'io.github.cyfko:filterql-spring:2.0.0'
-```
-
-## Quick Start Example
-
-Let's build a complete filtering system for a User entity.
-
-### Step 1: Define Your Entity
+Create a simple `User` entity:
 
 ```java
+package com.example.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -66,42 +110,78 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "name")
+    @Column(nullable = false)
     private String name;
     
-    @Column(name = "email")
+    @Column(nullable = false, unique = true)
     private String email;
     
-    @Column(name = "age")
+    @Column(nullable = false)
     private Integer age;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
     private UserStatus status;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
-    // constructors, getters, setters...
+    // Constructors
+    public User() {}
+    
+    public User(String name, String email, Integer age, UserStatus status) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+        this.status = status;
+        this.createdAt = LocalDateTime.now();
+    }
+    
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
 
-public enum UserStatus {
-    ACTIVE, INACTIVE, PENDING, SUSPENDED
+enum UserStatus {
+    ACTIVE, INACTIVE, PENDING
 }
 ```
 
-### Step 2: Create Property Reference Enum
+## Step 3: Define Property References
+
+Create an enum that defines which properties can be filtered:
 
 ```java
-import io.github.cyfko.filterql.core.validation.PropertyReference;
+package com.example.config;
+
 import io.github.cyfko.filterql.core.validation.Op;
+import io.github.cyfko.filterql.core.validation.PropertyReference;
+import io.github.cyfko.filterql.core.utils.OperatorUtils;
+import com.example.model.UserStatus;
+
+import java.time.LocalDateTime;
+import java.util.Set;
 
 public enum UserPropertyRef implements PropertyReference {
-    NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN)),
-    CREATED_AT(LocalDateTime.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE));
+    NAME(String.class, OperatorUtils.FOR_TEXT),
+    EMAIL(String.class, OperatorUtils.FOR_TEXT),
+    AGE(Integer.class, OperatorUtils.FOR_NUMBER),
+    STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN, Op.IS_NULL, Op.NOT_NULL)),
+    CREATED_AT(LocalDateTime.class, OperatorUtils.FOR_NUMBER);
 
     private final Class<?> type;
     private final Set<Op> supportedOperators;
@@ -123,10 +203,20 @@ public enum UserPropertyRef implements PropertyReference {
 }
 ```
 
-### Step 3: Create Filter Context
+## Step 4: Configure FilterQL
+
+Create a configuration class:
 
 ```java
+package com.example.config;
+
 import io.github.cyfko.filterql.adapter.spring.FilterContext;
+import io.github.cyfko.filterql.core.model.FilterDefinition;
+import com.example.model.User;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.function.Function;
 
 @Configuration
 public class FilterConfig {
@@ -136,58 +226,98 @@ public class FilterConfig {
         return new FilterContext<>(
             User.class,
             UserPropertyRef.class,
-            definition -> switch (definition.ref()) {
-                case NAME -> "name";
-                case EMAIL -> "email";
-                case AGE -> "age";
-                case STATUS -> "status";
-                case CREATED_AT -> "createdAt";
-            }
+            this::mapUserProperty
         );
+    }
+    
+    private Object mapUserProperty(FilterDefinition<UserPropertyRef> definition) {
+        return switch (definition.ref()) {
+            case NAME -> "name";
+            case EMAIL -> "email";
+            case AGE -> "age";
+            case STATUS -> "status";
+            case CREATED_AT -> "createdAt";
+        };
     }
 }
 ```
 
-### Step 4: Create a Service
+## Step 5: Create Repository and Service
 
+### Repository
 ```java
+package com.example.repository;
+
+import com.example.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+}
+```
+
+### Service
+```java
+package com.example.service;
+
+import com.example.config.UserPropertyRef;
+import com.example.model.User;
+import com.example.repository.UserRepository;
+import io.github.cyfko.filterql.adapter.spring.FilterContext;
+import io.github.cyfko.filterql.core.Condition;
 import io.github.cyfko.filterql.core.FilterResolver;
 import io.github.cyfko.filterql.core.domain.PredicateResolver;
 import io.github.cyfko.filterql.core.model.FilterRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
     
     @Autowired
-    private EntityManager entityManager;
+    private UserRepository userRepository;
     
     @Autowired
-    private FilterContext<User, UserPropertyRef> userFilterContext;
+    private FilterContext<User, UserPropertyRef> filterContext;
     
-    public List<User> findUsers(FilterRequest<UserPropertyRef> filterRequest) {
+    public Page<User> search(FilterRequest<UserPropertyRef> request, Pageable pageable) {
         // Create filter resolver
-        FilterResolver resolver = FilterResolver.of(userFilterContext);
+        FilterResolver resolver = FilterResolver.of(filterContext);
         
-        // Generate predicate resolver
-        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, filterRequest);
+        // Resolve filter request to executable predicate
+        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
         
-        // Execute JPA query
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<User> query = cb.createQuery(User.class);
-        Root<User> root = query.from(User.class);
+        // Convert to Spring Specification
+        Specification<User> specification = (root, query, cb) -> 
+            predicateResolver.resolve(root, query, cb);
         
-        query.where(predicateResolver.resolve(root, query, cb));
-        
-        return entityManager.createQuery(query).getResultList();
+        // Execute query with pagination
+        return userRepository.findAll(specification, pageable);
     }
 }
 ```
 
-### Step 5: Create a Controller
+## Step 6: Create REST Controller
 
 ```java
+package com.example.controller;
+
+import com.example.config.UserPropertyRef;
+import com.example.model.User;
+import com.example.service.UserService;
 import io.github.cyfko.filterql.core.model.FilterDefinition;
 import io.github.cyfko.filterql.core.model.FilterRequest;
+import io.github.cyfko.filterql.core.validation.Op;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -196,105 +326,167 @@ public class UserController {
     @Autowired
     private UserService userService;
     
-    @PostMapping("/search")
-    public List<User> searchUsers(@RequestBody FilterRequest<UserPropertyRef> filterRequest) {
-        return userService.findUsers(filterRequest);
-    }
-    
-    @GetMapping("/active-adults")
-    public List<User> getActiveAdults() {
-        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
-            .filter("statusFilter", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
-            .filter("ageFilter", new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, 18))
-            .combineWith("statusFilter & ageFilter")
+    @GetMapping("/search")
+    public Page<User> searchUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer minAge) {
+        
+        // Build dynamic filter request
+        FilterRequest.Builder<UserPropertyRef> builder = FilterRequest.builder();
+        
+        if (name != null && !name.isEmpty()) {
+            builder.filter("nameFilter", 
+                new FilterDefinition<>(UserPropertyRef.NAME, Op.MATCHES, name + "%"));
+        }
+        
+        if (minAge != null) {
+            builder.filter("ageFilter", 
+                new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, minAge));
+        }
+        
+        // Combine filters
+        String combination;
+        if (name != null && minAge != null) {
+            combination = "nameFilter & ageFilter";
+        } else if (name != null) {
+            combination = "nameFilter";
+        } else if (minAge != null) {
+            combination = "ageFilter";
+        } else {
+            // No filters - return all
+            Pageable pageable = PageRequest.of(page, size);
+            return userService.userRepository.findAll(pageable);
+        }
+        
+        FilterRequest<UserPropertyRef> request = builder
+            .combineWith(combination)
             .build();
-            
-        return userService.findUsers(request);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        return userService.search(request, pageable);
     }
 }
 ```
 
-### Step 6: Test Your Implementation
+## Step 7: Add Sample Data
 
-**Simple POST request to `/api/users/search`:**
+Create a data initialization class:
 
-```json
-{
-  "filters": {
-    "nameFilter": {
-      "ref": "NAME",
-      "operator": "MATCHES",
-      "value": "John%"
-    },
-    "ageFilter": {
-      "ref": "AGE",
-      "operator": "GTE",
-      "value": 25
-    },
-    "statusFilter": {
-      "ref": "STATUS",
-      "operator": "EQ",
-      "value": "ACTIVE"
+```java
+package com.example.config;
+
+import com.example.model.User;
+import com.example.model.UserStatus;
+import com.example.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DataInitializer implements CommandLineRunner {
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Override
+    public void run(String... args) {
+        if (userRepository.count() == 0) {
+            userRepository.save(new User("John Doe", "john@example.com", 28, UserStatus.ACTIVE));
+            userRepository.save(new User("Jane Smith", "jane@example.com", 32, UserStatus.ACTIVE));
+            userRepository.save(new User("Bob Johnson", "bob@example.com", 24, UserStatus.INACTIVE));
+            userRepository.save(new User("Alice Brown", "alice@example.com", 29, UserStatus.PENDING));
+            userRepository.save(new User("Charlie Wilson", "charlie@example.com", 35, UserStatus.ACTIVE));
+        }
     }
-  },
-  "combineWith": "nameFilter & (ageFilter | statusFilter)"
 }
 ```
 
-This will find all users whose name starts with "John" AND (age >= 25 OR status is ACTIVE).
+## Step 8: Run and Test
+
+### Start the Application
+```bash
+mvn spring-boot:run
+```
+
+### Test Your Filter API
+
+Try these URLs in your browser or with curl:
+
+```bash
+# All users
+http://localhost:8080/api/users/search
+
+# Users with names starting with "J"
+http://localhost:8080/api/users/search?name=J
+
+# Users aged 25 or older
+http://localhost:8080/api/users/search?minAge=25
+
+# Users with names starting with "J" AND aged 25 or older
+http://localhost:8080/api/users/search?name=J&minAge=25
+```
+
+## 🎉 Congratulations!
+
+You've successfully created your first FilterQL application! You now have:
+
+- ✅ A working Spring Boot application
+- ✅ Dynamic, type-safe filtering
+- ✅ Flexible filter combinations
+- ✅ REST API endpoints
 
 ## What's Next?
 
-Now that you have a basic FilterQL setup running:
+Now that you have the basics working, explore more advanced features:
 
-1. **[Learn about Core Concepts](../core-module/overview.md)** - Understand the architecture in depth
-2. **[Explore Advanced Spring Integration](../spring-adapter/configuration.md)** - Custom mappings and complex scenarios  
-3. **[See More Examples](../core-module/examples/basic-usage.md)** - Real-world filtering patterns
-4. **[Check the FAQ](../guides/faq.md)** - Common questions and solutions
+1. **[Build a Complete Application](first-application.md)** - More complex filtering scenarios
+2. **[Learn Core Concepts](../core-module/overview.md)** - Understand FilterQL's architecture
+3. **[Explore Spring Integration](../spring-adapter/overview.md)** - Advanced Spring features
+4. **[See Real-World Examples](../core-module/examples/)** - Production-ready patterns
 
-## Common Patterns
+## Common Enhancements
 
-### Range Queries
+### Add Complex Filters
 ```java
-// Age between 18 and 65
-new FilterDefinition<>(UserPropertyRef.AGE, Op.RANGE, List.of(18, 65))
-```
-
-### Multiple Values
-```java
-// Status is ACTIVE or PENDING
-new FilterDefinition<>(UserPropertyRef.STATUS, Op.IN, List.of(UserStatus.ACTIVE, UserStatus.PENDING))
-```
-
-### Null Checks
-```java
-// Email is not null
-new FilterDefinition<>(UserPropertyRef.EMAIL, Op.NOT_NULL, null)
-```
-
-### Complex Boolean Logic
-```java
-FilterRequest.builder()
-    .filter("active", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
-    .filter("young", new FilterDefinition<>(UserPropertyRef.AGE, Op.LT, 30))
-    .filter("hasEmail", new FilterDefinition<>(UserPropertyRef.EMAIL, Op.NOT_NULL, null))
-    .combineWith("(active & young) | hasEmail")
+// Complex business logic filters
+FilterRequest<UserPropertyRef> request = FilterRequest.builder()
+    .filter("youngAdults", new FilterDefinition<>(UserPropertyRef.AGE, Op.RANGE, Arrays.asList(18, 30)))
+    .filter("activeUsers", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
+    .filter("recentUsers", new FilterDefinition<>(UserPropertyRef.CREATED_AT, Op.GT, LocalDateTime.now().minusDays(30)))
+    .combineWith("(youngAdults | recentUsers) & activeUsers")
     .build();
+```
+
+### Add Custom Mappings
+```java
+// Custom search logic
+private Object mapUserProperty(FilterDefinition<UserPropertyRef> definition) {
+    return switch (definition.ref()) {
+        case NAME -> "name";
+        case EMAIL -> "email";
+        case AGE -> "age";
+        case STATUS -> "status";
+        case CREATED_AT -> "createdAt";
+        case FULL_TEXT_SEARCH -> new FullTextSearchMapping(definition); // Custom logic
+    };
+}
 ```
 
 ## Troubleshooting
 
-### Common Issues
+### Build Issues
+- Ensure Java 21+ is installed
+- Check Maven/Gradle versions
+- Verify dependency versions match
 
-**1. "Operator X is not supported for property Y"**
-- Check that your PropertyReference enum includes the operator in `getSupportedOperators()`
+### Runtime Issues
+- Check application.properties for database configuration
+- Ensure H2 console is enabled for debugging
+- Verify entity scanning is configured correctly
 
-**2. "Property not found" errors**
-- Verify your mapping function returns the correct JPA property path
-- Ensure entity property names match your mapping
-
-**3. "Type mismatch" errors**
-- Ensure the value type matches the property type defined in PropertyReference
-- Check for null values where they're not expected
-
-For more help, see our [Troubleshooting Guide](../guides/troubleshooting.md).
+### Get Help
+- [Troubleshooting Guide](../guides/troubleshooting.md)
+- [GitHub Issues](https://github.com/cyfko/filter-build/issues)
+- [Community Discussions](https://github.com/cyfko/filter-build/discussions)
