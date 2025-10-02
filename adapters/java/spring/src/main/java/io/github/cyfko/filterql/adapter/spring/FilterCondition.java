@@ -64,6 +64,10 @@ import org.springframework.data.jpa.domain.Specification;
  *     private UserRepository userRepository;
  *     
  *     public List<User> findUsers(Condition condition) {
+ *         if (!(condition instanceof FilterCondition<?>)) {
+ *             throw new IllegalArgumentException("Unsupported condition type");
+ *         }
+ *         @SuppressWarnings("unchecked")
  *         FilterCondition<User> filterCondition = (FilterCondition<User>) condition;
  *         Specification<User> spec = filterCondition.getSpecification();
  *         return userRepository.findAll(spec);

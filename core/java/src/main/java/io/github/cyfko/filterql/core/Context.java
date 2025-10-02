@@ -13,6 +13,10 @@ import io.github.cyfko.filterql.core.model.FilterDefinition;
  * 
  * <p><strong>Usage Example:</strong></p>
  * <pre>{@code
+ * import io.github.cyfko.filterql.core.model.FilterDefinition;
+ * import io.github.cyfko.filterql.core.validation.Op;
+ * import io.github.cyfko.filterql.core.domain.PredicateResolver;
+ * 
  * // Create a context for User entities
  * Context context = new FilterContext<>(User.class, UserPropertyRef.class, mapping);
  * 

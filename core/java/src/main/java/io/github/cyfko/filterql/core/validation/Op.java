@@ -104,16 +104,16 @@ public enum Op {
     /** Not equal operator: "!=" */
     NE("!=", "NE"),
 
-    /** Greater than operator: "&gt;" */
+    /** Greater than operator: ">" */
     GT(">", "GT"),
 
-    /** Greater than or equal operator: "&gt;=" */
+    /** Greater than or equal operator: ">=" */
     GTE(">=", "GTE"),
 
-    /** Less than operator: "&lt;" */
+    /** Less than operator: "<" */
     LT("<", "LT"),
 
-    /** Less than or equal operator: "&lt;=" */
+    /** Less than or equal operator: "<=" */
     LTE("<=", "LTE"),
 
     /** Pattern matching operator: "LIKE" */

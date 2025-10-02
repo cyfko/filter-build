@@ -170,10 +170,10 @@ public class FilterResolver {
      *   <li>Generate a {@link Condition} tree and adapt it into a {@link PredicateResolver}.</li>
      * </ol>
      *
-     * @param entityClass   the entity type
+     * @param <E> the entity type (e.g., User, Product, Order)
+     * @param <P> the property enum type implementing {@link PropertyReference} (e.g., UserPropertyRef)
+     * @param entityClass   the entity class for type safety validation
      * @param filterRequest the request containing filter definitions and the DSL combination logic
-     * @param <E>           the entity type
-     * @param <P>           the property enum type (must implement {@link PropertyReference})
      * @return a {@link PredicateResolver} representing the filter request
      * @throws NullPointerException      if entityClass or filterRequest is null
      * @throws DSLSyntaxException        if the DSL expression has invalid syntax

@@ -327,6 +327,8 @@ public interface PropertyReference {
      *     System.out.println("Validation error: " + result.getErrorMessage());
      * }
      * }</pre>
+     * 
+     * @since 2.0.0
      */
     static class ValidationResult {
 

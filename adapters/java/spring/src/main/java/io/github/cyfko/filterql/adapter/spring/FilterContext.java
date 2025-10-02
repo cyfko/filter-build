@@ -57,7 +57,7 @@ import java.util.function.Function;
  * }
  * 
  * // 2. Create mapping function
- * Function<UserPropertyRef, Object> mappingFunction = ref -> switch (ref) {
+ * Function<FilterDefinition<UserPropertyRef>, Object> mappingFunction = def -> switch (def.ref()) {
  *     case NAME -> "name";                    // Simple path
  *     case EMAIL -> "email";                  // Simple path
  *     case AGE -> "age";                      // Simple path
@@ -151,8 +151,8 @@ public class FilterContext<E,P extends Enum<P> & PropertyReference> implements C
      * 
      * <p><strong>Example:</strong></p>
      * <pre>{@code
-     * // Simple mapping function using property paths
-     * Function<UserPropertyRef, Object> simpleMapping = ref -> switch (ref) {
+     * // Simple mapping function using filter definitions
+     * Function<FilterDefinition<UserPropertyRef>, Object> simpleMapping = def -> switch (def.ref()) {
      *     case NAME -> "name";
      *     case EMAIL -> "email";
      *     case AGE -> "age";
