@@ -12,39 +12,17 @@ theme: just-the-docs
 
 # Configuration Just-the-Docs
 color_scheme: light
-search_enabled: true
-search:
-  heading_level: 2
-  previews: 3
-  preview_words_before: 5
-  preview_words_after: 10
-  tokenizer_separator: /[\s/]+/
-  rel_url: true
-  button: false
+search_enabled: false
 
 # Navigation externe
 nav_external_links:
   - title: GitHub
     url: https://github.com/cyfko/filter-build
-  - title: Maven Central
-    url: https://search.maven.org/artifact/io.github.cyfko/filterql-core
 
-# Plugin configuration
+# Plugin configuration (minimal)
 plugins:
-  - jekyll-feed
-  - jekyll-sitemap
   - jekyll-seo-tag
-  - jekyll-relative-links
-  - jemoji
-
-# Navigation structure
-header_pages:
-  - README.md
-  - docs/getting-started.md
-  - docs/core-concepts.md
-  - docs/spring-adapter.md
-  - docs/jpa-adapter.md
-  - docs/ARCHITECTURE.md
+  - jekyll-sitemap
 
 # Repository information for GitHub metadata
 repository: cyfko/filter-build
