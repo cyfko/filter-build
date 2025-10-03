@@ -448,102 +448,71 @@
   .border-gray-700 { border-color: $dark-border-color; }
 }
 
-// Header Dropdown Menu - Ultra Specific Selectors
+// Header Dropdown Menu - Simplified and Robust
 // -----------------------------------------------------------------------------
-.dropdown-menu {
-  background-color: rgba(255, 255, 255, 1) !important;
-  backdrop-filter: blur(12px) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+/* Force solid dropdown backgrounds */
+header .dropdown-menu,
+header .group .absolute {
+  background: white !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
   z-index: 9999 !important;
+  border: 1px solid #e5e7eb !important;
 }
 
-.dark .dropdown-menu {
-  background-color: rgba(31, 41, 55, 1) !important;
-  border-color: rgba(75, 85, 99, 1) !important;
+/* Dark mode dropdown */
+html.dark header .dropdown-menu,
+html.dark header .group .absolute {
+  background: #1f2937 !important;
+  border-color: #4b5563 !important;
+  color: #d1d5db !important;
 }
 
-.dropdown-item {
-  background-color: transparent !important;
+/* Dropdown items */
+header .dropdown-item,
+header .group .absolute a {
+  background: transparent !important;
+  color: #374151 !important;
   
   &:hover {
-    background-color: rgba(249, 250, 251, 1) !important;
-    color: rgba(37, 99, 235, 1) !important;
+    background: #f9fafb !important;
+    color: #2563eb !important;
   }
 }
 
-.dark .dropdown-item {
-  &:hover {
-    background-color: rgba(55, 65, 81, 1) !important;
-    color: rgba(96, 165, 250, 1) !important;
-  }
-}
-
-header .group:hover > .absolute,
-header .relative.group:hover .absolute {
-  background-color: rgb(255, 255, 255) !important;
-  backdrop-filter: blur(12px) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-  z-index: 9999 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.dark header .group:hover > .absolute,
-.dark header .relative.group:hover .absolute {
-  background-color: rgb(31, 41, 55) !important;
-  border-color: rgb(75, 85, 99) !important;
-}
-
-// Dropdown menu items - More specific
-header .group .absolute a,
-header .relative.group .absolute a {
-  color: rgb(55, 65, 81) !important;
+/* Dark mode dropdown items */
+html.dark header .dropdown-item,
+html.dark header .group .absolute a {
+  color: #d1d5db !important;
   
   &:hover {
-    background-color: rgb(249, 250, 251) !important;
-    color: rgb(37, 99, 235) !important;
+    background: #374151 !important;
+    color: #60a5fa !important;
   }
 }
 
-.dark header .group .absolute a,
-.dark header .relative.group .absolute a {
-  color: rgb(209, 213, 219) !important;
-  
-  &:hover {
-    background-color: rgb(55, 65, 81) !important;
-    color: rgb(96, 165, 250) !important;
-  }
-}
-
-// Mobile Menu
+// Mobile Menu - Simplified
 // -----------------------------------------------------------------------------
 #mobile-menu {
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
 }
 
-#mobile-menu.show {
-  transform: translateY(0);
+/* Dark mode mobile menu */
+html.dark #mobile-menu {
+  background: #1f2937 !important;
+  border-color: #4b5563 !important;
+  color: #d1d5db !important;
 }
 
-.mobile-dropdown-toggle:focus {
-  outline: 2px solid rgb(59, 130, 246);
-  outline-offset: 2px;
+/* Mobile menu buttons and links */
+html.dark #mobile-menu .mobile-dropdown-toggle,
+html.dark #mobile-menu a {
+  color: #d1d5db !important;
 }
 
-.mobile-chevron.rotate {
-  transform: rotate(180deg);
-}
-
-// Mobile menu animation
-@media (max-width: 1023px) {
-  .mobile-menu-icon.hidden,
-  .mobile-close-icon.hidden {
-    display: none;
-  }
-  
-  .mobile-menu-icon.block,
-  .mobile-close-icon.block {
-    display: block;
-  }
+html.dark #mobile-menu .mobile-dropdown-toggle:hover,
+html.dark #mobile-menu a:hover {
+  background: #374151 !important;
+  color: #60a5fa !important;
 }
