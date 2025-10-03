@@ -452,12 +452,13 @@
 // -----------------------------------------------------------------------------
 .group:hover .absolute {
   // Ensure dropdown has solid background and proper z-index
-  background-color: $bg-color !important;
-  backdrop-filter: blur(8px);
-  box-shadow: $shadow-lg;
+  background-color: rgba(255, 255, 255, 1) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: $shadow-lg !important;
+  z-index: 1000 !important;
 
   .dark & {
-    background-color: $dark-bg-color !important;
+    background-color: rgba(31, 41, 55, 1) !important;
   }
 }
 
@@ -465,10 +466,43 @@
 .group .absolute a {
   // Ensure dropdown links have proper background on hover
   &:hover {
-    background-color: $bg-color-secondary !important;
+    background-color: rgba(249, 250, 251, 1) !important;
 
     .dark & {
-      background-color: $dark-bg-color-secondary !important;
+      background-color: rgba(55, 65, 81, 1) !important;
     }
+  }
+}
+
+// Mobile Menu
+// -----------------------------------------------------------------------------
+#mobile-menu {
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+#mobile-menu.show {
+  transform: translateY(0);
+}
+
+.mobile-dropdown-toggle:focus {
+  outline: 2px solid rgb(59, 130, 246);
+  outline-offset: 2px;
+}
+
+.mobile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+// Mobile menu animation
+@media (max-width: 1023px) {
+  .mobile-menu-icon.hidden,
+  .mobile-close-icon.hidden {
+    display: none;
+  }
+  
+  .mobile-menu-icon.block,
+  .mobile-close-icon.block {
+    display: block;
   }
 }
