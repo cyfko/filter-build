@@ -108,7 +108,7 @@ public class UserController {
         // FilterQL automatically validates the request against your property definitions
         FilterResolver resolver = FilterResolver.of(springContext);
         PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
-        Specification<User> spec = predicateResolver.toSpecification();
+        Specification<User> spec = predicateResolver::resolve;
         return userRepository.findAll(spec, pageable);
     }
 }
@@ -128,12 +128,8 @@ public enum UserPropertyRef implements PropertyReference {
 **4. 💾 Execute with any data access framework:**
 ```java
 // Spring Data JPA (included)
-Specification<User> spec = predicateResolver.toSpecification();
+Specification<User> spec = predicateResolver::resolve;
 Page<User> results = userRepository.findAll(spec, pageable);
-
-// Future: Other frameworks
-// Criteria criteria = predicateResolver.toCriteria();
-// String sql = predicateResolver.toSql();
 ```
 
 ## What Makes FilterQL Different?
@@ -189,13 +185,13 @@ implementation 'io.github.cyfko:filterql-spring:3.0.0'
 ## Ready to Transform Filtering?
 
 <div align="center">
-  <p><strong>🚀 <a href="getting-started.md">Start Your 10-Minute Journey</a></strong></p>
+  <p><strong>🚀 <a href="/docs/getting-started.md">Start Your 10-Minute Journey</a></strong></p>
   <p>From novice to productive in under 10 minutes</p>
   <p>or</p>
-  <p><strong>🏗️ <a href="spring-adapter.md">Spring Integration Guide</a></strong></p>
+  <p><strong>🏗️ <a href="/docs/spring-adapter.md">Spring Integration Guide</a></strong></p>
   <p>Integrate FilterQL with your Spring Data JPA app</p>
   <p>or</p>
-  <p><strong>📚 <a href="examples.md">Explore Real-World Examples</a></strong></p>
+  <p><strong>📚 <a href="/docs/examples.md">Explore Real-World Examples</a></strong></p>
 </div>
 
 ---
