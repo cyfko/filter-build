@@ -1,176 +1,230 @@
 ---
-layout: home
-title: FilterQL - Transform Filtering Forever
-description: Advanced dynamic filtering protocol for Java - Type-safe, composable, and framework-agnostic
-nav_order: 1
+title: FilterQL Documentation
+description: Framework-agnostic dynamic filtering library with type-safe DSL
+sidebar_position: 1
 ---
 
-# � FilterQL: Transform Filtering Forever
+# FilterQL - Dynamic Filter Builder
 
-**Filtering in Java, reimagined for clarity, safety, and power**
-
-![Maven Central](https://img.shields.io/maven-central/v/io.github.cyfko/filterql-core.svg)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Java](https://img.shields.io/badge/Java-21+-orange.svg)
+> **Transformez des exigences de filtrage complexes et dynamiques en solutions simples, sécurisées et maintenables**
 
 ---
 
-## Why Does FilterQL Exist?
+## Résumé du Projet
 
-**Every developer has faced the filtering nightmare:**
-- Endless query parameters
-- Unmaintainable code
-- Brittle logic, bugs, and security risks
-- No type safety, no flexibility
+**FilterQL** est une bibliothèque Java agnostique de framework qui transforme des exigences de filtrage complexes et dynamiques en solutions simples, sécurisées et maintenables. Elle fournit un langage spécifique au domaine (DSL) pour construire des conditions de filtre complexes tout en maintenant la sécurité des types et en prévenant les injections SQL.
 
-**FilterQL was born to solve this.**
+La bibliothèque implémente une architecture en couches qui sépare les préoccupations à travers quatre couches distinctes, permettant un filtrage dynamique sécurisé avec une validation complète.
 
-## What Is FilterQL?
+---
 
-FilterQL is an **advanced dynamic filtering protocol** that bridges the gap between frontend and backend. The Java implementation provides type-safe, composable filters that work seamlessly across your entire stack:
+## Problème Adressé
 
-**🌐 For Frontend Developers:**
-- Send intuitive JSON filter requests to any endpoint
-- Express complex queries without learning SQL or backend specifics
-- Get predictable, validated responses
+Les applications web modernes ont souvent besoin de **recherche et de filtrage dynamiques pilotés par l'utilisateur**. Les approches traditionnelles présentent des limitations importantes :
 
-**⚙️ For Backend Developers:**
-- Receive strongly-typed filter objects with guaranteed validation
-- Transform filters to any data access framework (Spring Data JPA, etc.)
-- Eliminate parameter explosion and brittle query building
+### ❌ Limitations des Approches Traditionnelles
 
-**Key Capabilities:**
-- Express complex filter logic as simple, readable objects
-- Guarantee type safety and operator validation at compile time
-- Protect against SQL injection and runtime errors
-- Scale from simple apps to enterprise systems
-
-## Who Is FilterQL For?
-
-**🌐 Frontend Teams:**
-- React, Vue, Angular developers building search interfaces
-- Mobile developers creating filter-heavy apps
-- UX designers wanting intuitive filtering experiences
-
-**⚙️ Backend Teams:**
-- Java developers tired of parameter explosion
-- Spring Data JPA users needing dynamic queries
-- API architects building search, analytics, or admin endpoints
-
-**🏢 Organizations:**
-- Teams wanting consistent filtering across projects
-- Architects demanding maintainable, testable, secure code
-- Companies building data-heavy applications
-
-## The Problem: Filtering Without FilterQL
-
+**Filtres Statiques** : Conditions codées en dur qui ne peuvent pas s'adapter aux besoins des utilisateurs
 ```java
-// The old way: brittle, error-prone, and hard to extend
-public List<User> findUsers(String name, String department, Boolean active, 
-                           Integer minAge, Integer maxAge) {
-    // 100+ lines of conditional logic, null checks, and manual query building
+// Inflexible - que faire si les utilisateurs veulent une logique OR au lieu de AND ?
+public List<User> findUsers(String name, UserStatus status, Integer minAge) {
+    return repository.findByNameAndStatusAndAgeGreaterThan(name, status, minAge);
 }
 ```
 
-- Adding a new filter means changing method signatures everywhere
-- Impossible to test all combinations
-- Easy to introduce bugs and security holes
-
-## The FilterQL Solution: Real Code, Real Simplicity
-
-### 🔄 **The Complete Client-Server Flow**
-
-**1. 🌐 Frontend sends intuitive filter requests:**
-
-```javascript
-// React/Vue/Angular - Natural filtering interface
-const filterRequest = {
-  "filters": {
-    "activeUsers": { "ref": "STATUS", "operator": "EQ", "value": "ACTIVE" },
-    "techTeam": { "ref": "DEPARTMENT", "operator": "EQ", "value": "ENGINEERING" },
-    "experienced": { "ref": "YEARS_EXPERIENCE", "operator": "GTE", "value": 3 }
-  },
-  "combineWith": "activeUsers & (techTeam | experienced)"
-};
-
-// Send to backend
-fetch('/api/users/search', {
-  method: 'POST',
-  body: JSON.stringify(filterRequest)
-});
-```
-
-**2. ⚙️ Backend receives type-safe filter objects:**
+**Exposition des Requêtes Brutes** : Risques de sécurité et couplage serré
 ```java
-// VERIFIED: This is actual FilterQL usage in Java
-@RestController
-public class UserController {
-    @PostMapping("/users/search")
-    public Page<User> search(@RequestBody FilterRequest<UserPropertyRef> request, Pageable pageable) {
-        // FilterQL automatically validates the request against your property definitions
-        FilterResolver resolver = FilterResolver.of(springContext);
-        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
-        Specification<User> spec = predicateResolver::resolve;
-        return userRepository.findAll(spec, pageable);
-    }
+// Dangereux - expose la structure de base de données et les risques d'injection SQL
+public List<User> search(String whereClause) {
+    return entityManager.createQuery("SELECT u FROM User u WHERE " + whereClause).getResultList();
 }
 ```
 
-**3. 🎯 Define your domain once, use everywhere:**
+**Explosion des Paramètres** : Signatures de méthodes ingérables
 ```java
+// Non maintenable - la méthode grandit avec chaque nouveau filtre
+public Page<User> findUsers(String name, String email, Integer minAge, Integer maxAge, 
+                           UserStatus status, List<String> roles, LocalDateTime createdAfter, 
+                           Boolean isActive, String department, String sortBy, String sortDirection) {
+    // Logique conditionnelle complexe...
+}
+```
+
+---
+
+## État de l'Art
+
+### Solutions Existantes
+
+**Query Builders Traditionnels** : 
+- **Avantages** : Composition dynamique de requêtes
+- **Inconvénients** : Exposition directe des champs de base de données, risques de sécurité
+- **Exemples** : QueryDSL, Criteria API directe
+
+**Solutions ORM Spécifiques** :
+- **Avantages** : Intégration native avec les frameworks
+- **Inconvénients** : Couplage fort, manque de validation de types
+- **Exemples** : Spring Data Specifications, Hibernate Criteria
+
+**Bibliothèques de Filtrage** :
+- **Avantages** : APIs simplifiées pour des cas d'usage courants
+- **Inconvénients** : Flexibilité limitée, manque de validation complète
+
+### Positionnement de FilterQL
+
+FilterQL se différencie en combinant :
+- **Sécurité par design** avec des références abstraites de propriétés
+- **Validation multi-niveaux** (compilation, construction, exécution)  
+- **Agnosticisme de framework** avec des adaptateurs spécialisés
+- **DSL expressif** supportant la logique booléenne complexe
+- **Sécurité des types** avec validation à la compilation
+
+---
+
+## Approche Choisie
+
+### Architecture en Couches
+
+FilterQL suit une **architecture à quatre couches** avec séparation claire des responsabilités :
+
+```
+┌─────────────────────────────────────────┐
+│              Couche DSL                 │
+│  (Parser, FilterTree, Logique Booléenne)│
+├─────────────────────────────────────────┤
+│           Couche Validation             │
+│   (PropertyReference, Operators, Op)    │
+├─────────────────────────────────────────┤
+│             Couche Modèle               │
+│  (FilterDefinition, FilterRequest)      │
+├─────────────────────────────────────────┤
+│          Couche Exécution               │
+│  (Context, Condition, PredicateResolver)│
+└─────────────────────────────────────────┘
+```
+
+### Processus de Filtrage
+
+1. **Parsing DSL et Validation** : Transformation du DSL textuel en logique booléenne exécutable
+2. **Construction de Filtres Type-Safe** : Validation des propriétés-opérateurs à la compilation
+3. **Population du Contexte** : Stockage des conditions validées et construction de l'arbre
+4. **Exécution Native** : Conversion vers des constructions spécifiques au framework
+
+### Exemple Complet
+
+```java
+// 1. Définir les références de propriétés
 public enum UserPropertyRef implements PropertyReference {
-    STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN)),
-    DEPARTMENT(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    YEARS_EXPERIENCE(Integer.class, Set.of(Op.GT, Op.LT, Op.RANGE)),
-    FULL_NAME(String.class, Set.of(Op.MATCHES));
-    // Frontend gets automatic validation, Backend gets type safety
+    NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
+    EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES)),
+    AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
+    STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN));
 }
+
+// 2. Créer le contexte avec mappings
+FilterContext<User, UserPropertyRef> context = new FilterContext<>(
+    User.class, UserPropertyRef.class,
+    definition -> switch (definition.ref()) {
+        case NAME -> "name";
+        case EMAIL -> "email";
+        case AGE -> "age";
+        case STATUS -> "status";
+    }
+);
+
+// 3. Construire et exécuter les filtres
+FilterResolver resolver = FilterResolver.of(context);
+PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
+Specification<User> specification = (root, query, cb) -> 
+    predicateResolver.resolve(root, query, cb);
+Page<User> results = userRepository.findAll(specification, pageable);
 ```
 
-**4. 💾 Execute with any data access framework:**
-```java
-// Spring Data JPA (included)
-Specification<User> spec = predicateResolver::resolve;
-Page<User> results = userRepository.findAll(spec, pageable);
-```
+---
 
-## What Makes FilterQL Different?
+## Public Cible et Rôles
 
-### 🌍 **Universal Protocol, Not Just a Library**
-- **Protocol-first design**: FilterQL defines a standard way to express filters
-- **Language agnostic**: Today Java, tomorrow Python, TypeScript, etc.
-- **Framework neutral**: Works with Spring Data JPA, Hibernate, MyBatis, etc.
+### Développeurs Backend
+- **Besoin** : Intégration simple dans les APIs REST existantes
+- **Solution** : Adaptateurs prêts à l'emploi pour Spring Data JPA
+- **Avantage** : Réduction drastique du code boilerplate
 
-### 🔄 **Perfect Client-Server Harmony**
-- **Frontend**: Intuitive JSON requests, no backend knowledge needed
-- **Backend**: Type-safe objects, no parameter explosion
-- **Validation**: Automatic on both sides, consistent everywhere
+### Architectes Système
+- **Besoin** : Solutions évolutives et sécurisées
+- **Solution** : Architecture en couches avec séparation des responsabilités
+- **Avantage** : Extensibilité et maintenabilité à long terme
 
-### 🛡️ **Enterprise-Grade Safety**
-- **Type safety**: Only valid properties and operators allowed
-- **SQL injection proof**: No manual query building ever
-- **Runtime validation**: Catch errors before they hit the database
-- **Scalability**: Used in production for millions of records
+### Équipes Frontend
+- **Besoin** : APIs de filtrage flexibles et expressives
+- **Solution** : DSL JSON intuitif avec logique booléenne
+- **Avantage** : Construction dynamique d'interfaces utilisateur complexes
 
-## See FilterQL in Action
+---
 
-**Explore the docs:**
-- [Getting Started Guide](getting-started.md)
-- [Core Architecture](core-module.md)
-- [Spring Integration](spring-adapter.md)
-- [Real-World Examples](examples.md)
-- [FAQ](faq.md)
-- [Troubleshooting](troubleshooting.md)
+## Caractéristiques Principales
 
-## Quick Install
+### 🔒 Sécurité par Design
+- **Références abstraites** : Pas d'exposition directe des champs de base de données
+- **Validation multi-niveaux** : Compilation, construction, valeur, parsing
+- **Prévention d'injection** : Liaisons de paramètres type-safe
 
-**Maven:**
+### ⚡ Composition Dynamique
+- **DSL expressif** : Support de `&` (AND), `|` (OR), `!` (NOT), parenthèses
+- **Filtres réutilisables** : Conditions nommées combinables
+- **Logique complexe** : Expression booléenne avec précédence
+
+### 🎯 Sécurité des Types
+- **Validation à la compilation** : Énumérations PropertyReference 
+- **Vérification d'opérateurs** : Compatibilité propriété-opérateur validée
+- **Types de valeurs** : Validation automatique des types de données
+
+### 🔧 Intégration Framework
+- **Adaptateur Spring** : Support natif Spring Data JPA prêt à l'emploi
+- **Architecture extensible** : Pattern adaptateur pour autres frameworks
+- **Préservation des fonctionnalités** : Pagination, tri, cache, transactions
+
+---
+
+## Table des Matières
+
+### Implémentations
+
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **[Core](./implementations/core/)** | Bibliothèque agnostique de framework avec DSL et validation | [Guide Core →](./implementations/core/) |
+| **[Spring Adapter](./implementations/spring-adapter/)** | Adaptateur Spring Data JPA avec Specifications | [Guide Spring →](./implementations/spring-adapter/) |
+
+### Guides et Références
+
+| Section | Description | Lien |
+|---------|-------------|------|
+| **[Architecture](./architecture.md)** | Architecture détaillée et patterns de conception | [Architecture →](./architecture.md) |
+| **[Installation](./installation.md)** | Guide d'installation et configuration | [Installation →](./installation.md) |
+| **[Contributing](./contributing.md)** | Guide de contribution et développement | [Contributing →](./contributing.md) |
+| **[Changelog](./changelog.md)** | Historique des versions et migrations | [Changelog →](./changelog.md) |
+
+### Ressources
+
+- **[Exemples Complets](./examples/)** : Cas d'usage réels et patterns avancés
+- **[FAQ](./faq.md)** : Questions fréquemment posées
+- **[Troubleshooting](./troubleshooting.md)** : Dépannage et solutions communes
+- **[API Reference](./api/)** : Documentation complète des APIs
+
+---
+
+## Démarrage Rapide
+
+### 1. Installation
+
 ```xml
+<!-- Module core (requis) -->
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-core</artifactId>
     <version>3.0.0</version>
 </dependency>
+
+<!-- Adaptateur Spring Data JPA -->
 <dependency>
     <groupId>io.github.cyfko</groupId>
     <artifactId>filterql-spring</artifactId>
@@ -178,31 +232,97 @@ Page<User> results = userRepository.findAll(spec, pageable);
 </dependency>
 ```
 
-**Gradle:**
-```gradle
-implementation 'io.github.cyfko:filterql-core:3.0.0'
-implementation 'io.github.cyfko:filterql-spring:3.0.0'
+### 2. Configuration
+
+```java
+@Configuration
+public class FilterConfig {
+    @Bean
+    public FilterContext<User, UserPropertyRef> userFilterContext() {
+        return new FilterContext<>(User.class, UserPropertyRef.class, 
+            definition -> switch (definition.ref()) {
+                case NAME -> "name";
+                case EMAIL -> "email";
+                case AGE -> "age";
+                case STATUS -> "status";
+            });
+    }
+}
 ```
 
-## Ready to Transform Filtering?
+### 3. Utilisation
 
-<div align="center">
-  <p><strong>🚀 <a href="/getting-started.md">Start Your 10-Minute Journey</a></strong></p>
-  <p>From novice to productive in under 10 minutes</p>
-  <p>or</p>
-  <p><strong>🏗️ <a href="/spring-adapter.md">Spring Integration Guide</a></strong></p>
-  <p>Integrate FilterQL with your Spring Data JPA app</p>
-  <p>or</p>
-  <p><strong>📚 <a href="/examples.md">Explore Real-World Examples</a></strong></p>
-</div>
+```java
+@RestController
+public class UserController {
+    @PostMapping("/users/search")
+    public Page<User> searchUsers(
+            @RequestBody FilterRequest<UserPropertyRef> request,
+            Pageable pageable) {
+        
+        FilterResolver resolver = FilterResolver.of(userFilterContext);
+        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
+        Specification<User> specification = (root, query, cb) -> 
+            predicateResolver.resolve(root, query, cb);
+        return userRepository.findAll(specification, pageable);
+    }
+}
+```
 
 ---
 
-<div align="center">
-  <strong>FilterQL: Filtering, Reimagined for Java</strong><br>
-  <em>Made for developers who demand clarity, safety, and power</em>
-  <br><br>
-  <a href="https://github.com/cyfko/filter-build">GitHub</a> • 
-  <a href="https://cyfko.github.io/filter-build">Documentation</a> • 
-  <a href="https://github.com/cyfko/filter-build/issues">Issues</a>
-</div>
+## Exemples de Requêtes
+
+### Recherche E-commerce
+```json
+{
+  "filters": {
+    "category": { "ref": "CATEGORY", "operator": "IN", "value": ["ELECTRONICS", "BOOKS"] },
+    "priceRange": { "ref": "PRICE", "operator": "RANGE", "value": [10.0, 100.0] },
+    "inStock": { "ref": "STOCK_QUANTITY", "operator": "GT", "value": 0 },
+    "featured": { "ref": "IS_FEATURED", "operator": "EQ", "value": true }
+  },
+  "combineWith": "category & priceRange & inStock & featured"
+}
+```
+
+### Gestion RH
+```json
+{
+  "filters": {
+    "highPerformance": { "ref": "PERFORMANCE_RATING", "operator": "GTE", "value": 4.5 },
+    "experience": { "ref": "YEARS_EXPERIENCE", "operator": "GTE", "value": 3 },
+    "activeStatus": { "ref": "STATUS", "operator": "EQ", "value": "ACTIVE" },
+    "eligibleDepts": { "ref": "DEPARTMENT", "operator": "IN", "value": ["ENGINEERING", "PRODUCT"] }
+  },
+  "combineWith": "activeStatus & eligibleDepts & (highPerformance | experience)"
+}
+```
+
+---
+
+## Contribution et Support
+
+### Contribution
+
+Nous accueillons les contributions ! Consultez notre [Guide de Contribution](./contributing.md) pour :
+- Code de conduite
+- Configuration de développement  
+- Processus de pull request
+- Standards de codage
+
+### Support
+
+- **[GitHub Issues](https://github.com/cyfko/filter-build/issues)** : Rapports de bugs et demandes de fonctionnalités
+- **[Documentation](./troubleshooting.md)** : Guides de dépannage
+- **[Discussions](https://github.com/cyfko/filter-build/discussions)** : Questions et bonnes pratiques
+
+---
+
+## Licence
+
+Ce projet est sous licence MIT - voir le fichier [LICENSE](../LICENSE) pour plus de détails.
+
+---
+
+**FilterQL** - Rendre le filtrage dynamique simple, sûr et puissant.

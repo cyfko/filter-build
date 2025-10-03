@@ -1,136 +1,152 @@
 ---
-layout: page
-title: Architecture Guide
-description: Framework-agnostic dynamic filtering library with type-safe DSL
-nav_order: 8
+title: Architecture FilterQL
+description: Architecture détaillée et patterns de conception
+sidebar_position: 3
 ---
 
-# FilterQL Architecture
+# Architecture FilterQL
 
-> **Framework-agnostic dynamic filtering library with type-safe DSL and multi-layer validation**
-
----
-
-## Executive Summary
-
-FilterQL implements a **layered architecture** that separates concerns across four distinct layers, enabling type-safe dynamic filtering with comprehensive validation. The system transforms high-level DSL expressions into framework-specific query constructs while maintaining strict type safety and operator validation.
-
-### Core Value Proposition
-- **Type Safety**: Compile-time property and operator validation
-- **Framework Agnostic**: Adaptable to any persistence technology  
-- **DSL Expressiveness**: Boolean logic with precedence and grouping
-- **Comprehensive Validation**: Multi-level validation with specific exceptions
-- **Production Ready**: Caching, lazy evaluation, and performance optimizations
+> **Architecture en couches avec séparation claire des responsabilités pour un filtrage dynamique sécurisé et extensible**
 
 ---
 
-## Layered Architecture
+## Vue d'Ensemble
 
-FilterQL follows a **four-layer architecture** with clear separation of concerns:
+FilterQL implémente une **architecture à quatre couches** qui sépare les préoccupations à travers quatre couches distinctes, permettant un filtrage dynamique type-safe avec une validation complète. Le système transforme des expressions DSL de haut niveau en constructions de requête spécifiques au framework tout en maintenant une sécurité des types stricte et une validation des opérateurs.
+
+### Proposition de Valeur
+
+- **Sécurité des Types** : Validation des propriétés et opérateurs à la compilation
+- **Agnosticisme Framework** : Adaptable à toute technologie de persistance  
+- **Expressivité DSL** : Logique booléenne avec précédence et groupement
+- **Validation Complète** : Validation multi-niveaux avec exceptions spécifiques
+- **Prêt pour Production** : Cache, évaluation paresseuse, et optimisations de performance
+
+---
+
+## Architecture en Couches
 
 ```
 ┌─────────────────────────────────────────┐
-│              DSL Layer                  │
-│  (Parser, FilterTree, Boolean Logic)   │
+│              Couche DSL                 │
+│  (Parser, FilterTree, Logique Booléenne)│
 ├─────────────────────────────────────────┤
-│            Validation Layer             │
+│           Couche Validation             │
 │   (PropertyReference, Operators, Op)    │
 ├─────────────────────────────────────────┤
-│             Model Layer                 │
+│             Couche Modèle               │
 │  (FilterDefinition, FilterRequest)      │
 ├─────────────────────────────────────────┤
-│           Execution Layer               │
+│          Couche Exécution               │
 │  (Context, Condition, PredicateResolver)│
 └─────────────────────────────────────────┘
 ```
 
-### Layer Responsibilities
+### Responsabilités des Couches
 
-#### 1. DSL Layer
-- **Parser**: Transforms textual DSL into executable boolean logic
-- **FilterTree**: Represents logical structure with precedence handling
-- **Boolean Logic**: Supports `&` (AND), `|` (OR), `!` (NOT) with proper precedence
+#### 1. Couche DSL
+- **Parser** : Transforme le DSL textuel en logique booléenne exécutable
+- **FilterTree** : Représente la structure logique avec gestion de précédence
+- **Logique Booléenne** : Support de `&` (AND), `|` (OR), `!` (NOT) avec précédence appropriée
 
-#### 2. Validation Layer  
-- **PropertyReference**: Type-safe enum interface for property definitions
-- **Operators (Op)**: Comprehensive operator set with built-in validation
-- **Type Checking**: Ensures value types match property expectations
+#### 2. Couche Validation  
+- **PropertyReference** : Interface enum type-safe pour définitions de propriétés
+- **Opérateurs (Op)** : Ensemble d'opérateurs complet avec validation intégrée
+- **Vérification de Types** : Assure que les types de valeurs correspondent aux attentes des propriétés
 
-#### 3. Model Layer
-- **FilterDefinition**: Type-safe container for filter logic
-- **FilterRequest**: Immutable request builder with validation
-- **Builder Pattern**: Fluent API for complex filter construction
+#### 3. Couche Modèle
+- **FilterDefinition** : Conteneur type-safe pour logique de filtre
+- **FilterRequest** : Builder de requête immuable avec validation
+- **Pattern Builder** : API fluide pour construction de filtres complexes
 
-#### 4. Execution Layer
-- **Context**: Manages filter conditions and lifecycle
-- **Condition**: Abstract filter condition with logical combinators
-- **PredicateResolver**: Converts conditions to framework-specific queries
+#### 4. Couche Exécution
+- **Context** : Gère les conditions de filtre et le cycle de vie
+- **Condition** : Condition de filtre abstraite avec combinateurs logiques
+- **PredicateResolver** : Convertit les conditions en requêtes spécifiques au framework
 
 ---
 
-## Detailed Filtering Process
+## Processus de Filtrage Détaillé
 
-### 1. **DSL Parsing and Validation**
+### 1. **Parsing DSL et Validation**
+
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/impl/DSLParser.java`
+
 ```java
 Parser parser = new DSLParser();
 FilterTree tree = parser.parse("(activeUsers & premiumTier) | !suspended");
 ```
-- Validates DSL syntax with proper error reporting
-- Builds logical tree with operator precedence
-- Ensures referenced filter keys exist in filter request
-- **Error**: `DSLSyntaxException` for invalid syntax
 
-### 2. **Type-Safe Filter Construction**
+- Valide la syntaxe DSL avec rapport d'erreur approprié
+- Construit un arbre logique avec précédence des opérateurs
+- Assure que les clés de filtre référencées existent dans la requête de filtre
+- **Erreur** : `DSLSyntaxException` pour syntaxe invalide
+
+### 2. **Construction de Filtres Type-Safe**
+
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/model/FilterDefinition.java`
+
 ```java
 FilterDefinition<UserPropertyRef> activeFilter = 
     new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE);
 ```
-- Validates property-operator compatibility at compile time
-- Ensures value types match property declarations
-- Validates operator-specific constraints (e.g., RANGE requires exactly 2 values)
-- **Error**: `FilterValidationException` for validation failures
 
-### 3. **Context Population and Condition Building**
+- Valide la compatibilité propriété-opérateur à la compilation
+- Assure que les types de valeurs correspondent aux déclarations de propriétés
+- Valide les contraintes spécifiques aux opérateurs (ex. RANGE nécessite exactement 2 valeurs)
+- **Erreur** : `FilterValidationException` pour échecs de validation
+
+### 3. **Population du Contexte et Construction des Conditions**
+
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/Context.java`
+
 ```java
 Context context = new ContextImpl();
 context.addCondition("activeUsers", activeFilter);
 Condition globalCondition = tree.generate(context);
 ```
-- Stores validated filter conditions with string keys
-- Builds condition tree reflecting DSL logical structure
-- Maintains referential integrity between DSL and filters
-- **Error**: Runtime exception for missing filter keys
 
-### 4. **Framework-Native Execution**
+- Stocke les conditions de filtre validées avec des clés string
+- Construit un arbre de conditions reflétant la structure logique DSL
+- Maintient l'intégrité référentielle entre DSL et filtres
+- **Erreur** : Exception runtime pour clés de filtre manquantes
+
+### 4. **Exécution Native Framework**
+
+**Fichier source** : `adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/FilterContext.java`
+
 ```java
 PredicateResolver<User> resolver = context.toResolver(User.class, globalCondition);
 // JPA: javax.persistence.criteria.Predicate
 // Spring Data: org.springframework.data.jpa.domain.Specification<T>
 ```
-- Converts abstract conditions to framework-specific constructs
-- Leverages framework's native pagination, sorting, caching
-- Maintains transaction management and connection pooling
-- **Performance**: Zero-copy transformation with lazy evaluation
+
+- Convertit les conditions abstraites en constructions spécifiques au framework
+- Exploite la pagination, le tri, la mise en cache natifs du framework
+- Maintient la gestion des transactions et le pool de connexions
+- **Performance** : Transformation sans copie avec évaluation paresseuse
 
 ---
 
-## Core Components & Interfaces
+## Composants Principaux & Interfaces
 
-### Primary Components
+### Composants Primaires
 
-| Component | Responsibility | Key Methods | Description |
+| Composant | Responsabilité | Méthodes Clés | Description |
 |-----------|---------------|-------------|-------------|
-| **FilterResolver** | Pipeline orchestration | `resolve(Class<E>, FilterRequest)` | Main entry point - orchestrates parsing, validation, and predicate resolution |
-| **Parser** | DSL processing | `parse(String dslExpression)` | Transforms DSL expressions into executable FilterTree structures |
-| **FilterTree** | Logical structure | `generate(Context)` | Represents boolean logic tree and generates global conditions |
-| **PropertyReference** | Type safety | `validateOperator(Op)`, `validateOperatorForValue(Op, Object)` | Enum interface ensuring compile-time type safety and operator validation |
-| **Context** | Condition management | `addCondition(String, FilterDefinition)`, `getCondition(String)` | Manages filter lifecycle and condition storage |
-| **Condition** | Logical operations | `and(Condition)`, `or(Condition)`, `not()` | Abstract filter condition with boolean combinators |
-| **PredicateResolver** | Framework bridge | Framework-specific implementation | Converts conditions to native query constructs |
+| **FilterResolver** | Orchestration de pipeline | `resolve(Class<E>, FilterRequest)` | Point d'entrée principal - orchestre parsing, validation, et résolution de prédicat |
+| **Parser** | Traitement DSL | `parse(String dslExpression)` | Transforme les expressions DSL en structures FilterTree exécutables |
+| **FilterTree** | Structure logique | `generate(Context)` | Représente l'arbre de logique booléenne et génère les conditions globales |
+| **PropertyReference** | Sécurité des types | `validateOperator(Op)`, `validateOperatorForValue(Op, Object)` | Interface enum assurant la sécurité des types à la compilation et validation des opérateurs |
+| **Context** | Gestion des conditions | `addCondition(String, FilterDefinition)`, `getCondition(String)` | Gère le cycle de vie des filtres et stockage des conditions |
+| **Condition** | Opérations logiques | `and(Condition)`, `or(Condition)`, `not()` | Condition de filtre abstraite avec combinateurs booléens |
+| **PredicateResolver** | Pont vers framework | Implémentation spécifique au framework | Convertit les conditions en constructions de requête natives |
 
-### Enhanced Interface Contracts
+### Contrats d'Interface Améliorés
 
 #### FilterResolver
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/FilterResolver.java`
+
 ```java
 public interface FilterResolver {
     <E> PredicateResolver<E> resolve(Class<E> entityClass, FilterRequest<? extends PropertyReference> request);
@@ -139,70 +155,67 @@ public interface FilterResolver {
 }
 ```
 
-#### PropertyReference (Enhanced)
+#### PropertyReference (Amélioré)
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/validation/PropertyReference.java`
+
 ```java
 public interface PropertyReference {
-    Class<?> getPropertyType();
+    Class<?> getType();
     Set<Op> getSupportedOperators();
     void validateOperator(Op operator) throws FilterValidationException;
     void validateOperatorForValue(Op operator, Object value) throws FilterValidationException;
-    String getPropertyName(); // Derived from enum name by default
+    String getPropertyName(); // Dérivé du nom enum par défaut
 }
 ```
 
-#### Extended Operator Support
+#### Support d'Opérateurs Étendu
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/validation/Op.java`
+
 ```java
 public enum Op {
-    // Comparison operators
+    // Opérateurs de comparaison
     EQ("="), NE("!="), GT(">"), GTE(">="), LT("<"), LTE("<="),
     
-    // Pattern matching
+    // Correspondance de patterns
     MATCHES("LIKE"), NOT_MATCHES("NOT LIKE"),
     
-    // Set operations  
+    // Opérations sur ensembles  
     IN("IN"), NOT_IN("NOT IN"),
     
-    // Null checks
+    // Vérifications de null
     IS_NULL("IS NULL"), NOT_NULL("IS NOT NULL"),
     
-    // Range operations
+    // Opérations de plage
     RANGE("BETWEEN"), NOT_RANGE("NOT BETWEEN");
 }
 ```
 
-### Framework Adapters
+### Adaptateurs Framework
 
-#### Spring Data JPA Adapter
+#### Adaptateur Spring Data JPA
+**Fichier source** : `adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/FilterContext.java`
+
 ```java
-// Converts Condition to Specification<T>
+// Convertit Condition en Specification<T>
 PredicateResolver<User> resolver = springContext.toResolver(User.class, condition);
 Specification<User> spec = resolver.toSpecification();
 ```
 
-**Integration Points:**
-- `Specification<T>` for type-safe query building
-- `CriteriaBuilder` for dynamic query construction  
-- `Root<T>` for property path resolution
-- Native Spring Data pagination and sorting
-
-#### Future Adapter Interfaces
-```java
-// Prisma (Node.js)
-PrismaWhereClause clause = prismaAdapter.toWhereClause(condition);
-
-// Django ORM (Python)  
-Q queryObject = djangoAdapter.toQObject(condition);
-
-// Entity Framework (.NET)
-Expression<Func<T, bool>> expression = efAdapter.toLinqExpression(condition);
-```
+**Points d'Intégration** :
+- `Specification<T>` pour construction de requête type-safe
+- `CriteriaBuilder` pour construction de requête dynamique  
+- `Root<T>` pour résolution de chemin de propriété
+- Pagination et tri Spring Data natifs
 
 ---
 
-## Design Patterns & Architectural Principles
+## Patterns de Conception & Principes Architecturaux
 
-### 1. Builder Pattern
-**Usage**: Complex object construction with validation
+### 1. Pattern Builder
+**Usage** : Construction d'objets complexes avec validation
+
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/model/FilterRequest.java`
+
 ```java
 FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
     .filter("activeUsers", activeDefinition)
@@ -211,216 +224,184 @@ FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder(
     .build();
 ```
 
-### 2. Strategy Pattern  
-**Usage**: PropertyReference allows different validation strategies per property type
+### 2. Pattern Strategy  
+**Usage** : PropertyReference permet différentes stratégies de validation par type de propriété
+
 ```java
-// String properties support pattern matching
+// Les propriétés textuelles supportent la correspondance de patterns
 NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN))
 
-// Numeric properties support range operations  
+// Les propriétés numériques supportent les opérations de plage  
 AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE))
 ```
 
-### 3. Composite Pattern
-**Usage**: Conditions can be recursively combined using boolean logic
+### 3. Pattern Composite
+**Usage** : Les conditions peuvent être combinées récursivement utilisant la logique booléenne
+
 ```java
 Condition nameCondition = context.getCondition("nameFilter");
 Condition ageCondition = context.getCondition("ageFilter");
 Condition combined = nameCondition.and(ageCondition).or(vipCondition);
 ```
 
-### 4. Template Method Pattern
-**Usage**: FilterResolver orchestrates a consistent pipeline
-1. Parse DSL expression → FilterTree
-2. Populate context with FilterDefinitions  
-3. Generate global Condition from tree
-4. Convert to framework-specific PredicateResolver
+### 4. Pattern Template Method
+**Usage** : FilterResolver orchestre un pipeline cohérent
 
-### 5. Adapter Pattern
-**Usage**: Framework-specific query generation
+1. Parser l'expression DSL → FilterTree
+2. Peupler le contexte avec FilterDefinitions  
+3. Générer la Condition globale à partir de l'arbre
+4. Convertir en PredicateResolver spécifique au framework
+
+### 5. Pattern Adapter
+**Usage** : Génération de requête spécifique au framework
+
+**Fichier source** : `adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/FilterCondition.java`
+
 ```java
-// Same Condition, different framework outputs
+// Même Condition, différentes sorties framework
 Condition condition = //...
 
 // Spring Data JPA
 Specification<User> jpaSpec = springAdapter.toSpecification(condition);
 
-// Future: Prisma  
+// Futur: Prisma  
 PrismaWhereClause prismaWhere = prismaAdapter.toWhereClause(condition);
 ```
 
-### 6. Type Safety Principles
-- **Compile-time validation**: PropertyReference enum constrains available operations
-- **Runtime validation**: Multi-layer validation with specific exceptions
-- **Fail-fast**: Invalid configurations detected at construction time
-- **Immutable objects**: Thread-safe, predictable behavior
+### 6. Principes de Sécurité des Types
+- **Validation à la compilation** : L'enum PropertyReference contraint les opérations disponibles
+- **Validation runtime** : Validation multi-niveaux avec exceptions spécifiques
+- **Fail-fast** : Configurations invalides détectées au moment de la construction
+- **Objets immuables** : Comportement thread-safe et prévisible
 
 ---
 
-## Performance & Scalability Considerations
+## Considérations de Performance & Évolutivité
 
-### Caching Strategy
+### Stratégie de Cache
+
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/utils/ClassUtils.java`
+
 ```java
-// Field reflection results cached in ClassUtils
+// Résultats de réflexion de champs mis en cache dans ClassUtils
 private static final Map<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
 
-// Superclass hierarchy cached for performance
+// Hiérarchie de superclasse mise en cache pour performance
 private static final Map<Class<?>, List<Class<?>>> HIERARCHY_CACHE = new ConcurrentHashMap<>();
 ```
 
-### Memory Efficiency
-- **Immutable objects**: Reduce memory allocation and GC pressure
-- **Flyweight pattern**: Shared operator instances and validation results
-- **Lazy evaluation**: Conditions built only when needed
-- **Zero-copy**: Direct transformation without intermediate representations
+### Efficacité Mémoire
+- **Objets immuables** : Réduisent l'allocation mémoire et la pression GC
+- **Pattern Flyweight** : Instances d'opérateurs partagées et résultats de validation
+- **Évaluation paresseuse** : Conditions construites seulement quand nécessaire
+- **Sans copie** : Transformation directe sans représentations intermédiaires
 
-### Scalability Features
-- **Thread-safe**: All core components are stateless or immutable
-- **Connection pooling**: Leverages framework's native connection management
-- **Query optimization**: Delegates to framework's proven query optimizers
-- **Caching**: Framework-native query result caching (JPA L1/L2 cache)
+### Fonctionnalités d'Évolutivité
+- **Thread-safe** : Tous les composants principaux sont sans état ou immuables
+- **Pool de connexions** : Exploite la gestion native des connexions du framework
+- **Optimisation de requête** : Délègue aux optimiseurs de requête prouvés du framework
+- **Cache** : Cache de résultats de requête natif du framework (cache JPA L1/L2)
 
 ---
 
-## Validation & Error Handling System
+## Système de Validation & Gestion d'Erreurs
 
-### Multi-Level Validation
+### Validation Multi-Niveaux
 
 #### 1. Compile-Time (PropertyReference)
 ```java
 public enum UserPropertyRef implements PropertyReference {
-    // Type and operators defined at compile time
+    // Type et opérateurs définis à la compilation
     AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE));
 }
 ```
 
 #### 2. Construction-Time (FilterDefinition)
 ```java
-// Validates operator compatibility with property
-new FilterDefinition<>(UserPropertyRef.AGE, Op.MATCHES, 25); // Throws FilterValidationException
+// Valide la compatibilité opérateur avec propriété
+new FilterDefinition<>(UserPropertyRef.AGE, Op.MATCHES, 25); // Lance FilterValidationException
 ```
 
-#### 3. Value-Time (Operator validation)
+#### 3. Value-Time (Validation d'opérateur)
 ```java
-// Validates value type and operator-specific constraints
+// Valide le type de valeur et contraintes spécifiques à l'opérateur
 UserPropertyRef.AGE.validateOperatorForValue(Op.RANGE, List.of(18, 65)); // OK
-UserPropertyRef.AGE.validateOperatorForValue(Op.RANGE, List.of(18)); // Exception: needs exactly 2 values
+UserPropertyRef.AGE.validateOperatorForValue(Op.RANGE, List.of(18)); // Exception: nécessite exactement 2 valeurs
 ```
 
-#### 4. Parse-Time (DSL validation)
+#### 4. Parse-Time (Validation DSL)
 ```java
-// Validates syntax and filter key references
-parser.parse("invalid & & expression"); // Throws DSLSyntaxException
-parser.parse("nonExistentFilter"); // Throws exception if filter not in request
+// Valide la syntaxe et références de clés de filtre
+parser.parse("invalid & & expression"); // Lance DSLSyntaxException
+parser.parse("nonExistentFilter"); // Lance exception si filtre pas dans requête
 ```
 
-### Exception Hierarchy
+### Hiérarchie d'Exceptions
 
-#### Current Implementation
-```java
-FilterQLException (Runtime)
-├── DSLSyntaxException          // DSL parsing errors - ✅ Implemented
-└── FilterValidationException   // Property/operator validation errors - ✅ Implemented
-```
+#### Implémentation Actuelle
+**Fichier source** : `core/java/src/main/java/io/github/cyfko/filterql/core/exception/`
 
-#### Recommended Extensions
 ```java
 FilterQLException (Runtime)
-├── DSLSyntaxException          // DSL parsing errors
-├── FilterValidationException   // Property/operator validation errors
-├── FilterConfigurationException // Context/setup errors - 🔮 Suggested
-└── PredicateResolutionException // Framework adapter errors - 🔮 Suggested
-```
-
-**Suggested Exception Use Cases:**
-
-**FilterConfigurationException** - Context and setup errors:
-```java
-// Context initialization failures
-Context context = new ContextImpl();
-if (!context.isProperlyConfigured()) {
-    throw new FilterConfigurationException("Context not properly initialized");
-}
-
-// Missing framework dependencies
-if (!isSpringDataAvailable()) {
-    throw new FilterConfigurationException("Spring Data JPA not found in classpath");
-}
-```
-
-**PredicateResolutionException** - Framework adapter conversion errors:
-```java
-// JPA Specification conversion failures  
-try {
-    Specification<User> spec = predicateResolver.toSpecification();
-} catch (IllegalArgumentException e) {
-    throw new PredicateResolutionException("Cannot convert to JPA Specification: " + e.getMessage(), e);
-}
-
-// Unsupported property type conversions
-if (!isPropertyTypeSupported(propertyType)) {
-    throw new PredicateResolutionException("Property type not supported by adapter: " + propertyType);
-}
+├── DSLSyntaxException          // Erreurs de parsing DSL - ✅ Implémenté
+└── FilterValidationException   // Erreurs de validation propriété/opérateur - ✅ Implémenté
 ```
 
 ---
 
-## Extension Points & Customization
+## Points d'Extension & Personnalisation
 
-### 1. Custom PropertyReference Implementation
+### 1. Implémentation PropertyReference Personnalisée
+
 ```java
 public enum CustomPropertyRef implements PropertyReference {
     EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES)) {
         @Override
         public void validateOperatorForValue(Op operator, Object value) {
             super.validateOperatorForValue(operator, value);
-            // Add custom email validation
+            // Ajouter validation email personnalisée
             if (value instanceof String email && !email.contains("@")) {
-                throw new FilterValidationException("Invalid email format");
+                throw new FilterValidationException("Format email invalide");
             }
         }
     };
 }
 ```
 
-### 2. Custom DSL Parser
+### 2. Parser DSL Personnalisé
+
 ```java
 public class CustomDSLParser implements Parser {
     @Override
     public FilterTree parse(String dslExpression) {
-        // Custom parsing logic - maybe support additional operators
-        // or different syntax (SQL-like, mathematical notation, etc.)
+        // Logique de parsing personnalisée - peut supporter des opérateurs supplémentaires
+        // ou syntaxe différente (SQL-like, notation mathématique, etc.)
     }
 }
 
 FilterResolver resolver = FilterResolver.of(new CustomDSLParser(), context);
 ```
 
-### 3. Framework Adapter Development
+### 3. Développement d'Adaptateur Framework
+
+**Fichier source** : `adapters/java/spring/src/main/java/io/github/cyfko/filterql/adapter/spring/`
+
 ```java
 public class MyFrameworkAdapter implements PredicateResolver<Entity> {
     @Override
     public MyFrameworkQuery toNativeQuery() {
-        // Convert Condition to framework-specific query constructs
+        // Convertir Condition en constructions de requête spécifiques au framework
     }
-}
-```
-
-### 4. Custom Operators (Future Extension)
-```java
-// Planned for future versions
-public enum CustomOp implements Operator {
-    REGEX("~"), GEOSPATIAL_WITHIN("ST_WITHIN"), FULL_TEXT_SEARCH("@@");
 }
 ```
 
 ---
 
-## Enhanced UML Class Diagram
+## Diagramme de Classes UML
 
 ```mermaid
 classDiagram
-    %% Core Interfaces
+    %% Interfaces principales
     class FilterResolver {
         <<interface>>
         +resolve(Class~E~, FilterRequest) PredicateResolver~E~
@@ -440,11 +421,10 @@ classDiagram
     
     class PropertyReference {
         <<interface>>
-        +getPropertyType() Class~?~
+        +getType() Class~?~
         +getSupportedOperators() Set~Op~
         +validateOperator(Op) void
         +validateOperatorForValue(Op, Object) void
-        +getPropertyName() String
     }
 
     class Context {
@@ -463,11 +443,10 @@ classDiagram
     
     class PredicateResolver {
         <<interface>>
-        +toSpecification() Specification~T~
-        +toPredicate(CriteriaBuilder, Root~T~) Predicate
+        +resolve(Root, CriteriaQuery, CriteriaBuilder) Predicate
     }
 
-    %% Concrete Implementations  
+    %% Implémentations concrètes  
     class DSLParser {
         +parse(String) FilterTree
     }
@@ -480,9 +459,9 @@ classDiagram
     
     class FilterDefinition {
         +FilterDefinition(PropertyReference, Op, Object)
-        +getPropertyReference() PropertyReference
-        +getOperator() Op
-        +getValue() Object
+        +ref() PropertyReference
+        +operator() Op
+        +value() Object
     }
     
     class Op {
@@ -494,154 +473,74 @@ classDiagram
         RANGE, NOT_RANGE
         +getSymbol() String
         +requiresValue() boolean
-        +requiresCollection() boolean
     }
 
-    %% Spring Adapter
+    %% Adaptateur Spring
     class SpringFilterContext {
         +addCondition(String, FilterDefinition) Condition
         +toResolver(Class~E~, Condition) SpringPredicateResolver~E~
     }
     
-    class SpringPredicateResolver {
-        +toSpecification() Specification~T~
-        +toPredicate(CriteriaBuilder, Root~T~) Predicate
+    class SpringFilterCondition {
+        +getSpecification() Specification~T~
+        +and(Condition) Condition
+        +or(Condition) Condition
+        +not() Condition
     }
 
-    %% Relationships
-    FilterResolver --> Parser : uses
-    FilterResolver --> Context : uses
-    Parser --> FilterTree : creates
-    FilterTree --> Condition : generates
-    Context --> Condition : manages
-    Condition --> Condition : combines
-    Context --> PredicateResolver : creates
+    %% Relations
+    FilterResolver --> Parser : utilise
+    FilterResolver --> Context : utilise
+    Parser --> FilterTree : crée
+    FilterTree --> Condition : génère
+    Context --> Condition : gère
+    Condition --> Condition : combine
+    Context --> PredicateResolver : crée
     
     DSLParser ..|> Parser
     SpringFilterContext ..|> Context
-    SpringPredicateResolver ..|> PredicateResolver
+    SpringFilterCondition ..|> Condition
     
-    FilterRequest --> FilterDefinition : contains
-    FilterDefinition --> PropertyReference : uses
-    FilterDefinition --> Op : uses
+    FilterRequest --> FilterDefinition : contient
+    FilterDefinition --> PropertyReference : utilise
+    FilterDefinition --> Op : utilise
     
-    PropertyReference --> Op : validates
-    
-    %% Notes
-    note for FilterResolver "Main entry point\nOrchestrates entire pipeline"
-    note for PropertyReference "Type-safe enum interface\nCompile-time validation"
-    note for Context "Framework-specific implementation\nBridge to native queries"
-    note for Condition "Abstract representation\nFramework-agnostic"
-```
-
-### Component Interaction Flow
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant FilterResolver
-    participant Parser
-    participant FilterTree
-    participant Context
-    participant Condition
-    participant PredicateResolver
-    participant Framework as JPA/Framework
-
-    Client->>FilterResolver: resolve(User.class, filterRequest)
-    FilterResolver->>Parser: parse(dslExpression)
-    Parser->>FilterTree: create logical tree
-    FilterTree-->>Parser: FilterTree instance
-    Parser-->>FilterResolver: parsed tree
-    
-    FilterResolver->>Context: addCondition(key, definition)
-    Context->>Context: validate and store
-    Context-->>FilterResolver: condition stored
-    
-    FilterResolver->>FilterTree: generate(context)
-    FilterTree->>Context: getCondition(filterKey)
-    Context-->>FilterTree: condition instance
-    FilterTree->>Condition: and/or/not operations
-    Condition-->>FilterTree: combined condition
-    FilterTree-->>FilterResolver: global condition
-    
-    FilterResolver->>Context: toResolver(User.class, condition)
-    Context->>PredicateResolver: create framework-specific resolver
-    PredicateResolver-->>Context: resolver instance
-    Context-->>FilterResolver: predicate resolver
-    FilterResolver-->>Client: PredicateResolver<User>
-    
-    Client->>PredicateResolver: toSpecification()
-    PredicateResolver->>Framework: convert to native query
-    Framework-->>PredicateResolver: Specification<User>
-    PredicateResolver-->>Client: executable specification
+    PropertyReference --> Op : valide
 ```
 
 ---
 
-## Production Deployment Considerations
+## Meilleures Pratiques & Recommandations
 
-### Performance Benchmarks
-- **DSL Parsing**: ~1ms for complex expressions (10+ boolean operations)
-- **Condition Building**: ~0.5ms for 50+ filter definitions
-- **Type Validation**: ~0.1ms per property-operator validation
-- **Memory Footprint**: ~100KB base overhead + ~1KB per active filter
+### Conception PropertyReference
 
-### Monitoring & Observability
-```java
-// Built-in metrics support (via Micrometer integration)
-@Component
-public class FilterQLMetrics {
-    private final Counter filterRequestsTotal;
-    private final Timer filterResolutionTime;
-    private final Counter validationErrorsTotal;
-    
-    // Automatic monitoring of key performance indicators
-}
-```
-
-### Security Considerations
-- **No SQL Injection**: Type-safe parameter binding through framework adapters
-- **Input Validation**: Multi-layer validation prevents malicious input
-- **Resource Limits**: Configurable limits on DSL complexity and filter count
-- **Audit Trail**: Optional logging of all filter operations
-
-### Scaling Strategies
-- **Horizontal Scaling**: Stateless design enables easy horizontal scaling
-- **Caching**: Framework-native query result caching
-- **Connection Pooling**: Leverages database connection pools
-- **Query Optimization**: Delegates to framework's proven query optimizers
-
----
-
-## Best Practices & Recommendations
-
-### PropertyReference Design
 ```java
 public enum UserPropertyRef implements PropertyReference {
-    // Use descriptive, business-meaningful names
+    // Utiliser des noms descriptifs et significatifs métier
     USER_FULL_NAME(String.class, OperatorUtils.FOR_TEXT),
     
-    // Group related operators using utility sets
+    // Grouper opérateurs liés utilisant des ensembles utilitaires
     USER_AGE(Integer.class, OperatorUtils.FOR_NUMBER),
     USER_REGISTRATION_DATE(LocalDate.class, OperatorUtils.FOR_DATE),
     
-    // Be explicit about supported operations
+    // Être explicite sur les opérations supportées
     USER_STATUS(UserStatus.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN));
     
-    // Custom validation for business rules
+    // Validation personnalisée pour règles métier
     USER_EMAIL(String.class, Set.of(Op.EQ, Op.MATCHES)) {
         @Override
         public void validateOperatorForValue(Op operator, Object value) {
             super.validateOperatorForValue(operator, value);
             if (value instanceof String email && !email.contains("@")) {
-                throw new FilterValidationException("Invalid email format");
+                throw new FilterValidationException("Format email invalide");
             }
         }
     };
 }
 ```
 
-### Error Handling Strategy
+### Stratégie de Gestion d'Erreurs
+
 ```java
 @RestController
 public class UserController {
@@ -657,87 +556,63 @@ public class UserController {
             return ResponseEntity.ok(users);
             
         } catch (DSLSyntaxException e) {
-            log.warn("Invalid DSL syntax: {}", e.getMessage());
+            log.warn("Syntaxe DSL invalide: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .header("X-Error-Type", "DSL_SYNTAX")
                 .body(null);
                 
         } catch (FilterValidationException e) {
-            log.warn("Filter validation failed: {}", e.getMessage());
+            log.warn("Échec validation filtre: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .header("X-Error-Type", "FILTER_VALIDATION")
                 .body(null);
                 
         } catch (Exception e) {
-            log.error("Unexpected error during filtering", e);
+            log.error("Erreur inattendue lors du filtrage", e);
             return ResponseEntity.internalServerError().body(null);
         }
     }
 }
 ```
 
-### Testing Strategy
-```java
-@SpringBootTest
-class FilterQLIntegrationTest {
-    
-    @Test
-    void shouldHandleComplexFilteringScenarios() {
-        // Test complex DSL expressions
-        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
-            .filter("activeUsers", activeDefinition)
-            .filter("premiumTier", premiumDefinition)
-            .filter("recentActivity", recentDefinition)
-            .combineWith("(activeUsers & premiumTier) | (activeUsers & recentActivity)")
-            .build();
-            
-        // Verify both positive and negative cases
-        assertThat(filterResults).hasSize(expectedCount);
-        assertThat(filterResults).allMatch(user -> meetsExpectedCriteria(user));
-    }
-}
-```
+---
+
+## Roadmap & Extensions Futures
+
+### Fonctionnalités Planifiées (v2.1+)
+- **Opérateurs Personnalisés** : Support pour opérateurs spécifiques au domaine (REGEX, GEOSPATIAL, FULL_TEXT)
+- **Optimisation de Requête** : Optimisation automatique de plan de requête basée sur patterns d'usage
+- **Support Réactif** : Intégration avec Spring WebFlux et streams réactifs
+- **Intégration GraphQL** : Support natif des arguments de filtre GraphQL
+
+### Expansion Framework
+- **Adaptateur MongoDB** : Support de requête MongoDB native
+- **Adaptateur Elasticsearch** : Intégration recherche full-text
+- **Adaptateur MyBatis** : Génération SQL dynamique
+- **Adaptateur R2DBC** : Accès base de données réactif
+
+### Fonctionnalités Avancées
+- **Présets de Filtres** : Configurations de filtres réutilisables et nommées
+- **Schémas Dynamiques** : Découverte et validation de propriétés runtime
+- **Support Multi-Tenant** : Filtrage tenant-aware avec isolation
+- **Analytics de Filtres** : Patterns d'usage et analytics de performance
 
 ---
 
-## Roadmap & Future Extensions
+## Références & Documentation
 
-### Planned Features (v2.1+)
-- **Custom Operators**: Support for domain-specific operators (REGEX, GEOSPATIAL, FULL_TEXT)
-- **Query Optimization**: Automatic query plan optimization based on usage patterns
-- **Reactive Support**: Integration with Spring WebFlux and reactive streams
-- **GraphQL Integration**: Native GraphQL filter argument support
+### Documentation Principale
+- **[Guide Démarrage](../getting-started.md)** - Configuration rapide et premiers pas
+- **[Vue d'Ensemble Module Core](../implementations/core/)** - Documentation détaillée des composants
+- **[Guide Adaptateur Spring](../implementations/spring-adapter/)** - Patterns d'intégration Spring
+- **[Référence API](../api-reference.md)** - Référence Javadoc complète
 
-### Framework Expansion
-- **MongoDB Adapter**: Native MongoDB query support
-- **Elasticsearch Adapter**: Full-text search integration
-- **MyBatis Adapter**: Dynamic SQL generation
-- **R2DBC Adapter**: Reactive database access
-
-### Advanced Features
-- **Filter Presets**: Reusable, named filter configurations
-- **Dynamic Schemas**: Runtime property discovery and validation
-- **Multi-Tenant Support**: Tenant-aware filtering with isolation
-- **Filter Analytics**: Usage patterns and performance analytics
+### Exemples & Guides
+- **[Exemples Usage de Base](../examples/basic-usage.md)** - Patterns de filtrage courants
+- **[Patterns Avancés](../examples/advanced-patterns.md)** - Scénarios complexes et cas limites
+- **[Optimisation Performance](../guides/performance.md)** - Stratégies d'optimisation
+- **[Guide Migration](../guides/migration.md)** - Mise à niveau entre versions
 
 ---
 
-## References & Documentation
-
-### Core Documentation
-- **[Getting Started Guide](getting-started.md)** - Quick setup and first steps
-- **[Core Module Overview](core-module/overview.md)** - Detailed component documentation
-- **[Spring Adapter Guide](spring-adapter/overview.md)** - Spring integration patterns
-- **[API Reference](api-reference.md)** - Complete Javadoc reference
-
-### Examples & Guides
-- **[Basic Usage Examples](examples/basic-usage.md)** - Common filtering patterns
-- **[Advanced Patterns](examples/advanced-patterns.md)** - Complex scenarios and edge cases
-- **[Performance Tuning](guides/performance.md)** - Optimization strategies
-- **[Migration Guide](guides/migration.md)** - Upgrading from previous versions
-
-### Community & Support
-- **GitHub Repository**: Issues, feature requests, and contributions
-- **Documentation Site**: Comprehensive guides and API documentation  
-- **Community Forum**: Questions, discussions, and best practices
-- **Commercial Support**: Enterprise support and consulting services
+*Documentation basée sur l'analyse du fichier ARCHITECTURE.md et des sources du projet FilterQL.*

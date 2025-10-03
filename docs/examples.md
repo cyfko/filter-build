@@ -1,1247 +1,1384 @@
 ---
-layout: page
-title: Real-World Examples
-description: Complex scenarios and production patterns with FilterQL
-nav_order: 5
+title: Exemples Pratiques
+description: Collection d'exemples réels et patterns d'utilisation FilterQL
+sidebar_position: 6
 ---
 
-# 🌍 FilterQL in the Real World: Stories from the Trenches
+# Exemples Pratiques FilterQL
 
-Welcome to **FilterQL's showcase**! These aren't toy examples or academic exercises. These are **real applications** solving **real problems** with FilterQL's power. Each story comes from production systems where FilterQL transformed complexity into elegance.
-
-**What you'll discover:**
-- 🏪 **E-commerce Platform** - Product search that scales to millions
-- 🏢 **Enterprise HR System** - Complex employee filtering with security
-- 📊 **Analytics Dashboard** - Dynamic data exploration that business loves
-- 🎫 **Event Management** - Real-time filtering for live events
-- 🏥 **Healthcare Portal** - HIPAA-compliant patient record filtering
-- 💰 **Financial Trading** - High-performance transaction analysis
-
-*Ready to see FilterQL change the game?* Let's dive into real success stories! 🚀
+> **Découvrez FilterQL à travers des exemples concrets et des patterns éprouvés**
 
 ---
 
-## 🏪 Story 1: E-commerce Revolution at TechMart
+## Vue d'Ensemble
 
-**The Challenge**: TechMart's product catalog grew from 10,000 to 2.5 million items. Their legacy search was **dying under the load**.
+Cette page présente une collection complète d'exemples pratiques couvrant :
 
-### The Old Way: Search Nightmare
+- **Exemples Basic** : Premiers pas et concepts fondamentaux
+- **Patterns Avancés** : Techniques de filtrage complexes
+- **Intégrations Réelles** : Cas d'usage concrets avec Spring Boot
+- **API REST** : Endpoints dynamiques avec filtrage
+- **Performance** : Optimisations et bonnes pratiques
+
+---
+
+## Exemples Basic
+
+### 1. Filtrage Simple d'Entité
+
+**Entité User** :
+```java
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String name;
+    
+    @Column(unique = true)
+    private String email;
+    
+    private Integer age;
+    
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+    
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+    
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+    
+    // Constructors, getters, setters...
+}
+
+public enum UserStatus {
+    ACTIVE, INACTIVE, PENDING, BLOCKED
+}
+```
+
+**PropertyReference** :
+```java
+public enum UserPropertyRef implements PropertyReference {
+    // Propriétés simples
+    NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.CONTAINS)),
+    EMAIL(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    AGE(Integer.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.GTE, Op.LTE)),
+    STATUS(UserStatus.class, Set.of(Op.EQ, Op.IN)),
+    CREATED_DATE(LocalDateTime.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.BETWEEN)),
+    
+    // Propriétés de relation
+    DEPARTMENT_NAME(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    DEPARTMENT_CODE(String.class, Set.of(Op.EQ));
+
+    private final Class<?> type;
+    private final Set<Op> supportedOperators;
+
+    UserPropertyRef(Class<?> type, Set<Op> supportedOperators) {
+        this.type = type;
+        this.supportedOperators = Set.copyOf(supportedOperators);
+    }
+
+    @Override
+    public Class<?> getType() { return type; }
+
+    @Override
+    public Set<Op> getSupportedOperators() { return supportedOperators; }
+}
+```
+
+**Exemples de Filtrage** :
 
 ```java
-// ❌ What TechMart's developers dreaded maintaining
-@RestController
-public class ProductSearchController {
+@Service
+public class UserService {
     
-    @GetMapping("/products/search")
-    public ResponseEntity<Page<Product>> search(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean inStock,
-            @RequestParam(required = false) Boolean onSale,
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(required = false) String color,
-            @RequestParam(required = false) String size,
-            @RequestParam(required = false) LocalDate releasedAfter,
-            @RequestParam(required = false) String vendor,
-            @RequestParam(required = false) String warehouse,
-            Pageable pageable) {
+    private final UserRepository userRepository;
+    private final FilterContext<User, UserPropertyRef> filterContext;
+    
+    /**
+     * Recherche utilisateurs par nom exact
+     */
+    public List<User> findUsersByName(String name) {
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.EQ, name
+        );
         
-        // 150+ lines of conditional Specification building...
-        Specification<Product> spec = Specification.where(null);
+        Condition condition = filterContext.addCondition("nameFilter", nameFilter);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        return userRepository.findAll(spec);
+    }
+    
+    /**
+     * Recherche utilisateurs par tranche d'âge
+     */
+    public List<User> findUsersByAgeRange(int minAge, int maxAge) {
+        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
+            .filter("minAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, minAge))
+            .filter("maxAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.LTE, maxAge))
+            .combineWith("minAge & maxAge")
+            .build();
+            
+        Condition condition = filterContext.toCondition(request);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        return userRepository.findAll(spec);
+    }
+    
+    /**
+     * Recherche utilisateurs avec critères multiples
+     */
+    public List<User> findUsersWithCriteria(String namePattern, 
+                                          Set<UserStatus> statuses, 
+                                          String departmentName) {
+        FilterRequest.Builder<UserPropertyRef> builder = FilterRequest.<UserPropertyRef>builder();
+        StringBuilder expression = new StringBuilder();
+        
+        // Nom (pattern matching)
+        if (namePattern != null && !namePattern.trim().isEmpty()) {
+            builder.filter("namePattern", new FilterDefinition<>(
+                UserPropertyRef.NAME, Op.CONTAINS, namePattern
+            ));
+            expression.append("namePattern");
+        }
+        
+        // Status (multiple values)
+        if (statuses != null && !statuses.isEmpty()) {
+            builder.filter("statusFilter", new FilterDefinition<>(
+                UserPropertyRef.STATUS, Op.IN, statuses
+            ));
+            if (expression.length() > 0) expression.append(" & ");
+            expression.append("statusFilter");
+        }
+        
+        // Département
+        if (departmentName != null && !departmentName.trim().isEmpty()) {
+            builder.filter("deptFilter", new FilterDefinition<>(
+                UserPropertyRef.DEPARTMENT_NAME, Op.EQ, departmentName
+            ));
+            if (expression.length() > 0) expression.append(" & ");
+            expression.append("deptFilter");
+        }
+        
+        if (expression.length() == 0) {
+            return userRepository.findAll(); // No filters = all results
+        }
+        
+        FilterRequest<UserPropertyRef> request = builder
+            .combineWith(expression.toString())
+            .build();
+            
+        Condition condition = filterContext.toCondition(request);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        return userRepository.findAll(spec);
+    }
+}
+```
+
+### 2. Configuration FilterContext
+
+```java
+@Configuration
+public class FilterConfig {
+    
+    @Bean
+    public FilterContext<User, UserPropertyRef> userFilterContext() {
+        return new FilterContext<>(
+            User.class,
+            UserPropertyRef.class,
+            this::mapUserProperty
+        );
+    }
+    
+    /**
+     * Mapping PropertyReference vers chemins JPA
+     */
+    private Object mapUserProperty(FilterDefinition<UserPropertyRef> definition) {
+        return switch (definition.ref()) {
+            case NAME -> "name";
+            case EMAIL -> "email"; 
+            case AGE -> "age";
+            case STATUS -> "status";
+            case CREATED_DATE -> "createdDate";
+            
+            // Navigation dans les relations
+            case DEPARTMENT_NAME -> "department.name";
+            case DEPARTMENT_CODE -> "department.code";
+        };
+    }
+}
+```
+
+---
+
+## Patterns Avancés
+
+### 1. Filtrage avec Relations Complexes
+
+**Entités avec Relations** :
+```java
+@Entity
+public class Order {
+    @Id
+    private Long id;
+    
+    @ManyToOne
+    private Customer customer;
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items = new ArrayList<>();
+    
+    private BigDecimal totalAmount;
+    private LocalDateTime orderDate;
+    private OrderStatus status;
+}
+
+@Entity 
+public class Customer {
+    @Id
+    private Long id;
+    private String name;
+    private String email;
+    
+    @ManyToOne
+    private Country country;
+    
+    @OneToMany(mappedBy = "customer")
+    private List<Order> orders = new ArrayList<>();
+}
+
+@Entity
+public class OrderItem {
+    @Id
+    private Long id;
+    
+    @ManyToOne
+    private Order order;
+    
+    @ManyToOne
+    private Product product;
+    
+    private Integer quantity;
+    private BigDecimal unitPrice;
+}
+```
+
+**PropertyReference Avancé** :
+```java
+public enum OrderPropertyRef implements PropertyReference {
+    // Propriétés Order
+    ID(Long.class, Set.of(Op.EQ, Op.IN)),
+    TOTAL_AMOUNT(BigDecimal.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.BETWEEN)),
+    ORDER_DATE(LocalDateTime.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.BETWEEN)),
+    STATUS(OrderStatus.class, Set.of(Op.EQ, Op.IN)),
+    
+    // Relations Customer
+    CUSTOMER_NAME(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    CUSTOMER_EMAIL(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    CUSTOMER_COUNTRY(String.class, Set.of(Op.EQ)),
+    
+    // Relations Items/Products  
+    PRODUCT_NAME(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    PRODUCT_CATEGORY(String.class, Set.of(Op.EQ, Op.IN)),
+    ITEM_QUANTITY(Integer.class, Set.of(Op.GT, Op.LT)),
+    
+    // Calculs/Aggregations
+    HAS_MINIMUM_AMOUNT(BigDecimal.class, Set.of(Op.GT)),
+    CONTAINS_PRODUCT(String.class, Set.of(Op.CONTAINS));
+
+    // Implementation PropertyReference...
+}
+```
+
+**Mapping Relations Complexes** :
+```java
+@Configuration
+public class OrderFilterConfig {
+    
+    @Bean
+    public FilterContext<Order, OrderPropertyRef> orderFilterContext() {
+        return new FilterContext<>(
+            Order.class,
+            OrderPropertyRef.class,
+            this::mapOrderProperty
+        );
+    }
+    
+    private Object mapOrderProperty(FilterDefinition<OrderPropertyRef> definition) {
+        return switch (definition.ref()) {
+            // Propriétés directes
+            case ID -> "id";
+            case TOTAL_AMOUNT -> "totalAmount";
+            case ORDER_DATE -> "orderDate";
+            case STATUS -> "status";
+            
+            // Relations simples Customer
+            case CUSTOMER_NAME -> "customer.name";
+            case CUSTOMER_EMAIL -> "customer.email";
+            case CUSTOMER_COUNTRY -> "customer.country.name";
+            
+            // Relations collections (nécessite EXISTS subquery)
+            case PRODUCT_NAME -> new ProductNameSubquery(definition);
+            case PRODUCT_CATEGORY -> new ProductCategorySubquery(definition);
+            case ITEM_QUANTITY -> new ItemQuantitySubquery(definition);
+            
+            // Logique métier complexe
+            case HAS_MINIMUM_AMOUNT -> new MinimumAmountPredicate(definition);
+            case CONTAINS_PRODUCT -> new ContainsProductPredicate(definition);
+        };
+    }
+}
+```
+
+**Custom PredicateResolver** :
+```java
+/**
+ * Resolver pour filtrer commandes contenant un produit spécifique
+ */
+public class ContainsProductPredicate implements PredicateResolver<Order> {
+    
+    private final FilterDefinition<OrderPropertyRef> definition;
+    
+    public ContainsProductPredicate(FilterDefinition<OrderPropertyRef> definition) {
+        this.definition = definition;
+    }
+    
+    @Override
+    public jakarta.persistence.criteria.Predicate resolve(Root<Order> root, 
+                                                         CriteriaQuery<?> query, 
+                                                         CriteriaBuilder cb) {
+        String productName = (String) definition.value();
+        
+        // Subquery EXISTS pour vérifier si Order contient Product
+        Subquery<Long> subquery = query.subquery(Long.class);
+        Root<OrderItem> itemRoot = subquery.from(OrderItem.class);
+        
+        subquery.select(itemRoot.get("id"))
+               .where(
+                   cb.and(
+                       cb.equal(itemRoot.get("order"), root),
+                       cb.like(
+                           cb.lower(itemRoot.get("product").get("name")),
+                           "%" + productName.toLowerCase() + "%"
+                       )
+                   )
+               );
+        
+        return cb.exists(subquery);
+    }
+}
+```
+
+### 2. Filtrage avec Aggregations
+
+**Recherche Commandes par Montant Total** :
+```java
+public class MinimumAmountPredicate implements PredicateResolver<Order> {
+    
+    private final FilterDefinition<OrderPropertyRef> definition;
+    
+    @Override
+    public jakarta.persistence.criteria.Predicate resolve(Root<Order> root, 
+                                                         CriteriaQuery<?> query, 
+                                                         CriteriaBuilder cb) {
+        BigDecimal minimumAmount = (BigDecimal) definition.value();
+        
+        // Subquery pour calculer total items
+        Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
+        Root<OrderItem> itemRoot = subquery.from(OrderItem.class);
+        
+        // SUM(quantity * unitPrice)
+        Expression<BigDecimal> itemTotal = cb.prod(
+            itemRoot.get("quantity").as(BigDecimal.class),
+            itemRoot.get("unitPrice")
+        );
+        
+        subquery.select(cb.sum(itemTotal))
+               .where(cb.equal(itemRoot.get("order"), root));
+        
+        return switch (definition.operator()) {
+            case GT -> cb.gt(subquery, minimumAmount);
+            case GTE -> cb.ge(subquery, minimumAmount);
+            case LT -> cb.lt(subquery, minimumAmount);
+            case LTE -> cb.le(subquery, minimumAmount);
+            case EQ -> cb.equal(subquery, minimumAmount);
+            default -> throw new UnsupportedOperationException(
+                "Operator " + definition.operator() + " not supported for aggregation"
+            );
+        };
+    }
+}
+```
+
+---
+
+## Intégrations Réelles
+
+### 1. API REST avec Filtrage Dynamique
+
+**Controller REST** :
+```java
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    
+    private final UserService userService;
+    
+    /**
+     * Endpoint avec filtrage par query parameters
+     */
+    @GetMapping
+    public ResponseEntity<Page<UserDTO>> getUsers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) Set<UserStatus> status,
+            @RequestParam(required = false) String department,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        
+        // Construction dynamique FilterRequest
+        FilterRequest<UserPropertyRef> filterRequest = buildUserFilter(
+            name, email, minAge, maxAge, status, department
+        );
+        
+        // Pagination et tri
+        Sort sort = Sort.by(
+            "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC,
+            sortBy
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        // Exécution recherche
+        Page<User> users = userService.findUsers(filterRequest, pageable);
+        Page<UserDTO> userDTOs = users.map(this::toDTO);
+        
+        return ResponseEntity.ok(userDTOs);
+    }
+    
+    /**
+     * Construction dynamique FilterRequest depuis parameters
+     */
+    private FilterRequest<UserPropertyRef> buildUserFilter(String name, 
+                                                          String email,
+                                                          Integer minAge, 
+                                                          Integer maxAge,
+                                                          Set<UserStatus> status, 
+                                                          String department) {
+        FilterRequest.Builder<UserPropertyRef> builder = FilterRequest.<UserPropertyRef>builder();
+        List<String> conditions = new ArrayList<>();
         
         if (name != null && !name.trim().isEmpty()) {
-            spec = spec.and((root, query, cb) -> 
-                cb.or(
-                    cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("description")), "%" + name.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("shortDescription")), "%" + name.toLowerCase() + "%")
-                ));
+            builder.filter("name", new FilterDefinition<>(
+                UserPropertyRef.NAME, Op.CONTAINS, name.trim()
+            ));
+            conditions.add("name");
         }
         
-        // ... 140 more lines of repetitive conditional logic
-        // ... nested joins, complex predicates, error-prone logic
-        // ... developers quit rather than maintain this
-        
-        return ResponseEntity.ok(productRepository.findAll(spec, pageable));
-    }
-}
-```
-
-**The Problems:**
-- 🔥 **200+ line methods** that no one wanted to touch
-- 🐛 **Brittle parameter handling** with endless edge cases
-- 📈 **Linear growth** - each new filter doubled complexity
-- 🧪 **Untestable** - too many combinations to verify
-- 😰 **Developer exodus** - junior devs couldn't handle the complexity
-
-### The FilterQL Revolution
-
-```java
-// ✅ How FilterQL transformed TechMart's search
-@RestController
-@RequestMapping("/api/products")
-public class ProductSearchController {
-    
-    private final ProductSearchService productSearchService;
-    
-    public ProductSearchController(ProductSearchService productSearchService) {
-        this.productSearchService = productSearchService;
-    }
-    
-    @PostMapping("/search")
-    public ResponseEntity<Page<ProductDTO>> search(
-            @Valid @RequestBody FilterRequest<ProductPropertyRef> request,
-            @PageableDefault(size = 24) Pageable pageable) {
-        
-        // That's it. 2 lines handle UNLIMITED complexity.
-        Page<Product> products = productSearchService.search(request, pageable);
-        return ResponseEntity.ok(products.map(this::toDTO));
-    }
-    
-    @GetMapping("/search")
-    public ResponseEntity<Page<ProductDTO>> quickSearch(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String priceRange,
-            Pageable pageable) {
-        
-        // Convert simple params to FilterQL for backward compatibility
-        FilterRequest<ProductPropertyRef> request = buildQuickSearchRequest(q, category, priceRange);
-        return search(request, pageable);
-    }
-}
-```
-
-### The Magic: Product Property Reference
-
-```java
-// VERIFIED: TechMart's actual property reference enum
-public enum ProductPropertyRef implements PropertyReference {
-    // Basic product info
-    NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.NOT_MATCHES)),
-    DESCRIPTION(String.class, Set.of(Op.MATCHES, Op.NOT_MATCHES)),
-    SKU(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    
-    // Pricing and inventory
-    PRICE(BigDecimal.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    SALE_PRICE(BigDecimal.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    STOCK_QUANTITY(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    IN_STOCK(Boolean.class, Set.of(Op.EQ, Op.NE)),
-    ON_SALE(Boolean.class, Set.of(Op.EQ, Op.NE)),
-    
-    // Categorization
-    CATEGORY_NAME(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN, Op.MATCHES)),
-    BRAND_NAME(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN, Op.MATCHES)),
-    TAGS(String.class, Set.of(Op.IN, Op.NOT_IN)),
-    
-    // Quality and ratings
-    RATING(Double.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    REVIEW_COUNT(Integer.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    
-    // Physical attributes
-    COLOR(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    SIZE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    WEIGHT(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    
-    // Business metadata
-    VENDOR_NAME(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    WAREHOUSE_CODE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    RELEASE_DATE(LocalDate.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    CREATED_DATE(LocalDateTime.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE));
-    
-    private final Class<?> type;
-    private final Set<Op> supportedOperators;
-    
-    ProductPropertyRef(Class<?> type, Set<Op> supportedOperators) {
-        this.type = type;
-        this.supportedOperators = supportedOperators;
-    }
-    
-    @Override
-    public Class<?> getType() { return type; }
-    
-    @Override
-    public Set<Op> getSupportedOperators() { return supportedOperators; }
-}
-```
-
-### Advanced Search Scenarios
-
-```java
-// VERIFIED: Real search requests from TechMart's production system
-public class TechMartSearchExamples {
-    
-    /**
-     * Black Friday electronics search:
-     * "Electronics under $500, in stock, 4+ stars, on sale"
-     */
-    public static FilterRequest<ProductPropertyRef> blackFridayElectronics() {
-        return FilterRequest.<ProductPropertyRef>builder()
-            .filter("electronics", new FilterDefinition<>(ProductPropertyRef.CATEGORY_NAME, 
-                Op.EQ, "Electronics"))
-            .filter("affordable", new FilterDefinition<>(ProductPropertyRef.PRICE, 
-                Op.LT, new BigDecimal("500")))
-            .filter("available", new FilterDefinition<>(ProductPropertyRef.IN_STOCK, 
-                Op.EQ, true))
-            .filter("quality", new FilterDefinition<>(ProductPropertyRef.RATING, 
-                Op.GTE, 4.0))
-            .filter("discount", new FilterDefinition<>(ProductPropertyRef.ON_SALE, 
-                Op.EQ, true))
-            .combineWith("electronics & affordable & available & quality & discount")
-            .build();
-    }
-    
-    /**
-     * Premium brand collection:
-     * "High-end brands OR luxury items, excellent ratings"
-     */
-    public static FilterRequest<ProductPropertyRef> premiumCollection() {
-        return FilterRequest.<ProductPropertyRef>builder()
-            .filter("luxury_brands", new FilterDefinition<>(ProductPropertyRef.BRAND_NAME, 
-                Op.IN, List.of("Apple", "Samsung", "Sony", "Bose", "Nike")))
-            .filter("expensive", new FilterDefinition<>(ProductPropertyRef.PRICE, 
-                Op.GT, new BigDecimal("200")))
-            .filter("excellent", new FilterDefinition<>(ProductPropertyRef.RATING, 
-                Op.GTE, 4.5))
-            .filter("popular", new FilterDefinition<>(ProductPropertyRef.REVIEW_COUNT, 
-                Op.GT, 100))
-            .combineWith("(luxury_brands | expensive) & excellent & popular")
-            .build();
-    }
-    
-    /**
-     * Inventory clearance:
-     * "Overstocked items that need to move fast"
-     */
-    public static FilterRequest<ProductPropertyRef> clearanceItems() {
-        return FilterRequest.<ProductPropertyRef>builder()
-            .filter("overstocked", new FilterDefinition<>(ProductPropertyRef.STOCK_QUANTITY, 
-                Op.GT, 50))
-            .filter("old_inventory", new FilterDefinition<>(ProductPropertyRef.CREATED_DATE, 
-                Op.LT, LocalDateTime.now().minusMonths(6)))
-            .filter("no_recent_discount", new FilterDefinition<>(ProductPropertyRef.ON_SALE, 
-                Op.EQ, false))
-            .filter("decent_rating", new FilterDefinition<>(ProductPropertyRef.RATING, 
-                Op.GTE, 3.0))
-            .combineWith("overstocked & old_inventory & no_recent_discount & decent_rating")
-            .build();
-    }
-}
-```
-
-### The Business Impact at TechMart
-
-```java
-// VERIFIED: TechMart's production service implementation
-@Service
-@Transactional(readOnly = true)
-public class ProductSearchService {
-    
-    private final ProductRepository productRepository;
-    private final FilterResolver filterResolver;
-    private final SearchAnalyticsService analyticsService;
-    
-    public Page<Product> search(FilterRequest<ProductPropertyRef> request, Pageable pageable) {
-        // Track search patterns for business intelligence
-        analyticsService.recordSearch(request);
-        
-        // Execute the search with FilterQL
-        PredicateResolver<Product> predicateResolver = filterResolver.resolve(Product.class, request);
-        Specification<Product> spec = predicateResolver.toSpecification();
-        
-        return productRepository.findAll(spec, pageable);
-    }
-    
-    /**
-     * Dynamic recommendations based on user behavior
-     */
-    public List<Product> getRecommendations(String userId, int limit) {
-        UserPreferences prefs = analyticsService.getUserPreferences(userId);
-        
-        FilterRequest<ProductPropertyRef> request = FilterRequest.<ProductPropertyRef>builder()
-            .filter("liked_categories", new FilterDefinition<>(ProductPropertyRef.CATEGORY_NAME, 
-                Op.IN, prefs.getFavoriteCategories()))
-            .filter("price_range", new FilterDefinition<>(ProductPropertyRef.PRICE, 
-                Op.RANGE, List.of(prefs.getMinPrice(), prefs.getMaxPrice())))
-            .filter("quality", new FilterDefinition<>(ProductPropertyRef.RATING, 
-                Op.GTE, prefs.getMinRating()))
-            .filter("available", new FilterDefinition<>(ProductPropertyRef.IN_STOCK, 
-                Op.EQ, true))
-            .combineWith("liked_categories & price_range & quality & available")
-            .build();
-            
-        return search(request, PageRequest.of(0, limit)).getContent();
-    }
-}
-```
-
-**TechMart's Results:**
-- ⚡ **95% faster** development for new search features
-- 🐛 **Zero search bugs** in production since FilterQL adoption
-- 📈 **40% increase** in conversion rate from better search relevance
-- 💻 **Junior developers** can now add complex search features
-- 🧪 **100% test coverage** - every filter combination is testable
-
----
-
-## 🏢 Story 2: Enterprise HR Transformation at GlobalCorp
-
-**The Challenge**: GlobalCorp's HR system serves 50,000+ employees across 40 countries. Their employee search was a **compliance nightmare**.
-
-### The Compliance Problem
-
-```java
-// ❌ The old way: Security through obscurity and hope
-@RestController
-public class EmployeeController {
-    
-    @GetMapping("/employees/search")
-    @PreAuthorize("hasRole('HR')")
-    public Page<Employee> searchEmployees(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String department,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String level,
-            // ... 20 more parameters
-            Authentication auth,
-            Pageable pageable) {
-        
-        // Security logic mixed with business logic - disaster waiting to happen
-        List<String> allowedDepartments = securityService.getAllowedDepartments(auth);
-        List<String> allowedLocations = securityService.getAllowedLocations(auth);
-        
-        Specification<Employee> spec = Specification.where(null);
-        
-        // Business filters
-        if (name != null) {
-            spec = spec.and((root, query, cb) -> 
-                cb.like(root.get("fullName"), "%" + name + "%"));
+        if (email != null && !email.trim().isEmpty()) {
+            builder.filter("email", new FilterDefinition<>(
+                UserPropertyRef.EMAIL, Op.CONTAINS, email.trim()
+            ));
+            conditions.add("email");
         }
         
-        // Security filters - easy to forget or implement wrong
-        spec = spec.and((root, query, cb) -> 
-            root.get("department").get("name").in(allowedDepartments));
-        spec = spec.and((root, query, cb) -> 
-            root.get("location").get("name").in(allowedLocations));
-            
-        // Missing: salary visibility rules, PII protection, etc.
-        
-        return employeeRepository.findAll(spec, pageable);
-    }
-}
-```
-
-### The FilterQL Solution: Security-First Design
-
-```java
-// ✅ GlobalCorp's security-aware FilterQL implementation
-@Service
-public class SecureEmployeeSearchService {
-    
-    private final EmployeeRepository employeeRepository;
-    private final FilterResolver filterResolver;
-    private final SecurityContextBuilder securityContextBuilder;
-    
-    @PreAuthorize("hasRole('EMPLOYEE_READ')")
-    public Page<Employee> searchEmployees(
-            FilterRequest<EmployeePropertyRef> request, 
-            Pageable pageable,
-            Authentication auth) {
-        
-        // Security is automatically applied - no way to bypass
-        FilterRequest<EmployeePropertyRef> secureRequest = 
-            securityContextBuilder.applySecurityFilters(request, auth);
-            
-        PredicateResolver<Employee> resolver = filterResolver.resolve(Employee.class, secureRequest);
-        Specification<Employee> spec = resolver.toSpecification();
-        
-        return employeeRepository.findAll(spec, pageable);
-    }
-}
-```
-
-### Security-Aware Property Reference
-
-```java
-// VERIFIED: GlobalCorp's security-compliant property enum
-public enum EmployeePropertyRef implements PropertyReference {
-    // Basic info (everyone can filter)
-    FULL_NAME(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    FIRST_NAME(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    LAST_NAME(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    
-    // Organizational info
-    DEPARTMENT_NAME(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    TEAM_NAME(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    JOB_TITLE(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    EMPLOYEE_LEVEL(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    
-    // Location info
-    OFFICE_LOCATION(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    COUNTRY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    TIME_ZONE(String.class, Set.of(Op.EQ, Op.IN)),
-    REMOTE_STATUS(String.class, Set.of(Op.EQ, Op.NE)),
-    
-    // Employment info
-    EMPLOYMENT_TYPE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    START_DATE(LocalDate.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    STATUS(EmployeeStatus.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN)),
-    
-    // Sensitive info (restricted access)
-    SALARY_BAND(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    PERFORMANCE_RATING(String.class, Set.of(Op.EQ, Op.GT, Op.GTE)),
-    
-    // Manager hierarchy
-    MANAGER_NAME(String.class, Set.of(Op.EQ, Op.MATCHES)),
-    REPORTS_COUNT(Integer.class, Set.of(Op.EQ, Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    
-    // Skills and certifications
-    SKILLS(String.class, Set.of(Op.IN, Op.NOT_IN)),
-    CERTIFICATIONS(String.class, Set.of(Op.IN, Op.NOT_IN));
-    
-    private final Class<?> type;
-    private final Set<Op> supportedOperators;
-    
-    EmployeePropertyRef(Class<?> type, Set<Op> supportedOperators) {
-        this.type = type;
-        this.supportedOperators = supportedOperators;
-    }
-    
-    @Override
-    public Class<?> getType() { return type; }
-    
-    @Override
-    public Set<Op> getSupportedOperators() { return supportedOperators; }
-}
-```
-
-### Security Context Builder
-
-```java
-// VERIFIED: How GlobalCorp ensures security compliance
-@Component
-public class SecurityContextBuilder {
-    
-    private final SecurityService securityService;
-    
-    public FilterRequest<EmployeePropertyRef> applySecurityFilters(
-            FilterRequest<EmployeePropertyRef> originalRequest, 
-            Authentication auth) {
-        
-        FilterRequest.Builder<EmployeePropertyRef> builder = 
-            FilterRequest.<EmployeePropertyRef>builder()
-                .filters(originalRequest.filters())
-                .combineWith(originalRequest.combineWith());
-        
-        // Apply department restrictions
-        List<String> allowedDepartments = securityService.getAllowedDepartments(auth);
-        if (!allowedDepartments.isEmpty()) {
-            builder.filter("security_dept", new FilterDefinition<>(
-                EmployeePropertyRef.DEPARTMENT_NAME, Op.IN, allowedDepartments));
+        if (minAge != null) {
+            builder.filter("minAge", new FilterDefinition<>(
+                UserPropertyRef.AGE, Op.GTE, minAge
+            ));
+            conditions.add("minAge");
         }
         
-        // Apply location restrictions  
-        List<String> allowedLocations = securityService.getAllowedLocations(auth);
-        if (!allowedLocations.isEmpty()) {
-            builder.filter("security_location", new FilterDefinition<>(
-                EmployeePropertyRef.OFFICE_LOCATION, Op.IN, allowedLocations));
+        if (maxAge != null) {
+            builder.filter("maxAge", new FilterDefinition<>(
+                UserPropertyRef.AGE, Op.LTE, maxAge
+            ));
+            conditions.add("maxAge");
         }
         
-        // Hide sensitive employee statuses from non-HR
-        if (!securityService.hasRole(auth, "HR_ADMIN")) {
-            builder.filter("active_only", new FilterDefinition<>(
-                EmployeePropertyRef.STATUS, Op.NOT_IN, 
-                List.of(EmployeeStatus.TERMINATED, EmployeeStatus.ON_LEAVE)));
+        if (status != null && !status.isEmpty()) {
+            builder.filter("status", new FilterDefinition<>(
+                UserPropertyRef.STATUS, Op.IN, status
+            ));
+            conditions.add("status");
         }
         
-        // Salary information only for compensation team
-        if (!securityService.hasRole(auth, "COMPENSATION_TEAM")) {
-            // Remove any salary-related filters from original request
-            Map<String, FilterDefinition<EmployeePropertyRef>> filteredMap = 
-                originalRequest.filters().entrySet().stream()
-                    .filter(entry -> !isSensitiveProperty(entry.getValue().ref()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            builder.filters(filteredMap);
+        if (department != null && !department.trim().isEmpty()) {
+            builder.filter("department", new FilterDefinition<>(
+                UserPropertyRef.DEPARTMENT_NAME, Op.EQ, department.trim()
+            ));
+            conditions.add("department");
         }
         
-        // Build final secure request
-        String newCombineWith = buildSecureCombineWith(originalRequest.combineWith());
-        builder.combineWith(newCombineWith);
+        // Combinaison AND de tous les filtres
+        if (!conditions.isEmpty()) {
+            String expression = String.join(" & ", conditions);
+            builder.combineWith(expression);
+        }
         
         return builder.build();
     }
     
-    private boolean isSensitiveProperty(EmployeePropertyRef property) {
-        return property == EmployeePropertyRef.SALARY_BAND || 
-               property == EmployeePropertyRef.PERFORMANCE_RATING;
-    }
-    
-    private String buildSecureCombineWith(String originalCombine) {
-        List<String> securityFilters = List.of("security_dept", "security_location", "active_only");
-        String securityCombine = String.join(" & ", securityFilters);
-        
-        return originalCombine != null 
-            ? "(" + originalCombine + ") & " + securityCombine
-            : securityCombine;
-    }
-}
-```
-
-### Advanced HR Use Cases
-
-```java
-// VERIFIED: Real HR search scenarios at GlobalCorp
-public class HRSearchScenarios {
-    
     /**
-     * Succession planning: Find potential successors for senior roles
+     * Endpoint avec FilterRequest en POST body
      */
-    public static FilterRequest<EmployeePropertyRef> successionCandidates(String department) {
-        return FilterRequest.<EmployeePropertyRef>builder()
-            .filter("target_dept", new FilterDefinition<>(EmployeePropertyRef.DEPARTMENT_NAME, 
-                Op.EQ, department))
-            .filter("senior_level", new FilterDefinition<>(EmployeePropertyRef.EMPLOYEE_LEVEL, 
-                Op.IN, List.of("SENIOR", "PRINCIPAL", "LEAD")))
-            .filter("high_performance", new FilterDefinition<>(EmployeePropertyRef.PERFORMANCE_RATING, 
-                Op.IN, List.of("EXCEEDS", "OUTSTANDING")))
-            .filter("experienced", new FilterDefinition<>(EmployeePropertyRef.START_DATE, 
-                Op.LT, LocalDate.now().minusYears(3)))
-            .filter("active", new FilterDefinition<>(EmployeePropertyRef.STATUS, 
-                Op.EQ, EmployeeStatus.ACTIVE))
-            .combineWith("target_dept & senior_level & high_performance & experienced & active")
-            .build();
-    }
-    
-    /**
-     * Diversity and inclusion: Track representation across teams
-     */
-    public static FilterRequest<EmployeePropertyRef> diversityAnalysis(List<String> targetDepartments) {
-        return FilterRequest.<EmployeePropertyRef>builder()
-            .filter("target_depts", new FilterDefinition<>(EmployeePropertyRef.DEPARTMENT_NAME, 
-                Op.IN, targetDepartments))
-            .filter("leadership", new FilterDefinition<>(EmployeePropertyRef.EMPLOYEE_LEVEL, 
-                Op.IN, List.of("DIRECTOR", "VP", "SVP", "C_LEVEL")))
-            .filter("active", new FilterDefinition<>(EmployeePropertyRef.STATUS, 
-                Op.EQ, EmployeeStatus.ACTIVE))
-            .filter("recent_hires", new FilterDefinition<>(EmployeePropertyRef.START_DATE, 
-                Op.GT, LocalDate.now().minusYears(2)))
-            .combineWith("target_depts & (leadership | recent_hires) & active")
-            .build();
-    }
-    
-    /**
-     * Remote work analysis: Find distributed team patterns
-     */
-    public static FilterRequest<EmployeePropertyRef> remoteWorkAnalysis() {
-        return FilterRequest.<EmployeePropertyRef>builder()
-            .filter("remote_workers", new FilterDefinition<>(EmployeePropertyRef.REMOTE_STATUS, 
-                Op.IN, List.of("FULL_REMOTE", "HYBRID")))
-            .filter("engineering", new FilterDefinition<>(EmployeePropertyRef.DEPARTMENT_NAME, 
-                Op.IN, List.of("ENGINEERING", "PRODUCT", "DESIGN")))
-            .filter("has_reports", new FilterDefinition<>(EmployeePropertyRef.REPORTS_COUNT, 
-                Op.GT, 0))
-            .filter("active", new FilterDefinition<>(EmployeePropertyRef.STATUS, 
-                Op.EQ, EmployeeStatus.ACTIVE))
-            .combineWith("remote_workers & engineering & (has_reports | !has_reports) & active")
-            .build();
-    }
-}
-```
-
-**GlobalCorp's Results:**
-- 🔒 **100% audit compliance** - every search is automatically secured
-- ⚡ **80% faster** HR operations with complex employee searches
-- 🛡️ **Zero security incidents** since FilterQL adoption
-- 📊 **Rich analytics** on HR patterns and diversity metrics
-- 🌍 **Global rollout** to all 40 countries in 3 months
-
----
-
-## 📊 Story 3: Analytics Revolution at DataInsights Inc.
-
-**The Challenge**: DataInsights builds analytics dashboards for Fortune 500 companies. Their clients needed **dynamic data exploration** that traditional BI tools couldn't provide.
-
-### The Business Intelligence Problem
-
-```java
-// ❌ Static dashboards that frustrated business users
-@RestController
-public class DashboardController {
-    
-    // Each report required a separate endpoint - not scalable
-    @GetMapping("/reports/sales-by-region")
-    public SalesReport getSalesByRegion(
-            @RequestParam String region,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
-        // Hardcoded query logic
-    }
-    
-    @GetMapping("/reports/top-products")
-    public ProductReport getTopProducts(
-            @RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "10") int limit) {
-        // Another hardcoded query
-    }
-    
-    // Business users: "Can I filter by customer segment AND region AND product line?"
-    // Developers: "That'll be a 3-month project..."
-}
-```
-
-### The FilterQL Solution: Self-Service Analytics
-
-```java
-// ✅ One endpoint powers unlimited dashboard combinations
-@RestController
-@RequestMapping("/api/analytics")
-public class DynamicAnalyticsController {
-    
-    private final AnalyticsService analyticsService;
-    
-    @PostMapping("/explore/{entityType}")
-    public ResponseEntity<AnalyticsResult> explore(
-            @PathVariable String entityType,
-            @Valid @RequestBody AnalyticsRequest request) {
-        
-        // One method handles all analytical queries
-        AnalyticsResult result = analyticsService.explore(entityType, request);
-        return ResponseEntity.ok(result);
-    }
-}
-
-// The analytics request supports both filtering AND aggregation
-public class AnalyticsRequest {
-    private FilterRequest<?> filters;         // What to include
-    private List<String> groupBy;            // How to group
-    private List<AggregationRequest> metrics; // What to calculate
-    private List<SortRequest> orderBy;       // How to sort
-    private int limit;                       // How many results
-}
-```
-
-### Multi-Entity Analytics Setup
-
-```java
-// VERIFIED: DataInsights' analytical property definitions
-
-// Sales Transaction Properties
-public enum SalesPropertyRef implements PropertyReference {
-    // Transaction basics
-    TRANSACTION_ID(String.class, Set.of(Op.EQ, Op.IN)),
-    AMOUNT(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    QUANTITY(Integer.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    TRANSACTION_DATE(LocalDate.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    
-    // Product info
-    PRODUCT_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    PRODUCT_CATEGORY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    PRODUCT_BRAND(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    UNIT_PRICE(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    
-    // Customer info
-    CUSTOMER_SEGMENT(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    CUSTOMER_TIER(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    CUSTOMER_REGION(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    
-    // Sales info
-    SALES_REP_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    SALES_CHANNEL(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    PROMOTION_CODE(String.class, Set.of(Op.EQ, Op.IN, Op.IS_NULL, Op.NOT_NULL)),
-    
-    // Business metrics
-    PROFIT_MARGIN(Double.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    IS_REPEAT_CUSTOMER(Boolean.class, Set.of(Op.EQ, Op.NE));
-    
-    // Implementation details...
-}
-
-// Customer Properties
-public enum CustomerPropertyRef implements PropertyReference {
-    CUSTOMER_ID(String.class, Set.of(Op.EQ, Op.IN)),
-    COMPANY_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    INDUSTRY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    SEGMENT(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    REGION(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    ANNUAL_REVENUE(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    EMPLOYEE_COUNT(Integer.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    REGISTRATION_DATE(LocalDate.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE));
-    
-    // Implementation details...
-}
-```
-
-### Dynamic Analytics Service
-
-```java
-// VERIFIED: How DataInsights enables self-service analytics
-@Service
-public class AnalyticsService {
-    
-    private final Map<String, AnalyticsEntityConfig> entityConfigs;
-    private final JdbcTemplate jdbcTemplate;
-    
-    public AnalyticsResult explore(String entityType, AnalyticsRequest request) {
-        AnalyticsEntityConfig config = entityConfigs.get(entityType);
-        if (config == null) {
-            throw new IllegalArgumentException("Unknown entity type: " + entityType);
-        }
-        
-        // Build the analytical query
-        AnalyticsQuery query = buildAnalyticsQuery(config, request);
-        
-        // Execute and return results
-        return executeAnalyticsQuery(query);
-    }
-    
-    private AnalyticsQuery buildAnalyticsQuery(AnalyticsEntityConfig config, AnalyticsRequest request) {
-        // Convert FilterQL request to SQL WHERE clause
-        String whereClause = buildWhereClause(config, request.getFilters());
-        
-        // Build GROUP BY clause
-        String groupByClause = request.getGroupBy().stream()
-            .map(config::mapProperty)
-            .collect(Collectors.joining(", "));
-            
-        // Build SELECT clause with aggregations
-        String selectClause = buildSelectClause(config, request.getGroupBy(), request.getMetrics());
-        
-        // Build complete query
-        return AnalyticsQuery.builder()
-            .select(selectClause)
-            .from(config.getTableName())
-            .where(whereClause)
-            .groupBy(groupByClause)
-            .orderBy(buildOrderByClause(config, request.getOrderBy()))
-            .limit(request.getLimit())
-            .build();
-    }
-}
-```
-
-### Real Analytics Scenarios
-
-```java
-// VERIFIED: Real analytical queries from DataInsights' customers
-public class BusinessAnalyticsExamples {
-    
-    /**
-     * Executive Dashboard: "Show me Q4 performance by region and product line"
-     */
-    public static AnalyticsRequest executiveDashboard() {
-        FilterRequest<SalesPropertyRef> filters = FilterRequest.<SalesPropertyRef>builder()
-            .filter("q4", new FilterDefinition<>(SalesPropertyRef.TRANSACTION_DATE, 
-                Op.RANGE, List.of(
-                    LocalDate.of(2024, 10, 1), 
-                    LocalDate.of(2024, 12, 31))))
-            .filter("completed", new FilterDefinition<>(SalesPropertyRef.TRANSACTION_STATUS, 
-                Op.EQ, "COMPLETED"))
-            .combineWith("q4 & completed")
-            .build();
-            
-        return AnalyticsRequest.builder()
-            .filters(filters)
-            .groupBy(List.of("CUSTOMER_REGION", "PRODUCT_CATEGORY"))
-            .metrics(List.of(
-                AggregationRequest.sum("AMOUNT").as("total_revenue"),
-                AggregationRequest.count("TRANSACTION_ID").as("transaction_count"),
-                AggregationRequest.avg("PROFIT_MARGIN").as("avg_margin")))
-            .orderBy(List.of(SortRequest.desc("total_revenue")))
-            .limit(50)
-            .build();
-    }
-    
-    /**
-     * Sales Manager: "Which sales reps are underperforming with enterprise clients?"
-     */
-    public static AnalyticsRequest salesPerformanceAnalysis() {
-        FilterRequest<SalesPropertyRef> filters = FilterRequest.<SalesPropertyRef>builder()
-            .filter("enterprise", new FilterDefinition<>(SalesPropertyRef.CUSTOMER_SEGMENT, 
-                Op.EQ, "ENTERPRISE"))
-            .filter("recent", new FilterDefinition<>(SalesPropertyRef.TRANSACTION_DATE, 
-                Op.GT, LocalDate.now().minusMonths(3)))
-            .filter("significant", new FilterDefinition<>(SalesPropertyRef.AMOUNT, 
-                Op.GT, new BigDecimal("10000")))
-            .combineWith("enterprise & recent & significant")
-            .build();
-            
-        return AnalyticsRequest.builder()
-            .filters(filters)
-            .groupBy(List.of("SALES_REP_NAME"))
-            .metrics(List.of(
-                AggregationRequest.sum("AMOUNT").as("total_sales"),
-                AggregationRequest.count("TRANSACTION_ID").as("deal_count"),
-                AggregationRequest.avg("AMOUNT").as("avg_deal_size")))
-            .orderBy(List.of(SortRequest.asc("total_sales"))) // Ascending = lowest first
-            .limit(20)
-            .build();
-    }
-    
-    /**
-     * Product Manager: "What's the seasonal pattern for outdoor products?"
-     */
-    public static AnalyticsRequest seasonalAnalysis() {
-        FilterRequest<SalesPropertyRef> filters = FilterRequest.<SalesPropertyRef>builder()
-            .filter("outdoor", new FilterDefinition<>(SalesPropertyRef.PRODUCT_CATEGORY, 
-                Op.IN, List.of("OUTDOOR", "SPORTS", "CAMPING")))
-            .filter("last_year", new FilterDefinition<>(SalesPropertyRef.TRANSACTION_DATE, 
-                Op.RANGE, List.of(
-                    LocalDate.now().minusYears(1), 
-                    LocalDate.now())))
-            .combineWith("outdoor & last_year")
-            .build();
-            
-        return AnalyticsRequest.builder()
-            .filters(filters)
-            .groupBy(List.of("MONTH", "PRODUCT_CATEGORY"))
-            .metrics(List.of(
-                AggregationRequest.sum("QUANTITY").as("units_sold"),
-                AggregationRequest.sum("AMOUNT").as("revenue"),
-                AggregationRequest.countDistinct("CUSTOMER_ID").as("unique_customers")))
-            .orderBy(List.of(
-                SortRequest.asc("MONTH"), 
-                SortRequest.desc("revenue")))
-            .limit(100)
-            .build();
-    }
-}
-```
-
-### Real-Time Dashboard Updates
-
-```java
-// VERIFIED: How DataInsights enables real-time dashboards
-@Component
-@EventListener
-public class RealTimeDashboardService {
-    
-    private final SimpMessagingTemplate messagingTemplate;
-    private final AnalyticsService analyticsService;
-    
-    @EventListener
-    public void handleNewTransaction(TransactionCreatedEvent event) {
-        // Update all active dashboards that might be affected
-        updateActiveDashboards(event.getTransaction());
-    }
-    
-    @Async
-    public void updateActiveDashboards(Transaction transaction) {
-        // Find all dashboard subscriptions that match this transaction
-        List<DashboardSubscription> affectedDashboards = findAffectedDashboards(transaction);
-        
-        for (DashboardSubscription dashboard : affectedDashboards) {
-            try {
-                // Re-run the dashboard query
-                AnalyticsResult updatedResult = analyticsService.explore(
-                    dashboard.getEntityType(), 
-                    dashboard.getRequest());
-                    
-                // Push update to connected clients
-                messagingTemplate.convertAndSend(
-                    "/topic/dashboard/" + dashboard.getDashboardId(), 
-                    updatedResult);
-                    
-            } catch (Exception e) {
-                log.error("Failed to update dashboard {}", dashboard.getDashboardId(), e);
-            }
-        }
-    }
-    
-    private List<DashboardSubscription> findAffectedDashboards(Transaction transaction) {
-        // Check which dashboards have filters that would include this transaction
-        // This is where FilterQL's composability really shines
-        return activeDashboards.stream()
-            .filter(dashboard -> transactionMatchesFilters(transaction, dashboard.getRequest().getFilters()))
-            .collect(Collectors.toList());
-    }
-}
-```
-
-**DataInsights' Results:**
-- 🚀 **10x faster** dashboard development cycle
-- 💡 **Unlimited combinations** - business users create their own views
-- ⚡ **Real-time updates** across all analytical views
-- 💰 **500% increase** in customer retention due to self-service capabilities
-- 🎯 **Zero custom report requests** - users build everything themselves
-
----
-
-## 🎫 Story 4: Event Management Platform - TicketMaster Pro
-
-**The Challenge**: TicketMaster Pro handles millions of events worldwide. Their legacy filtering system **crashed during high-demand sales**.
-
-### The High-Load Challenge
-
-```java
-// ❌ The old system that couldn't handle Black Friday ticket sales
-@RestController
-public class EventSearchController {
-    
-    @GetMapping("/events/search")
-    public ResponseEntity<List<Event>> searchEvents(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) @DateTimeFormat LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat LocalDate endDate,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Boolean availableOnly) {
-        
-        // This approach broke under load:
-        // 1. Too many database queries
-        // 2. No caching strategy
-        // 3. Linear scaling problems
-        // 4. Memory leaks during peak traffic
-        
-        List<Event> events = eventService.findEvents(/* dozens of parameters */);
-        return ResponseEntity.ok(events);
-    }
-}
-```
-
-### The FilterQL Solution: Built for Scale
-
-```java
-// ✅ TicketMaster Pro's high-performance FilterQL implementation
-@RestController
-@RequestMapping("/api/events")
-public class EventSearchController {
-    
-    private final EventSearchService eventSearchService;
-    private final CacheManager cacheManager;
-    
     @PostMapping("/search")
-    @Cacheable(value = "event-searches", key = "#request.hashCode()")
-    public ResponseEntity<Page<EventSummary>> searchEvents(
-            @Valid @RequestBody FilterRequest<EventPropertyRef> request,
-            @PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<List<UserDTO>> searchUsers(
+            @RequestBody @Valid UserSearchRequest searchRequest) {
         
-        Page<Event> events = eventSearchService.searchEvents(request, pageable);
-        Page<EventSummary> summaries = events.map(this::toSummary);
+        FilterRequest<UserPropertyRef> filterRequest = searchRequest.toFilterRequest();
+        List<User> users = userService.findUsers(filterRequest);
+        List<UserDTO> userDTOs = users.stream().map(this::toDTO).toList();
         
-        return ResponseEntity.ok()
-            .header("X-Cache-Status", "MISS") // Cached on subsequent calls
-            .body(summaries);
+        return ResponseEntity.ok(userDTOs);
     }
     
-    @GetMapping("/featured")
-    @Cacheable(value = "featured-events", key = "#city + '-' + #category")
-    public ResponseEntity<List<EventSummary>> getFeaturedEvents(
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String category) {
-        
-        // Convert simple params to FilterQL for consistency
-        FilterRequest<EventPropertyRef> request = buildFeaturedEventsFilter(city, category);
-        Page<Event> events = eventSearchService.searchEvents(request, PageRequest.of(0, 10));
-        
-        return ResponseEntity.ok(events.getContent().stream()
-            .map(this::toSummary)
-            .collect(Collectors.toList()));
+    private UserDTO toDTO(User user) {
+        return new UserDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getAge(),
+            user.getStatus(),
+            user.getDepartment() != null ? user.getDepartment().getName() : null,
+            user.getCreatedDate()
+        );
     }
 }
 ```
 
-### Event Property Reference for Scale
-
+**DTO pour Recherche Avancée** :
 ```java
-// VERIFIED: TicketMaster Pro's high-performance property design
-public enum EventPropertyRef implements PropertyReference {
-    // Basic event info (indexed for performance)
-    EVENT_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.NOT_MATCHES)),
-    EVENT_ID(String.class, Set.of(Op.EQ, Op.IN)),
-    DESCRIPTION(String.class, Set.of(Op.MATCHES)),
+@JsonDeserialize(builder = UserSearchRequest.Builder.class)
+public record UserSearchRequest(
+    @Nullable String namePattern,
+    @Nullable String emailPattern,
+    @Nullable Integer minAge,
+    @Nullable Integer maxAge,
+    @Nullable Set<UserStatus> statuses,
+    @Nullable String departmentName,
+    @Nullable LocalDateTime createdAfter,
+    @Nullable LocalDateTime createdBefore,
+    @NotNull LogicalOperator operator // AND, OR
+) {
     
-    // Performance critical: Date and time filtering
-    START_DATE(LocalDateTime.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    END_DATE(LocalDateTime.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    DOORS_OPEN(LocalTime.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    
-    // Location (geo-indexed)
-    VENUE_NAME(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    CITY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    STATE_PROVINCE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    COUNTRY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    VENUE_TYPE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    
-    // Categorization (heavily filtered)
-    CATEGORY(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    GENRE(String.class, Set.of(Op.EQ, Op.IN, Op.NOT_IN)),
-    TAGS(String.class, Set.of(Op.IN, Op.NOT_IN)),
-    AGE_RESTRICTION(String.class, Set.of(Op.EQ, Op.IN)),
-    
-    // Pricing (frequently filtered)
-    MIN_PRICE(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    MAX_PRICE(BigDecimal.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    CURRENCY(String.class, Set.of(Op.EQ, Op.IN)),
-    
-    // Availability (real-time updates)
-    TICKETS_AVAILABLE(Boolean.class, Set.of(Op.EQ, Op.NE)),
-    TOTAL_CAPACITY(Integer.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    AVAILABLE_COUNT(Integer.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE)),
-    SOLD_OUT(Boolean.class, Set.of(Op.EQ, Op.NE)),
-    
-    // Business status
-    EVENT_STATUS(EventStatus.class, Set.of(Op.EQ, Op.NE, Op.IN, Op.NOT_IN)),
-    REQUIRES_MEMBERSHIP(Boolean.class, Set.of(Op.EQ, Op.NE)),
-    
-    // Artist/Performer info
-    MAIN_ARTIST(String.class, Set.of(Op.EQ, Op.MATCHES, Op.IN)),
-    SUPPORTING_ARTISTS(String.class, Set.of(Op.IN, Op.NOT_IN)),
-    
-    // Ratings and social
-    RATING(Double.class, Set.of(Op.GT, Op.GTE, Op.LT, Op.LTE, Op.RANGE)),
-    REVIEW_COUNT(Integer.class, Set.of(Op.GT, Op.GTE));
-    
-    private final Class<?> type;
-    private final Set<Op> supportedOperators;
-    
-    EventPropertyRef(Class<?> type, Set<Op> supportedOperators) {
-        this.type = type;
-        this.supportedOperators = supportedOperators;
-    }
-    
-    @Override
-    public Class<?> getType() { return type; }
-    
-    @Override
-    public Set<Op> getSupportedOperators() { return supportedOperators; }
-}
-```
-
-### High-Performance Search Scenarios
-
-```java
-// VERIFIED: Real search patterns from TicketMaster Pro's production system
-public class TicketMasterSearchExamples {
+    public enum LogicalOperator { AND, OR }
     
     /**
-     * Black Friday concerts: "Rock concerts in major cities, under $100, next 6 months"
+     * Conversion vers FilterRequest FilterQL
      */
-    public static FilterRequest<EventPropertyRef> blackFridayDeals() {
-        return FilterRequest.<EventPropertyRef>builder()
-            .filter("rock", new FilterDefinition<>(EventPropertyRef.GENRE, 
-                Op.IN, List.of("ROCK", "ALTERNATIVE", "INDIE")))
-            .filter("major_cities", new FilterDefinition<>(EventPropertyRef.CITY, 
-                Op.IN, List.of("New York", "Los Angeles", "Chicago", "Houston", "Phoenix")))
-            .filter("affordable", new FilterDefinition<>(EventPropertyRef.MAX_PRICE, 
-                Op.LTE, new BigDecimal("100")))
-            .filter("upcoming", new FilterDefinition<>(EventPropertyRef.START_DATE, 
-                Op.RANGE, List.of(
-                    LocalDateTime.now(), 
-                    LocalDateTime.now().plusMonths(6))))
-            .filter("available", new FilterDefinition<>(EventPropertyRef.TICKETS_AVAILABLE, 
-                Op.EQ, true))
-            .combineWith("rock & major_cities & affordable & upcoming & available")
-            .build();
-    }
-    
-    /**
-     * Family events: "Kid-friendly events this weekend in my area"
-     */
-    public static FilterRequest<EventPropertyRef> familyWeekend(String userCity) {
-        LocalDateTime weekendStart = LocalDateTime.now().with(DayOfWeek.SATURDAY).withHour(0);
-        LocalDateTime weekendEnd = LocalDateTime.now().with(DayOfWeek.SUNDAY).withHour(23);
+    public FilterRequest<UserPropertyRef> toFilterRequest() {
+        FilterRequest.Builder<UserPropertyRef> builder = FilterRequest.<UserPropertyRef>builder();
+        List<String> conditions = new ArrayList<>();
         
-        return FilterRequest.<EventPropertyRef>builder()
-            .filter("family_friendly", new FilterDefinition<>(EventPropertyRef.AGE_RESTRICTION, 
-                Op.IN, List.of("ALL_AGES", "FAMILY")))
-            .filter("my_city", new FilterDefinition<>(EventPropertyRef.CITY, 
-                Op.EQ, userCity))
-            .filter("this_weekend", new FilterDefinition<>(EventPropertyRef.START_DATE, 
-                Op.RANGE, List.of(weekendStart, weekendEnd)))
-            .filter("available", new FilterDefinition<>(EventPropertyRef.TICKETS_AVAILABLE, 
-                Op.EQ, true))
-            .filter("not_late", new FilterDefinition<>(EventPropertyRef.DOORS_OPEN, 
-                Op.LTE, LocalTime.of(20, 0))) // Not after 8 PM
-            .combineWith("family_friendly & my_city & this_weekend & available & not_late")
-            .build();
+        if (namePattern != null) {
+            builder.filter("namePattern", new FilterDefinition<>(
+                UserPropertyRef.NAME, Op.CONTAINS, namePattern
+            ));
+            conditions.add("namePattern");
+        }
+        
+        if (emailPattern != null) {
+            builder.filter("emailPattern", new FilterDefinition<>(
+                UserPropertyRef.EMAIL, Op.CONTAINS, emailPattern
+            ));
+            conditions.add("emailPattern");
+        }
+        
+        if (minAge != null) {
+            builder.filter("minAge", new FilterDefinition<>(
+                UserPropertyRef.AGE, Op.GTE, minAge
+            ));
+            conditions.add("minAge");
+        }
+        
+        if (maxAge != null) {
+            builder.filter("maxAge", new FilterDefinition<>(
+                UserPropertyRef.AGE, Op.LTE, maxAge
+            ));
+            conditions.add("maxAge");
+        }
+        
+        if (statuses != null && !statuses.isEmpty()) {
+            builder.filter("statuses", new FilterDefinition<>(
+                UserPropertyRef.STATUS, Op.IN, statuses
+            ));
+            conditions.add("statuses");
+        }
+        
+        if (departmentName != null) {
+            builder.filter("department", new FilterDefinition<>(
+                UserPropertyRef.DEPARTMENT_NAME, Op.EQ, departmentName
+            ));
+            conditions.add("department");
+        }
+        
+        if (createdAfter != null) {
+            builder.filter("createdAfter", new FilterDefinition<>(
+                UserPropertyRef.CREATED_DATE, Op.GTE, createdAfter
+            ));
+            conditions.add("createdAfter");
+        }
+        
+        if (createdBefore != null) {
+            builder.filter("createdBefore", new FilterDefinition<>(
+                UserPropertyRef.CREATED_DATE, Op.LTE, createdBefore
+            ));
+            conditions.add("createdBefore");
+        }
+        
+        if (!conditions.isEmpty()) {
+            String separator = operator == LogicalOperator.AND ? " & " : " | ";
+            String expression = String.join(separator, conditions);
+            builder.combineWith(expression);
+        }
+        
+        return builder.build();
     }
     
-    /**
-     * Last-minute deals: "Available events starting soon with good prices"
-     */
-    public static FilterRequest<EventPropertyRef> lastMinuteDeals() {
-        LocalDateTime soon = LocalDateTime.now().plusHours(2);
-        LocalDateTime nextWeek = LocalDateTime.now().plusDays(7);
-        
-        return FilterRequest.<EventPropertyRef>builder()
-            .filter("starting_soon", new FilterDefinition<>(EventPropertyRef.START_DATE, 
-                Op.RANGE, List.of(soon, nextWeek)))
-            .filter("available", new FilterDefinition<>(EventPropertyRef.TICKETS_AVAILABLE, 
-                Op.EQ, true))
-            .filter("good_availability", new FilterDefinition<>(EventPropertyRef.AVAILABLE_COUNT, 
-                Op.GT, 10))
-            .filter("not_expensive", new FilterDefinition<>(EventPropertyRef.MIN_PRICE, 
-                Op.LT, new BigDecimal("150")))
-            .filter("quality", new FilterDefinition<>(EventPropertyRef.RATING, 
-                Op.GTE, 4.0))
-            .combineWith("starting_soon & available & good_availability & not_expensive & quality")
-            .build();
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class Builder {
+        // Jackson builder for deserialization
     }
 }
 ```
 
-### High-Performance Service Implementation
+### 2. Service avec Cache et Performance
 
 ```java
-// VERIFIED: TicketMaster Pro's production-ready service
 @Service
 @Transactional(readOnly = true)
-public class EventSearchService {
+public class UserService {
     
-    private final EventRepository eventRepository;
-    private final FilterResolver filterResolver;
+    private final UserRepository userRepository;
+    private final FilterContext<User, UserPropertyRef> filterContext;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final MeterRegistry meterRegistry;
     
-    public Page<Event> searchEvents(FilterRequest<EventPropertyRef> request, Pageable pageable) {
-        // Performance monitoring
-        Timer.Sample sample = Timer.start(meterRegistry);
-        
-        try {
-            // Check cache first for popular searches
-            String cacheKey = buildCacheKey(request, pageable);
-            Page<Event> cached = getCachedResult(cacheKey);
-            if (cached != null) {
-                meterRegistry.counter("event.search.cache.hit").increment();
-                return cached;
-            }
-            
-            // Execute search with FilterQL
-            PredicateResolver<Event> resolver = filterResolver.resolve(Event.class, request);
-            Specification<Event> spec = resolver.toSpecification();
-            
-            Page<Event> results = eventRepository.findAll(spec, pageable);
-            
-            // Cache results for popular searches
-            cacheResult(cacheKey, results);
-            
-            meterRegistry.counter("event.search.cache.miss").increment();
-            return results;
-            
-        } finally {
-            sample.stop(Timer.builder("event.search.duration")
-                .tag("has_date_filter", hasDateFilter(request))
-                .tag("has_location_filter", hasLocationFilter(request))
-                .register(meterRegistry));
+    /**
+     * Recherche avec cache Redis
+     */
+    @Cacheable(value = "user-filters", key = "#filterRequest.hashCode()")
+    public List<User> findUsers(FilterRequest<UserPropertyRef> filterRequest) {
+        if (filterRequest.filters().isEmpty()) {
+            return userRepository.findAll();
         }
+        
+        Condition condition = filterContext.toCondition(filterRequest);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        return userRepository.findAll(spec);
     }
     
     /**
-     * High-performance geolocation search
+     * Recherche paginée avec cache
      */
-    public Page<Event> searchNearby(
-            double latitude, 
-            double longitude, 
-            double radiusKm,
-            FilterRequest<EventPropertyRef> additionalFilters,
-            Pageable pageable) {
+    @Cacheable(value = "user-pages", 
+               key = "#filterRequest.hashCode() + '_' + #pageable.hashCode()")
+    public Page<User> findUsers(FilterRequest<UserPropertyRef> filterRequest, 
+                               Pageable pageable) {
+        if (filterRequest.filters().isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
         
-        // Use PostGIS for geospatial queries
-        Specification<Event> geoSpec = (root, query, cb) -> {
-            // ST_DWithin for efficient radius search
-            return cb.isTrue(
-                cb.function("ST_DWithin", Boolean.class,
-                    root.get("venue").get("location"),
-                    cb.function("ST_Point", Object.class, 
-                        cb.literal(longitude), cb.literal(latitude)),
-                    cb.literal(radiusKm * 1000) // Convert to meters
-                )
-            );
-        };
+        Condition condition = filterContext.toCondition(filterRequest);
+        Specification<User> spec = filterContext.toSpecification(condition);
         
-        // Combine geo search with FilterQL filters
-        PredicateResolver<Event> resolver = filterResolver.resolve(Event.class, additionalFilters);
-        Specification<Event> filterSpec = resolver.toSpecification();
-        Specification<Event> combinedSpec = Specification.where(geoSpec).and(filterSpec);
-        
-        return eventRepository.findAll(combinedSpec, pageable);
+        return userRepository.findAll(spec, pageable);
     }
     
     /**
-     * Real-time availability updates
+     * Comptage avec cache
      */
-    @EventListener
-    public void onTicketSold(TicketSoldEvent event) {
-        // Invalidate relevant caches
-        String pattern = "event:search:*available*";
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (!keys.isEmpty()) {
-            redisTemplate.delete(keys);
+    @Cacheable(value = "user-counts", key = "#filterRequest.hashCode()")
+    public long countUsers(FilterRequest<UserPropertyRef> filterRequest) {
+        if (filterRequest.filters().isEmpty()) {
+            return userRepository.count();
         }
         
-        // Update real-time metrics
-        meterRegistry.gauge("event.available_tickets", 
-            Tags.of("event_id", event.getEventId()), 
-            event.getRemainingTickets());
+        Condition condition = filterContext.toCondition(filterRequest);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        return userRepository.count(spec);
+    }
+    
+    /**
+     * Recherche avec hints JPA pour performance
+     */
+    public List<User> findUsersOptimized(FilterRequest<UserPropertyRef> filterRequest) {
+        if (filterRequest.filters().isEmpty()) {
+            return userRepository.findAllWithDepartment(); // Custom query avec JOIN
+        }
+        
+        Condition condition = filterContext.toCondition(filterRequest);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        
+        // Application query hints pour performance
+        return userRepository.findAll(spec, hint -> {
+            hint.put("javax.persistence.fetchgraph", "User.withDepartment");
+            hint.put("org.hibernate.readOnly", true);
+        });
     }
 }
 ```
 
-**TicketMaster Pro's Results:**
-- ⚡ **99.9% uptime** during Black Friday ticket sales (vs. 60% before)
-- 🚀 **5x faster** search response times under load
-- 💰 **$2M additional revenue** from improved search relevance
-- 📱 **Zero mobile app crashes** during high-traffic events
-- 🎯 **40% increase** in user engagement with better filtering
+---
+
+## Patterns de Performance
+
+### 1. Optimisation Requêtes JPA
+
+**Repository avec Query Hints** :
+```java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+    
+    /**
+     * Query avec JOIN explicite pour éviter N+1
+     */
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.department WHERE u.status = :status")
+    List<User> findByStatusWithDepartment(@Param("status") UserStatus status);
+    
+    /**
+     * Query optimisée avec Entity Graph
+     */
+    @EntityGraph(attributePaths = {"department", "orders"})
+    @Query("SELECT u FROM User u WHERE u.createdDate >= :since")
+    List<User> findRecentUsersWithRelations(@Param("since") LocalDateTime since);
+    
+    /**
+     * Projection DTO pour éviter hydratation complète
+     */
+    @Query("SELECT new com.example.dto.UserSummaryDTO(u.id, u.name, u.email, d.name) " +
+           "FROM User u LEFT JOIN u.department d")
+    List<UserSummaryDTO> findAllSummaries();
+}
+```
+
+**Custom Repository avec Optimisations** :
+```java
+@Repository
+public class OptimizedUserRepository {
+    
+    private final EntityManager entityManager;
+    private final FilterContext<User, UserPropertyRef> filterContext;
+    
+    /**
+     * Recherche avec batch fetch et hints
+     */
+    public List<User> findUsersOptimized(FilterRequest<UserPropertyRef> filterRequest) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<User> query = cb.createQuery(User.class);
+        Root<User> root = query.from(User.class);
+        
+        // Fetch joins pour éviter N+1
+        root.fetch("department", JoinType.LEFT);
+        
+        // Application filtres FilterQL
+        if (!filterRequest.filters().isEmpty()) {
+            Condition condition = filterContext.toCondition(filterRequest);
+            PredicateResolver<User> resolver = filterContext.toResolver(User.class, condition);
+            jakarta.persistence.criteria.Predicate predicate = resolver.resolve(root, query, cb);
+            query.where(predicate);
+        }
+        
+        // Configuration TypedQuery avec hints
+        TypedQuery<User> typedQuery = entityManager.createQuery(query);
+        typedQuery.setHint(QueryHints.HINT_PASS_DISTINCT_THROUGH, false);
+        typedQuery.setHint(QueryHints.HINT_BATCH_SIZE, 100);
+        typedQuery.setHint(QueryHints.HINT_READ_ONLY, true);
+        
+        return typedQuery.getResultList();
+    }
+    
+    /**
+     * Comptage optimisé sans fetch
+     */
+    public long countUsersOptimized(FilterRequest<UserPropertyRef> filterRequest) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<User> root = query.from(User.class);
+        
+        query.select(cb.count(root));
+        
+        if (!filterRequest.filters().isEmpty()) {
+            Condition condition = filterContext.toCondition(filterRequest);
+            PredicateResolver<User> resolver = filterContext.toResolver(User.class, condition);
+            jakarta.persistence.criteria.Predicate predicate = resolver.resolve(root, query, cb);
+            query.where(predicate);
+        }
+        
+        return entityManager.createQuery(query).getSingleResult();
+    }
+}
+```
+
+### 2. Cache Strategy
+
+**Configuration Cache Redis** :
+```java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+    
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        RedisCacheManager.Builder builder = RedisCacheManager
+            .RedisCacheManagerBuilder
+            .fromConnectionFactory(connectionFactory)
+            .cacheDefaults(cacheConfiguration());
+            
+        return builder.build();
+    }
+    
+    private RedisCacheConfiguration cacheConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(RedisSerializationContext.SerializationPair
+                .fromSerializer(new StringRedisSerializer()))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair
+                .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+            .entryTtl(Duration.ofMinutes(30))
+            .disableCachingNullValues();
+    }
+    
+    /**
+     * Cache key generator custom pour FilterRequest
+     */
+    @Bean
+    public KeyGenerator filterRequestKeyGenerator() {
+        return (target, method, params) -> {
+            StringBuilder key = new StringBuilder();
+            key.append(method.getName());
+            
+            for (Object param : params) {
+                if (param instanceof FilterRequest<?> filterRequest) {
+                    key.append("_").append(filterRequest.hashCode());
+                } else if (param instanceof Pageable pageable) {
+                    key.append("_page").append(pageable.getPageNumber())
+                       .append("_size").append(pageable.getPageSize())
+                       .append("_sort").append(pageable.getSort().toString());
+                }
+            }
+            
+            return key.toString();
+        };
+    }
+}
+```
+
+**Service avec Cache Eviction** :
+```java
+@Service
+public class UserCacheService {
+    
+    /**
+     * Invalidation cache après modification
+     */
+    @CacheEvict(value = {"user-filters", "user-pages", "user-counts"}, allEntries = true)
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+    
+    @CacheEvict(value = {"user-filters", "user-pages", "user-counts"}, allEntries = true)
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+    
+    /**
+     * Warm up cache avec requêtes communes
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpCache() {
+        // Cache requêtes fréquentes
+        List<FilterRequest<UserPropertyRef>> commonRequests = Arrays.asList(
+            // Utilisateurs actifs
+            FilterRequest.<UserPropertyRef>builder()
+                .filter("active", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
+                .combineWith("active")
+                .build(),
+                
+            // Utilisateurs récents (derniers 30 jours)
+            FilterRequest.<UserPropertyRef>builder()
+                .filter("recent", new FilterDefinition<>(
+                    UserPropertyRef.CREATED_DATE, 
+                    Op.GTE, 
+                    LocalDateTime.now().minusDays(30)
+                ))
+                .combineWith("recent")
+                .build()
+        );
+        
+        commonRequests.forEach(this::preloadCache);
+    }
+    
+    private void preloadCache(FilterRequest<UserPropertyRef> request) {
+        try {
+            userService.findUsers(request);
+            userService.countUsers(request);
+        } catch (Exception e) {
+            log.warn("Failed to preload cache for request: {}", request, e);
+        }
+    }
+}
+```
 
 ---
 
-## What's Next?
+## Patterns de Test
 
-You've now seen FilterQL transform **five different industries** with real-world complexity:
+### 1. Tests Unitaires FilterQL
 
-- ✅ **E-commerce** - Scalable product search for millions of items
-- ✅ **Enterprise HR** - Security-compliant employee filtering  
-- ✅ **Analytics** - Self-service business intelligence
-- ✅ **Event Management** - High-performance ticket search
-- ✅ **Each story** shows 100% verified, production-ready code
+```java
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+    
+    @Mock
+    private UserRepository userRepository;
+    
+    @Mock
+    private FilterContext<User, UserPropertyRef> filterContext;
+    
+    @InjectMocks
+    private UserService userService;
+    
+    @Test
+    void shouldFindUsersByName() {
+        // Given
+        String searchName = "John";
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.EQ, searchName
+        );
+        
+        Condition mockCondition = mock(Condition.class);
+        Specification<User> mockSpec = mock(Specification.class);
+        List<User> expectedUsers = Arrays.asList(createTestUser("John Doe"));
+        
+        when(filterContext.addCondition("nameFilter", nameFilter)).thenReturn(mockCondition);
+        when(filterContext.toSpecification(mockCondition)).thenReturn(mockSpec);
+        when(userRepository.findAll(mockSpec)).thenReturn(expectedUsers);
+        
+        // When
+        List<User> result = userService.findUsersByName(searchName);
+        
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("John Doe");
+        
+        verify(filterContext).addCondition("nameFilter", nameFilter);
+        verify(filterContext).toSpecification(mockCondition);
+        verify(userRepository).findAll(mockSpec);
+    }
+    
+    @Test
+    void shouldFindUsersByAgeRange() {
+        // Given
+        int minAge = 25, maxAge = 35;
+        FilterRequest<UserPropertyRef> expectedRequest = FilterRequest.<UserPropertyRef>builder()
+            .filter("minAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, minAge))
+            .filter("maxAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.LTE, maxAge))
+            .combineWith("minAge & maxAge")
+            .build();
+            
+        Condition mockCondition = mock(Condition.class);
+        Specification<User> mockSpec = mock(Specification.class);
+        List<User> expectedUsers = Arrays.asList(createTestUser("Jane Doe", 30));
+        
+        when(filterContext.toCondition(any(FilterRequest.class))).thenReturn(mockCondition);
+        when(filterContext.toSpecification(mockCondition)).thenReturn(mockSpec);
+        when(userRepository.findAll(mockSpec)).thenReturn(expectedUsers);
+        
+        // When
+        List<User> result = userService.findUsersByAgeRange(minAge, maxAge);
+        
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getAge()).isEqualTo(30);
+        
+        ArgumentCaptor<FilterRequest> requestCaptor = ArgumentCaptor.forClass(FilterRequest.class);
+        verify(filterContext).toCondition(requestCaptor.capture());
+        
+        FilterRequest<UserPropertyRef> capturedRequest = requestCaptor.getValue();
+        assertThat(capturedRequest.filters()).hasSize(2);
+        assertThat(capturedRequest.combineWith()).isEqualTo("minAge & maxAge");
+    }
+    
+    private User createTestUser(String name) {
+        return createTestUser(name, 25);
+    }
+    
+    private User createTestUser(String name, Integer age) {
+        User user = new User();
+        user.setName(name);
+        user.setAge(age);
+        user.setEmail(name.toLowerCase().replace(" ", ".") + "@example.com");
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+}
+```
 
-### Your Next Steps
+### 2. Tests d'Intégration Spring
 
-<table>
-<tr>
-<td width="50%" valign="top">
+```java
+@SpringBootTest
+@DataJpaTest
+@TestPropertySource(properties = {
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "logging.level.org.hibernate.SQL=DEBUG"
+})
+class UserFilterIntegrationTest {
+    
+    @Autowired
+    private TestEntityManager entityManager;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private FilterContext<User, UserPropertyRef> filterContext;
+    
+    @BeforeEach
+    void setUp() {
+        // Test data setup
+        Department engineering = new Department("Engineering", "ENG");
+        Department sales = new Department("Sales", "SALES");
+        entityManager.persistAndFlush(engineering);
+        entityManager.persistAndFlush(sales);
+        
+        User user1 = new User("John Doe", "john@example.com", 30, UserStatus.ACTIVE, engineering);
+        User user2 = new User("Jane Smith", "jane@example.com", 25, UserStatus.ACTIVE, sales);
+        User user3 = new User("Bob Johnson", "bob@example.com", 35, UserStatus.INACTIVE, engineering);
+        
+        entityManager.persistAndFlush(user1);
+        entityManager.persistAndFlush(user2);
+        entityManager.persistAndFlush(user3);
+        entityManager.clear();
+    }
+    
+    @Test
+    void shouldFilterByNameContains() {
+        // Given
+        FilterDefinition<UserPropertyRef> nameFilter = new FilterDefinition<>(
+            UserPropertyRef.NAME, Op.CONTAINS, "john"
+        );
+        
+        // When
+        Condition condition = filterContext.addCondition("nameFilter", nameFilter);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        List<User> result = userRepository.findAll(spec);
+        
+        // Then
+        assertThat(result).hasSize(2); // John Doe, Bob Johnson
+        assertThat(result).extracting(User::getName)
+                         .containsExactlyInAnyOrder("John Doe", "Bob Johnson");
+    }
+    
+    @Test
+    void shouldFilterByAgeRange() {
+        // Given
+        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
+            .filter("minAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, 30))
+            .filter("maxAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.LTE, 35))
+            .combineWith("minAge & maxAge")
+            .build();
+        
+        // When
+        Condition condition = filterContext.toCondition(request);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        List<User> result = userRepository.findAll(spec);
+        
+        // Then
+        assertThat(result).hasSize(2); // John (30), Bob (35)
+        assertThat(result).extracting(User::getAge)
+                         .containsExactlyInAnyOrder(30, 35);
+    }
+    
+    @Test
+    void shouldFilterByDepartmentName() {
+        // Given
+        FilterDefinition<UserPropertyRef> deptFilter = new FilterDefinition<>(
+            UserPropertyRef.DEPARTMENT_NAME, Op.EQ, "Engineering"
+        );
+        
+        // When
+        Condition condition = filterContext.addCondition("deptFilter", deptFilter);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        List<User> result = userRepository.findAll(spec);
+        
+        // Then
+        assertThat(result).hasSize(2); // John, Bob
+        assertThat(result).extracting(user -> user.getDepartment().getName())
+                         .containsOnly("Engineering");
+    }
+    
+    @Test
+    void shouldCombineMultipleFilters() {
+        // Given - Users actifs du département Engineering
+        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
+            .filter("status", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
+            .filter("dept", new FilterDefinition<>(UserPropertyRef.DEPARTMENT_NAME, Op.EQ, "Engineering"))
+            .combineWith("status & dept")
+            .build();
+        
+        // When
+        Condition condition = filterContext.toCondition(request);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        List<User> result = userRepository.findAll(spec);
+        
+        // Then
+        assertThat(result).hasSize(1); // Only John (Bob is INACTIVE)
+        assertThat(result.get(0).getName()).isEqualTo("John Doe");
+        assertThat(result.get(0).getStatus()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(result.get(0).getDepartment().getName()).isEqualTo("Engineering");
+    }
+}
+```
 
-### 🎯 **Master the Foundations**
+### 3. Tests Performance
 
-- [**Getting Started Guide**](getting-started.md)  
-  *10-minute journey to FilterQL mastery*
-
-- [**Core Architecture**](core-module.md)  
-  *Deep dive into FilterQL's design*
-
-- [**Spring Integration**](spring-adapter.md)  
-  *Enterprise Spring Data JPA patterns*
-
-</td>
-<td width="50%" valign="top">
-
-### 🚀 **Get Help & Connect**
-
-- [**FAQ**](faq.md)  
-  *Common questions and expert answers*
-
-- [**Troubleshooting**](troubleshooting.md)  
-  *Solutions for common challenges*
-
-- [**GitHub Discussions**](https://github.com/cyfko/filter-build/discussions)  
-  *Join the FilterQL community*
-
-</td>
-</tr>
-</table>
+```java
+@SpringBootTest
+@EnableTestContainers
+class UserFilterPerformanceTest {
+    
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
+    
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private FilterContext<User, UserPropertyRef> filterContext;
+    
+    @BeforeEach
+    void setUp() {
+        // Création dataset large pour tests performance
+        createLargeDataset();
+    }
+    
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
+    void shouldPerformFastFilteringOnLargeDataset() {
+        // Given
+        FilterRequest<UserPropertyRef> request = FilterRequest.<UserPropertyRef>builder()
+            .filter("status", new FilterDefinition<>(UserPropertyRef.STATUS, Op.EQ, UserStatus.ACTIVE))
+            .filter("minAge", new FilterDefinition<>(UserPropertyRef.AGE, Op.GTE, 25))
+            .combineWith("status & minAge")
+            .build();
+        
+        // When
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        
+        Condition condition = filterContext.toCondition(request);
+        Specification<User> spec = filterContext.toSpecification(condition);
+        List<User> result = userRepository.findAll(spec);
+        
+        stopWatch.stop();
+        
+        // Then
+        assertThat(result).isNotEmpty();
+        assertThat(stopWatch.getTotalTimeMillis()).isLessThan(2000); // < 2 seconds
+        
+        log.info("Query executed in {} ms, returned {} results", 
+                stopWatch.getTotalTimeMillis(), result.size());
+    }
+    
+    private void createLargeDataset() {
+        List<Department> departments = createDepartments();
+        List<User> users = new ArrayList<>();
+        
+        for (int i = 0; i < 10000; i++) {
+            User user = new User(
+                "User " + i,
+                "user" + i + "@example.com",
+                20 + (i % 40), // Age 20-59
+                i % 3 == 0 ? UserStatus.ACTIVE : UserStatus.INACTIVE,
+                departments.get(i % departments.size())
+            );
+            users.add(user);
+            
+            // Batch insert pour performance
+            if (i % 100 == 0) {
+                userRepository.saveAll(users);
+                users.clear();
+            }
+        }
+        
+        if (!users.isEmpty()) {
+            userRepository.saveAll(users);
+        }
+    }
+    
+    private List<Department> createDepartments() {
+        List<Department> departments = Arrays.asList(
+            new Department("Engineering", "ENG"),
+            new Department("Sales", "SALES"),
+            new Department("Marketing", "MKT"),
+            new Department("HR", "HR"),
+            new Department("Finance", "FIN")
+        );
+        
+        return departmentRepository.saveAll(departments);
+    }
+}
+```
 
 ---
 
-<div align="center">
-  <p><strong>🌟 Ready to write your own FilterQL success story?</strong></p>
-  <p><em>These examples show it's possible. Your application could be next!</em></p>
-  
-  <p><strong>💡 Start building today:</strong></p>
-  <p><code>FilterQL.builder().story(YourApp.class).build().success()</code></p>
-</div>
+## Bonnes Pratiques
+
+### 1. Structure PropertyReference
+
+```java
+// ✅ BIEN - Groupement logique et validation
+public enum ProductPropertyRef implements PropertyReference {
+    // Propriétés de base
+    ID(Long.class, Set.of(Op.EQ, Op.IN)),
+    NAME(String.class, Set.of(Op.EQ, Op.CONTAINS, Op.MATCHES)),
+    DESCRIPTION(String.class, Set.of(Op.CONTAINS)),
+    
+    // Propriétés numériques
+    PRICE(BigDecimal.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.BETWEEN)),
+    STOCK_QUANTITY(Integer.class, Set.of(Op.EQ, Op.GT, Op.LT)),
+    
+    // Propriétés enum
+    STATUS(ProductStatus.class, Set.of(Op.EQ, Op.IN)),
+    CATEGORY(ProductCategory.class, Set.of(Op.EQ, Op.IN)),
+    
+    // Propriétés date
+    CREATED_DATE(LocalDateTime.class, Set.of(Op.EQ, Op.GT, Op.LT, Op.BETWEEN)),
+    UPDATED_DATE(LocalDateTime.class, Set.of(Op.GT, Op.LT)),
+    
+    // Relations
+    SUPPLIER_NAME(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    CATEGORY_NAME(String.class, Set.of(Op.EQ, Op.CONTAINS)),
+    
+    // Propriétés calculées/custom
+    IS_IN_STOCK(Boolean.class, Set.of(Op.EQ)),
+    HAS_DISCOUNT(Boolean.class, Set.of(Op.EQ));
+    
+    // Implementation standard...
+}
+
+// ❌ ÉVITER - Trop permissif
+public enum BadPropertyRef implements PropertyReference {
+    NAME(String.class, Set.of(Op.values())), // Tous opérateurs = danger
+    PRICE(Object.class, Set.of(Op.EQ));      // Type Object = pas de type safety
+}
+```
+
+### 2. Gestion d'Erreurs
+
+```java
+@ControllerAdvice
+public class FilterQLExceptionHandler {
+    
+    @ExceptionHandler(FilterValidationException.class)
+    public ResponseEntity<ErrorResponse> handleFilterValidation(FilterValidationException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "FILTER_VALIDATION_ERROR",
+            ex.getMessage(),
+            extractValidationDetails(ex)
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+    
+    @ExceptionHandler(DSLSyntaxException.class)
+    public ResponseEntity<ErrorResponse> handleDSLSyntax(DSLSyntaxException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "DSL_SYNTAX_ERROR", 
+            "Invalid filter expression: " + ex.getMessage(),
+            Map.of("expression", ex.getExpression(), "position", ex.getPosition())
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+    
+    private Map<String, Object> extractValidationDetails(FilterValidationException ex) {
+        return Map.of(
+            "property", ex.getPropertyReference().name(),
+            "operator", ex.getOperator().name(),
+            "value", ex.getValue(),
+            "allowedOperators", ex.getPropertyReference().getSupportedOperators()
+        );
+    }
+}
+```
+
+### 3. Monitoring et Métriques
+
+```java
+@Service
+public class FilterQLMetricsService {
+    
+    private final MeterRegistry meterRegistry;
+    private final Counter filterRequestsCounter;
+    private final Timer filterExecutionTimer;
+    
+    public FilterQLMetricsService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+        this.filterRequestsCounter = Counter.builder("filterql.requests")
+                .description("Number of filter requests")
+                .register(meterRegistry);
+        this.filterExecutionTimer = Timer.builder("filterql.execution.time")
+                .description("Filter execution time")
+                .register(meterRegistry);
+    }
+    
+    public <T> List<T> executeWithMetrics(String operation, Supplier<List<T>> filterOperation) {
+        filterRequestsCounter.increment(Tags.of("operation", operation));
+        
+        return filterExecutionTimer.recordCallable(() -> {
+            try {
+                return filterOperation.get();
+            } catch (Exception e) {
+                meterRegistry.counter("filterql.errors", 
+                    "operation", operation,
+                    "error", e.getClass().getSimpleName())
+                    .increment();
+                throw e;
+            }
+        });
+    }
+}
+```
+
+---
+
+## Next Steps
+
+### Après Maîtrise des Exemples
+
+1. **[Architecture Deep Dive](./architecture.md)** : Compréhension interne FilterQL
+2. **[Contributing Guide](./contributing.md)** : Contribuer au projet
+3. **[Performance Tuning](./performance.md)** : Optimisations avancées
+4. **[Migration Guide](./changelog.md)** : Mise à jour versions
+
+### Ressources Complémentaires
+
+- **[GitHub Repository](https://github.com/cyfko/filter-build)** : Code source et issues
+- **[Spring Data JPA Docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)** : Specifications et Criteria API
+- **[Jakarta Persistence](https://jakarta.ee/specifications/persistence/)** : Standards JPA
+
+---
+
+*Besoin d'aide sur un exemple spécifique ? Consultez les [issues GitHub](https://github.com/cyfko/filter-build/issues) ou créez une nouvelle discussion !*
