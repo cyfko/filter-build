@@ -37,10 +37,10 @@
                                 {{ item.title }}
                                 <i data-feather="chevron-down" class="w-4 h-4 ml-1 transition-transform group-hover:rotate-180"></i>
                             </button>
-                            <div class="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 backdrop-blur-sm">
+                            <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                                 {% for child in item.children %}
                                 <a href="{{ child.url | relative_url }}" 
-                                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors first:rounded-t-md last:rounded-b-md">
+                                   class="dropdown-item block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors first:rounded-t-md last:rounded-b-md">
                                     {{ child.title }}
                                 </a>
                                 {% endfor %}

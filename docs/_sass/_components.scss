@@ -448,29 +448,70 @@
   .border-gray-700 { border-color: $dark-border-color; }
 }
 
-// Header Dropdown Menu
+// Header Dropdown Menu - Ultra Specific Selectors
 // -----------------------------------------------------------------------------
-.group:hover .absolute {
-  // Ensure dropdown has solid background and proper z-index
+.dropdown-menu {
   background-color: rgba(255, 255, 255, 1) !important;
-  backdrop-filter: blur(8px) !important;
-  box-shadow: $shadow-lg !important;
-  z-index: 1000 !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 9999 !important;
+}
 
-  .dark & {
-    background-color: rgba(31, 41, 55, 1) !important;
+.dark .dropdown-menu {
+  background-color: rgba(31, 41, 55, 1) !important;
+  border-color: rgba(75, 85, 99, 1) !important;
+}
+
+.dropdown-item {
+  background-color: transparent !important;
+  
+  &:hover {
+    background-color: rgba(249, 250, 251, 1) !important;
+    color: rgba(37, 99, 235, 1) !important;
   }
 }
 
-// Dropdown menu items
-.group .absolute a {
-  // Ensure dropdown links have proper background on hover
+.dark .dropdown-item {
   &:hover {
-    background-color: rgba(249, 250, 251, 1) !important;
+    background-color: rgba(55, 65, 81, 1) !important;
+    color: rgba(96, 165, 250, 1) !important;
+  }
+}
 
-    .dark & {
-      background-color: rgba(55, 65, 81, 1) !important;
-    }
+header .group:hover > .absolute,
+header .relative.group:hover .absolute {
+  background-color: rgb(255, 255, 255) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 9999 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.dark header .group:hover > .absolute,
+.dark header .relative.group:hover .absolute {
+  background-color: rgb(31, 41, 55) !important;
+  border-color: rgb(75, 85, 99) !important;
+}
+
+// Dropdown menu items - More specific
+header .group .absolute a,
+header .relative.group .absolute a {
+  color: rgb(55, 65, 81) !important;
+  
+  &:hover {
+    background-color: rgb(249, 250, 251) !important;
+    color: rgb(37, 99, 235) !important;
+  }
+}
+
+.dark header .group .absolute a,
+.dark header .relative.group .absolute a {
+  color: rgb(209, 213, 219) !important;
+  
+  &:hover {
+    background-color: rgb(55, 65, 81) !important;
+    color: rgb(96, 165, 250) !important;
   }
 }
 
