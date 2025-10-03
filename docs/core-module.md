@@ -1,6 +1,9 @@
 ---
-layout: default
+layout: page
 title: Core Module Deep Dive
+description: Explore the architecture and internals of FilterQL's powerful core
+nav_order: 3
+has_children: true
 ---
 
 # 🔬 FilterQL Core Module: The Engine That Powers Everything

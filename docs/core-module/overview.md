@@ -1,3 +1,11 @@
+---
+layout: page
+title: Core Module Overview
+description: Framework-agnostic filtering engine for building dynamic, type-safe filters
+parent: Core Module Deep Dive
+nav_order: 1
+---
+
 # FilterQL Core Module Overview
 
 The FilterQL Core module provides a framework-agnostic filtering engine for building dynamic, type-safe, and composable filter logic in Java applications. All documentation and examples below are verified against the actual codebase.

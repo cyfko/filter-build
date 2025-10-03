@@ -1,6 +1,9 @@
 ---
-layout: default
+layout: page
 title: Spring Integration Mastery
+description: Seamlessly integrate FilterQL with Spring Data JPA applications
+nav_order: 4
+has_children: true
 ---
 
 # 🚀 FilterQL Spring Adapter: Where Enterprise Meets Elegance

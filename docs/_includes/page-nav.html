@@ -1,0 +1,46 @@
+<!-- Page Navigation -->
+{% assign nav_pages = site.navigation.main | map: 'url' | concat: (site.navigation.main | map: 'children' | compact | map: 'url') | flatten %}
+{% assign current_index = nav_pages | index: page.url %}
+
+<div class="page-navigation flex justify-between items-center mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+    <!-- Previous Page -->
+    <div class="flex-1">
+        {% if current_index and current_index > 0 %}
+            {% assign prev_url = nav_pages[current_index] | minus: 1 %}
+            {% assign prev_page = site.pages | where: 'url', prev_url | first %}
+            {% if prev_page %}
+            <a href="{{ prev_url | relative_url }}" 
+               class="group flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <div class="flex items-center">
+                    <i data-feather="arrow-left" class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                    <div>
+                        <div class="text-xs text-gray-500 dark:text-gray-500">Previous</div>
+                        <div class="font-medium">{{ prev_page.title | default: prev_page.name }}</div>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Next Page -->
+    <div class="flex-1 text-right">
+        {% if current_index and nav_pages.size > current_index %}
+            {% assign next_index = current_index | plus: 1 %}
+            {% assign next_url = nav_pages[next_index] %}
+            {% assign next_page = site.pages | where: 'url', next_url | first %}
+            {% if next_page %}
+            <a href="{{ next_url | relative_url }}" 
+               class="group flex items-center justify-end text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <div class="flex items-center">
+                    <div class="text-right">
+                        <div class="text-xs text-gray-500 dark:text-gray-500">Next</div>
+                        <div class="font-medium">{{ next_page.title | default: next_page.name }}</div>
+                    </div>
+                    <i data-feather="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

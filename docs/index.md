@@ -1,6 +1,8 @@
 ---
-layout: default
+layout: home
 title: FilterQL - Transform Filtering Forever
+description: Advanced dynamic filtering protocol for Java - Type-safe, composable, and framework-agnostic
+nav_order: 1
 ---
 
 # � FilterQL: Transform Filtering Forever
@@ -185,13 +187,13 @@ implementation 'io.github.cyfko:filterql-spring:3.0.0'
 ## Ready to Transform Filtering?
 
 <div align="center">
-  <p><strong>🚀 <a href="/docs/getting-started.md">Start Your 10-Minute Journey</a></strong></p>
+  <p><strong>🚀 <a href="/getting-started.md">Start Your 10-Minute Journey</a></strong></p>
   <p>From novice to productive in under 10 minutes</p>
   <p>or</p>
-  <p><strong>🏗️ <a href="/docs/spring-adapter.md">Spring Integration Guide</a></strong></p>
+  <p><strong>🏗️ <a href="/spring-adapter.md">Spring Integration Guide</a></strong></p>
   <p>Integrate FilterQL with your Spring Data JPA app</p>
   <p>or</p>
-  <p><strong>📚 <a href="/docs/examples.md">Explore Real-World Examples</a></strong></p>
+  <p><strong>📚 <a href="/examples.md">Explore Real-World Examples</a></strong></p>
 </div>
 
 ---

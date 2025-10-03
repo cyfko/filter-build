@@ -1,0 +1,138 @@
+---
+layout: default
+---
+
+<!-- Hero Section -->
+<div class="hero-section mb-16">
+    <!-- Hero content will be rendered from index.md -->
+    {{ content }}
+</div>
+
+<!-- Quick Navigation Cards -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+    <!-- Getting Started Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-green-100 dark:bg-green-900">
+                <i data-feather="play-circle" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+            </div>
+            <h3 class="card-title">Getting Started</h3>
+        </div>
+        <p class="card-description">
+            Begin your 10-minute journey to FilterQL mastery with our comprehensive guide.
+        </p>
+        <a href="{{ '/getting-started' | relative_url }}" class="card-link">
+            Start Learning <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Core Module Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-blue-100 dark:bg-blue-900">
+                <i data-feather="cpu" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h3 class="card-title">Core Module</h3>
+        </div>
+        <p class="card-description">
+            Explore the architecture and internals of FilterQL's powerful core.
+        </p>
+        <a href="{{ '/core-module' | relative_url }}" class="card-link">
+            Explore Core <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Spring Adapter Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-orange-100 dark:bg-orange-900">
+                <i data-feather="layers" class="w-6 h-6 text-orange-600 dark:text-orange-400"></i>
+            </div>
+            <h3 class="card-title">Spring Integration</h3>
+        </div>
+        <p class="card-description">
+            Seamlessly integrate FilterQL with Spring Data JPA applications.
+        </p>
+        <a href="{{ '/spring-adapter' | relative_url }}" class="card-link">
+            Learn Integration <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Examples Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-purple-100 dark:bg-purple-900">
+                <i data-feather="code" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+            </div>
+            <h3 class="card-title">Examples</h3>
+        </div>
+        <p class="card-description">
+            Real-world examples and patterns for complex filtering scenarios.
+        </p>
+        <a href="{{ '/examples' | relative_url }}" class="card-link">
+            View Examples <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+
+    <!-- FAQ Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-yellow-100 dark:bg-yellow-900">
+                <i data-feather="help-circle" class="w-6 h-6 text-yellow-600 dark:text-yellow-400"></i>
+            </div>
+            <h3 class="card-title">FAQ</h3>
+        </div>
+        <p class="card-description">
+            Common questions and answers about FilterQL implementation.
+        </p>
+        <a href="{{ '/faq' | relative_url }}" class="card-link">
+            Browse FAQ <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Troubleshooting Card -->
+    <div class="card hover-lift">
+        <div class="card-header">
+            <div class="icon-wrapper bg-red-100 dark:bg-red-900">
+                <i data-feather="tool" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+            </div>
+            <h3 class="card-title">Troubleshooting</h3>
+        </div>
+        <p class="card-description">
+            Solutions for common issues and debugging techniques.
+        </p>
+        <a href="{{ '/troubleshooting' | relative_url }}" class="card-link">
+            Get Help <i data-feather="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Community Section -->
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-8 mb-12">
+    <div class="text-center">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Join the Community</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+            Connect with other developers, share your experiences, and get help from the FilterQL community.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ site.theme_config.github_url }}" 
+               class="btn btn-primary" 
+               target="_blank" rel="noopener">
+                <i data-feather="github" class="w-5 h-5 mr-2"></i>
+                GitHub Repository
+            </a>
+            <a href="{{ site.theme_config.github_url }}/discussions" 
+               class="btn btn-secondary" 
+               target="_blank" rel="noopener">
+                <i data-feather="message-circle" class="w-5 h-5 mr-2"></i>
+                Discussions
+            </a>
+            <a href="{{ site.theme_config.github_url }}/issues" 
+               class="btn btn-secondary" 
+               target="_blank" rel="noopener">
+                <i data-feather="alert-circle" class="w-5 h-5 mr-2"></i>
+                Issues
+            </a>
+        </div>
+    </div>
+</div>

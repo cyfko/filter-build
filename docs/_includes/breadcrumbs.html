@@ -1,0 +1,38 @@
+<!-- Breadcrumbs -->
+<nav class="breadcrumbs mb-6" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+        <li>
+            <a href="{{ '/' | relative_url }}" 
+               class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <i data-feather="home" class="w-4 h-4"></i>
+                <span class="sr-only">Home</span>
+            </a>
+        </li>
+        
+        {% assign url_parts = page.url | split: '/' %}
+        {% assign current_path = '' %}
+        
+        {% for part in url_parts %}
+            {% unless part == '' %}
+                {% assign current_path = current_path | append: '/' | append: part %}
+                <li class="flex items-center">
+                    <i data-feather="chevron-right" class="w-4 h-4 mx-2 text-gray-300 dark:text-gray-600"></i>
+                    {% if forloop.last %}
+                        <span class="font-medium text-gray-900 dark:text-white" aria-current="page">
+                            {% if page.title %}
+                                {{ page.title }}
+                            {% else %}
+                                {{ part | replace: '-', ' ' | capitalize }}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <a href="{{ current_path | relative_url }}" 
+                           class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            {{ part | replace: '-', ' ' | capitalize }}
+                        </a>
+                    {% endif %}
+                </li>
+            {% endunless %}
+        {% endfor %}
+    </ol>
+</nav>

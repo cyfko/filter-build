@@ -1,0 +1,70 @@
+<!-- Sidebar Navigation -->
+<aside id="sidebar" class="fixed top-16 left-0 w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30 overflow-y-auto">
+    <nav class="p-6">
+        <div class="space-y-6">
+            {% for item in site.navigation.main %}
+                <div class="nav-section">
+                    {% if item.children %}
+                        <!-- Section with children -->
+                        <h3 class="nav-section-title">
+                            <a href="{{ item.url | relative_url }}" 
+                               class="flex items-center justify-between w-full text-left text-gray-900 dark:text-white font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <span>{{ item.title }}</span>
+                                <i data-feather="chevron-right" class="w-4 h-4 transform transition-transform nav-chevron {% if page.url contains item.url %}rotate-90{% endif %}"></i>
+                            </a>
+                        </h3>
+                        <ul class="nav-subsection mt-2 space-y-1 {% unless page.url contains item.url %}hidden{% endunless %}">
+                            {% for child in item.children %}
+                            <li>
+                                <a href="{{ child.url | relative_url }}" 
+                                   class="nav-link block py-2 px-3 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors {% if page.url == child.url %}active{% endif %}">
+                                    {{ child.title }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <!-- Single item -->
+                        <a href="{{ item.url | relative_url }}" 
+                           class="nav-link block py-2 px-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors font-medium {% if page.url == item.url %}active{% endif %}">
+                            {{ item.title }}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Version Badge -->
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Version</span>
+                <span class="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">3.0.0</span>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-6 space-y-2">
+            <a href="{{ site.theme_config.github_url }}/releases" 
+               target="_blank" 
+               rel="noopener"
+               class="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <i data-feather="tag" class="w-3 h-3 mr-2"></i>
+                Release Notes
+            </a>
+            <a href="{{ site.theme_config.github_url }}/issues" 
+               target="_blank" 
+               rel="noopener"
+               class="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <i data-feather="bug" class="w-3 h-3 mr-2"></i>
+                Report Issue
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<!-- Mobile Menu Close Button -->
+<button id="mobile-close-btn" 
+        class="fixed top-4 right-4 lg:hidden p-2 rounded-md bg-white dark:bg-gray-800 shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white z-40 hidden"
+        aria-label="Close navigation menu">
+    <i data-feather="x" class="w-5 h-5"></i>
+</button>

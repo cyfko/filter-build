@@ -1,5 +1,9 @@
-layout: default
+---
+layout: page
 title: Troubleshooting
+description: Solutions for common issues and debugging techniques
+nav_order: 7
+---
 
 # Troubleshooting
 

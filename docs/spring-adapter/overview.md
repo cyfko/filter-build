@@ -1,3 +1,11 @@
+---
+layout: page
+title: Spring Adapter Overview
+description: Integrate FilterQL with Spring Data JPA for dynamic, type-safe queries
+parent: Spring Integration Mastery
+nav_order: 1
+---
+
 # FilterQL Spring Adapter Overview
 
 The FilterQL Spring Adapter integrates the core filtering engine with Spring Data JPA, allowing you to build dynamic, type-safe queries using FilterQL's DSL and property references. All documentation and examples below are verified against the actual codebase.

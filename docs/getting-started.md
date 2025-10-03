@@ -1,6 +1,9 @@
 ---
-layout: default
+layout: page
 title: Getting Started with FilterQL
+description: Your 10-minute journey to FilterQL mastery
+nav_order: 2
+has_children: true
 ---
 
 # 🚀 Your 10-Minute Journey to FilterQL Mastery

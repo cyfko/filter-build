@@ -1,6 +1,8 @@
 ---
-layout: default
+layout: page
 title: Real-World Examples
+description: Complex scenarios and production patterns with FilterQL
+nav_order: 5
 ---
 
 # 🌍 FilterQL in the Real World: Stories from the Trenches

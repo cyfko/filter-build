@@ -1,3 +1,11 @@
+---
+layout: page
+title: Quick Start Guide
+description: Create your first FilterQL application in less than 10 minutes
+parent: Getting Started with FilterQL
+nav_order: 1
+---
+
 # Quick Start Guide for FilterQL
 
 This guide helps you create your first application using FilterQL in less than 10 minutes. All examples are verified and use only existing, tested APIs.

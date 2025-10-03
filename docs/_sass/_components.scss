@@ -1,0 +1,449 @@
+// Components SCSS - FilterQL Design System
+// =============================================================================
+
+// Navigation Components
+// -----------------------------------------------------------------------------
+.nav-section-title {
+  margin-bottom: map-get($spacing, 2);
+  
+  a {
+    color: $text-color;
+    font-weight: $font-medium;
+    text-decoration: none;
+    transition: $transition-colors;
+
+    .dark & {
+      color: $dark-text-color;
+    }
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+}
+
+.nav-chevron {
+  transition: transform $animation-duration-fast $animation-ease-out;
+}
+
+.nav-subsection {
+  padding-left: map-get($spacing, 4);
+  border-left: 2px solid $border-color;
+  transition: $transition-colors;
+
+  .dark & {
+    border-left-color: $dark-border-color;
+  }
+}
+
+.nav-link {
+  color: $text-color-secondary;
+  text-decoration: none;
+  transition: $transition-colors;
+
+  .dark & {
+    color: $dark-text-color-secondary;
+  }
+
+  &:hover {
+    color: $primary-color;
+    background-color: $bg-color-secondary;
+
+    .dark & {
+      background-color: $dark-bg-color-secondary;
+    }
+  }
+
+  &.active {
+    color: $primary-color;
+    background-color: $primary-50;
+    font-weight: $font-medium;
+
+    .dark & {
+      background-color: rgba($primary-600, 0.1);
+    }
+  }
+}
+
+// Button Components
+// -----------------------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: map-get($spacing, 3) map-get($spacing, 4);
+  border-radius: $border-radius-md;
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  text-decoration: none;
+  transition: $transition-all;
+  cursor: pointer;
+  border: none;
+
+  &:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba($primary-600, 0.5);
+  }
+}
+
+.btn-primary {
+  background-color: $primary-600;
+  color: white;
+
+  &:hover {
+    background-color: $primary-700;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-secondary {
+  background-color: $bg-color;
+  color: $text-color;
+  border: 1px solid $border-color;
+
+  .dark & {
+    background-color: $dark-bg-color;
+    color: $dark-text-color;
+    border-color: $dark-border-color;
+  }
+
+  &:hover {
+    background-color: $bg-color-secondary;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+
+    .dark & {
+      background-color: $dark-bg-color-secondary;
+    }
+  }
+}
+
+// Card Components
+// -----------------------------------------------------------------------------
+.card {
+  background-color: $bg-color;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: map-get($spacing, 6);
+  transition: $transition-all;
+
+  .dark & {
+    background-color: $dark-bg-color;
+    border-color: $dark-border-color;
+  }
+}
+
+.hover-lift {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: map-get($spacing, 3);
+}
+
+.card-title {
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: $text-color;
+  margin: 0;
+
+  .dark & {
+    color: $dark-text-color;
+  }
+}
+
+.card-description {
+  color: $text-color-secondary;
+  margin-bottom: map-get($spacing, 4);
+
+  .dark & {
+    color: $dark-text-color-secondary;
+  }
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  color: $primary-600;
+  font-weight: $font-medium;
+  text-decoration: none;
+  transition: $transition-colors;
+
+  &:hover {
+    color: $primary-700;
+  }
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: $border-radius-lg;
+  margin-right: map-get($spacing, 3);
+}
+
+// Badge Components
+// -----------------------------------------------------------------------------
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: map-get($spacing, 1) map-get($spacing, 2);
+  font-size: $text-xs;
+  font-weight: $font-medium;
+  border-radius: $border-radius-full;
+}
+
+.badge-primary {
+  background-color: $primary-100;
+  color: $primary-800;
+
+  .dark & {
+    background-color: rgba($primary-600, 0.2);
+    color: $primary-300;
+  }
+}
+
+.badge-success {
+  background-color: $success-100;
+  color: $success-800;
+
+  .dark & {
+    background-color: rgba($success-600, 0.2);
+    color: $success-300;
+  }
+}
+
+// Breadcrumb Components
+// -----------------------------------------------------------------------------
+.breadcrumbs {
+  ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  a {
+    color: $text-color-muted;
+    text-decoration: none;
+    transition: $transition-colors;
+
+    .dark & {
+      color: $dark-text-color-muted;
+    }
+
+    &:hover {
+      color: $primary-600;
+    }
+  }
+}
+
+// Alert Components
+// -----------------------------------------------------------------------------
+.alert {
+  padding: map-get($spacing, 4);
+  border-radius: $border-radius-md;
+  border: 1px solid;
+  margin: map-get($spacing, 4) 0;
+
+  &.alert-info {
+    background-color: $primary-50;
+    border-color: $primary-200;
+    color: $primary-800;
+
+    .dark & {
+      background-color: rgba($primary-600, 0.1);
+      border-color: rgba($primary-600, 0.3);
+      color: $primary-300;
+    }
+  }
+
+  &.alert-success {
+    background-color: $success-50;
+    border-color: $success-200;
+    color: $success-800;
+
+    .dark & {
+      background-color: rgba($success-600, 0.1);
+      border-color: rgba($success-600, 0.3);
+      color: $success-300;
+    }
+  }
+
+  &.alert-warning {
+    background-color: $warning-50;
+    border-color: $warning-200;
+    color: $warning-800;
+
+    .dark & {
+      background-color: rgba($warning-500, 0.1);
+      border-color: rgba($warning-500, 0.3);
+      color: $warning-300;
+    }
+  }
+}
+
+// Table of Contents
+// -----------------------------------------------------------------------------
+.toc-container {
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+
+    ul {
+      padding-left: map-get($spacing, 4);
+      margin-top: map-get($spacing, 2);
+    }
+  }
+
+  li {
+    margin: map-get($spacing, 1) 0;
+  }
+
+  a {
+    color: $text-color-secondary;
+    text-decoration: none;
+    font-size: $text-sm;
+    transition: $transition-colors;
+
+    .dark & {
+      color: $dark-text-color-secondary;
+    }
+
+    &:hover {
+      color: $primary-600;
+    }
+
+    &.active {
+      color: $primary-600;
+      font-weight: $font-medium;
+    }
+  }
+}
+
+// Search Components
+// -----------------------------------------------------------------------------
+.kbd {
+  display: inline-block;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.75rem;
+  font-family: $font-family-mono;
+  background-color: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+
+  .dark & {
+    background-color: $gray-800;
+    border-color: $gray-700;
+    color: $gray-300;
+  }
+}
+
+// Code Copy Button
+// -----------------------------------------------------------------------------
+.code-block-wrapper {
+  position: relative;
+
+  .copy-button {
+    position: absolute;
+    top: map-get($spacing, 2);
+    right: map-get($spacing, 2);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: $border-radius;
+    padding: map-get($spacing, 2);
+    font-size: $text-xs;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity $animation-duration-fast;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  &:hover .copy-button {
+    opacity: 1;
+  }
+}
+
+// Progress Indicator
+// -----------------------------------------------------------------------------
+.progress {
+  width: 100%;
+  height: 0.5rem;
+  background-color: $gray-200;
+  border-radius: $border-radius-full;
+  overflow: hidden;
+
+  .dark & {
+    background-color: $gray-700;
+  }
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: $primary-600;
+  transition: width 0.3s ease;
+}
+
+// Loading Spinner
+// -----------------------------------------------------------------------------
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Color utilities
+// -----------------------------------------------------------------------------
+.text-primary { color: $primary-600; }
+.text-success { color: $success-600; }
+.text-warning { color: $warning-500; }
+.text-error { color: $error-color; }
+
+.bg-primary { background-color: $primary-600; }
+.bg-success { background-color: $success-600; }
+.bg-warning { background-color: $warning-500; }
+.bg-error { background-color: $error-color; }
+
+// Dark mode text colors
+.dark {
+  .text-gray-900 { color: $dark-text-color; }
+  .text-gray-600 { color: $dark-text-color-secondary; }
+  .text-gray-500 { color: $dark-text-color-muted; }
+  .text-white { color: $dark-text-color; }
+  
+  .bg-white { background-color: $dark-bg-color; }
+  .bg-gray-50 { background-color: $dark-bg-color-secondary; }
+  .bg-gray-800 { background-color: $dark-bg-color-secondary; }
+  .bg-gray-900 { background-color: $dark-bg-color; }
+  
+  .border-gray-200 { border-color: $dark-border-color; }
+  .border-gray-700 { border-color: $dark-border-color; }
+}

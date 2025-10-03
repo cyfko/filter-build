@@ -1,3 +1,10 @@
+---
+layout: page
+title: Architecture Guide
+description: Framework-agnostic dynamic filtering library with type-safe DSL
+nav_order: 8
+---
+
 # FilterQL Architecture
 
 > **Framework-agnostic dynamic filtering library with type-safe DSL and multi-layer validation**

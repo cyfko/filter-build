@@ -1,0 +1,393 @@
+---
+---
+
+// Main SCSS - FilterQL Design System
+// =============================================================================
+
+// Import all SCSS partials
+@import 'variables';
+@import 'layout';
+@import 'components';
+@import 'syntax';
+
+// Base styles
+// -----------------------------------------------------------------------------
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: $font-family-sans;
+  font-size: $text-base;
+  line-height: $leading-normal;
+  color: $text-color;
+  background-color: $bg-color;
+  margin: 0;
+  padding: 0;
+  transition: color $animation-duration-normal, background-color $animation-duration-normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  &.dark {
+    color: $dark-text-color;
+    background-color: $dark-bg-color;
+  }
+}
+
+// Typography
+// -----------------------------------------------------------------------------
+h1, h2, h3, h4, h5, h6 {
+  font-weight: $font-semibold;
+  line-height: $leading-tight;
+  margin: 0 0 map-get($spacing, 4) 0;
+  color: $text-color;
+
+  .dark & {
+    color: $dark-text-color;
+  }
+}
+
+h1 {
+  font-size: $text-4xl;
+  font-weight: $font-bold;
+  margin-bottom: map-get($spacing, 6);
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-5xl;
+  }
+}
+
+h2 {
+  font-size: $text-2xl;
+  margin-top: map-get($spacing, 8);
+  margin-bottom: map-get($spacing, 4);
+  padding-bottom: map-get($spacing, 2);
+  border-bottom: 1px solid $border-color;
+
+  .dark & {
+    border-bottom-color: $dark-border-color;
+  }
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-3xl;
+  }
+}
+
+h3 {
+  font-size: $text-xl;
+  margin-top: map-get($spacing, 6);
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-2xl;
+  }
+}
+
+h4 {
+  font-size: $text-lg;
+  margin-top: map-get($spacing, 5);
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-xl;
+  }
+}
+
+h5 {
+  font-size: $text-base;
+  margin-top: map-get($spacing, 4);
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-lg;
+  }
+}
+
+h6 {
+  font-size: $text-sm;
+  margin-top: map-get($spacing, 4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  @media (min-width: map-get($breakpoints, md)) {
+    font-size: $text-base;
+  }
+}
+
+p {
+  margin: 0 0 map-get($spacing, 4) 0;
+  color: $text-color-secondary;
+
+  .dark & {
+    color: $dark-text-color-secondary;
+  }
+}
+
+// Links
+// -----------------------------------------------------------------------------
+a {
+  color: $primary-600;
+  text-decoration: none;
+  transition: $transition-colors;
+
+  &:hover {
+    color: $primary-700;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba($primary-600, 0.5);
+    border-radius: $border-radius-sm;
+  }
+}
+
+// Lists
+// -----------------------------------------------------------------------------
+ul, ol {
+  margin: 0 0 map-get($spacing, 4) 0;
+  padding-left: map-get($spacing, 6);
+
+  li {
+    margin: map-get($spacing, 2) 0;
+    color: $text-color-secondary;
+
+    .dark & {
+      color: $dark-text-color-secondary;
+    }
+  }
+
+  ul, ol {
+    margin-top: map-get($spacing, 2);
+    margin-bottom: map-get($spacing, 2);
+  }
+}
+
+// Images
+// -----------------------------------------------------------------------------
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: $border-radius-md;
+}
+
+// Tables
+// -----------------------------------------------------------------------------
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: map-get($spacing, 6) 0;
+  font-size: $text-sm;
+}
+
+th, td {
+  padding: map-get($spacing, 3) map-get($spacing, 4);
+  text-align: left;
+  border-bottom: 1px solid $border-color;
+
+  .dark & {
+    border-bottom-color: $dark-border-color;
+  }
+}
+
+th {
+  font-weight: $font-semibold;
+  color: $text-color;
+  background-color: $bg-color-secondary;
+
+  .dark & {
+    color: $dark-text-color;
+    background-color: $dark-bg-color-secondary;
+  }
+}
+
+td {
+  color: $text-color-secondary;
+
+  .dark & {
+    color: $dark-text-color-secondary;
+  }
+}
+
+// Blockquotes
+// -----------------------------------------------------------------------------
+blockquote {
+  margin: map-get($spacing, 6) 0;
+  padding: map-get($spacing, 4) map-get($spacing, 6);
+  border-left: 4px solid $primary-600;
+  background-color: $primary-50;
+  font-style: italic;
+
+  .dark & {
+    background-color: rgba($primary-600, 0.1);
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Horizontal rules
+// -----------------------------------------------------------------------------
+hr {
+  margin: map-get($spacing, 8) 0;
+  border: none;
+  border-top: 1px solid $border-color;
+
+  .dark & {
+    border-top-color: $dark-border-color;
+  }
+}
+
+// Form elements
+// -----------------------------------------------------------------------------
+input, textarea, select {
+  font-family: inherit;
+  font-size: $text-base;
+  padding: map-get($spacing, 3);
+  border: 1px solid $border-color;
+  border-radius: $border-radius-md;
+  background-color: $bg-color;
+  color: $text-color;
+  transition: $transition-colors;
+
+  .dark & {
+    border-color: $dark-border-color;
+    background-color: $dark-bg-color;
+    color: $dark-text-color;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-600;
+    box-shadow: 0 0 0 3px rgba($primary-600, 0.1);
+  }
+}
+
+// Utility classes
+// -----------------------------------------------------------------------------
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Animation utilities
+// -----------------------------------------------------------------------------
+.transition-colors {
+  transition: $transition-colors;
+}
+
+.transition-transform {
+  transition: $transition-transform;
+}
+
+.transition-all {
+  transition: $transition-all;
+}
+
+// Dark mode utilities
+// -----------------------------------------------------------------------------
+.dark\:hidden {
+  .dark & {
+    display: none;
+  }
+}
+
+.dark\:block {
+  .dark & {
+    display: block;
+  }
+}
+
+// Print styles
+// -----------------------------------------------------------------------------
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+}
+
+// Focus visible polyfill
+// -----------------------------------------------------------------------------
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+// Selection styles
+// -----------------------------------------------------------------------------
+::selection {
+  background-color: rgba($primary-600, 0.2);
+  color: $primary-900;
+}
+
+::-moz-selection {
+  background-color: rgba($primary-600, 0.2);
+  color: $primary-900;
+}
+
+// Scrollbar styles
+// -----------------------------------------------------------------------------
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-color-secondary;
+  border-radius: $border-radius-full;
+
+  .dark & {
+    background: $dark-bg-color-secondary;
+  }
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-400;
+  border-radius: $border-radius-full;
+
+  .dark & {
+    background: $gray-600;
+  }
+
+  &:hover {
+    background: $gray-500;
+
+    .dark & {
+      background: $gray-500;
+    }
+  }
+}

@@ -1,5 +1,9 @@
-layout: default
+---
+layout: page
 title: FAQ
+description: Common questions and answers about FilterQL implementation
+nav_order: 6
+---
 
 # FAQ
 
