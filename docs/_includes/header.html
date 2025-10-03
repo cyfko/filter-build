@@ -37,10 +37,10 @@
                                 {{ item.title }}
                                 ▼
                             </button>
-                            <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50" style="background: white; border: 1px solid #e5e7eb;">
+                            <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200" style="background: white !important; border: 1px solid #e5e7eb !important; z-index: 9999 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;">
                                 {% for child in item.children %}
                                 <a href="{{ child.url | relative_url }}" 
-                                   class="dropdown-item block px-4 py-2 text-sm transition-colors first:rounded-t-md last:rounded-b-md" style="color: #374151;">
+                                   class="dropdown-item block px-4 py-2 text-sm transition-colors first:rounded-t-md last:rounded-b-md" style="color: #374151 !important; background: transparent !important;" onmouseover="this.style.background='#f9fafb !important'; this.style.color='#2563eb !important';" onmouseout="this.style.background='transparent !important'; this.style.color='#374151 !important';">
                                     {{ child.title }}
                                 </a>
                                 {% endfor %}
@@ -62,7 +62,7 @@
                 <button id="search-btn" 
                         class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         aria-label="Search documentation">
-                    <i data-feather="search" class="w-5 h-5"></i>
+                    🔍
                 </button>
                 {% endif %}
 
@@ -71,8 +71,8 @@
                 <button id="theme-toggle" 
                         class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         aria-label="Toggle dark mode">
-                    <i data-feather="sun" class="w-5 h-5 dark:hidden"></i>
-                    <i data-feather="moon" class="w-5 h-5 hidden dark:block"></i>
+                    <span class="dark:hidden">☀️</span>
+                    <span class="hidden dark:block">🌙</span>
                 </button>
                 {% endif %}
 
@@ -83,7 +83,7 @@
                    rel="noopener"
                    class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                    aria-label="View on GitHub">
-                    <i data-feather="github" class="w-5 h-5"></i>
+                    🐙
                 </a>
                 {% endif %}
             </div>
@@ -123,3 +123,108 @@
 
 <!-- Mobile Menu Spacer -->
 <div class="h-16"></div>
+
+<!-- Inline JavaScript for immediate execution -->
+<script>
+// Execute immediately when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu functionality
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    
+    if (btn && menu) {
+        let isOpen = false;
+        
+        btn.onclick = function() {
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                menu.style.transform = 'translateY(0)';
+                menu.style.background = 'white';
+                menu.style.borderBottom = '1px solid #e5e7eb';
+                btn.querySelector('.mobile-menu-icon').style.display = 'none';
+                btn.querySelector('.mobile-close-icon').style.display = 'block';
+            } else {
+                menu.style.transform = 'translateY(-100%)';
+                btn.querySelector('.mobile-menu-icon').style.display = 'block';
+                btn.querySelector('.mobile-close-icon').style.display = 'none';
+            }
+        };
+
+        // Handle dropdown toggles
+        const toggles = document.querySelectorAll('.mobile-dropdown-toggle');
+        toggles.forEach(function(toggle) {
+            toggle.onclick = function(e) {
+                e.preventDefault();
+                const content = this.parentElement.querySelector('.mobile-dropdown-content');
+                const chevron = this.querySelector('.mobile-chevron');
+                
+                if (content && chevron) {
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        chevron.innerHTML = '▲';
+                    } else {
+                        content.classList.add('hidden');
+                        chevron.innerHTML = '▼';
+                    }
+                }
+            };
+        });
+
+        // Close menu when clicking links
+        menu.onclick = function(e) {
+            if (e.target.tagName === 'A' && !e.target.classList.contains('mobile-dropdown-toggle')) {
+                isOpen = false;
+                menu.style.transform = 'translateY(-100%)';
+                btn.querySelector('.mobile-menu-icon').style.display = 'block';
+                btn.querySelector('.mobile-close-icon').style.display = 'none';
+            }
+        };
+    }
+
+    // Force dropdown backgrounds for desktop
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    dropdowns.forEach(function(dropdown) {
+        dropdown.style.background = 'white !important';
+        dropdown.style.border = '1px solid #e5e7eb !important';
+        dropdown.style.zIndex = '9999 !important';
+        dropdown.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15) !important';
+    });
+
+    // Handle dark mode for dropdowns and mobile menu
+    function updateDarkMode() {
+        const isDark = document.documentElement.classList.contains('dark');
+        
+        // Update dropdowns
+        dropdowns.forEach(function(dropdown) {
+            if (isDark) {
+                dropdown.style.background = '#1f2937 !important';
+                dropdown.style.borderColor = '#4b5563 !important';
+            } else {
+                dropdown.style.background = 'white !important';
+                dropdown.style.borderColor = '#e5e7eb !important';
+            }
+        });
+        
+        // Update mobile menu
+        if (menu) {
+            if (isDark) {
+                menu.style.background = '#1f2937';
+                menu.style.borderColor = '#4b5563';
+                menu.style.color = '#d1d5db';
+            } else {
+                menu.style.background = 'white';
+                menu.style.borderColor = '#e5e7eb';
+                menu.style.color = '#374151';
+            }
+        }
+    }
+
+    // Watch for dark mode changes
+    const observer = new MutationObserver(updateDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    // Initial dark mode check
+    updateDarkMode();
+});
+</script>
