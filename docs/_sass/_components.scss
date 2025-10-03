@@ -447,3 +447,28 @@
   .border-gray-200 { border-color: $dark-border-color; }
   .border-gray-700 { border-color: $dark-border-color; }
 }
+
+// Header Dropdown Menu
+// -----------------------------------------------------------------------------
+.group:hover .absolute {
+  // Ensure dropdown has solid background and proper z-index
+  background-color: $bg-color !important;
+  backdrop-filter: blur(8px);
+  box-shadow: $shadow-lg;
+
+  .dark & {
+    background-color: $dark-bg-color !important;
+  }
+}
+
+// Dropdown menu items
+.group .absolute a {
+  // Ensure dropdown links have proper background on hover
+  &:hover {
+    background-color: $bg-color-secondary !important;
+
+    .dark & {
+      background-color: $dark-bg-color-secondary !important;
+    }
+  }
+}
