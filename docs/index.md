@@ -76,23 +76,10 @@ public List<User> findUsers(String name, String department, Boolean active,
 
 ## The FilterQL Solution: Real Code, Real Simplicity
 
-```java
-// VERIFIED: This is actual FilterQL usage
-@RestController
-public class UserController {
-    @PostMapping("/users/search")
-    public Page<User> search(@RequestBody FilterRequest<UserPropertyRef> request, Pageable pageable) {
-        FilterResolver resolver = FilterResolver.of(springContext);
-        PredicateResolver<User> predicateResolver = resolver.resolve(User.class, request);
-        Specification<User> spec = predicateResolver.toSpecification();
-        return userRepository.findAll(spec, pageable);
-    }
-}
-## How Does FilterQL Work?
-
 ### 🔄 **The Complete Client-Server Flow**
 
 **1. 🌐 Frontend sends intuitive filter requests:**
+
 ```javascript
 // React/Vue/Angular - Natural filtering interface
 const filterRequest = {
