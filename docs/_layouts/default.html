@@ -19,6 +19,58 @@
     <!-- Styles -->
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
     
+    <!-- BRUTAL CSS OVERRIDES -->
+    <style>
+        /* Force dropdown visibility and solid backgrounds */
+        .group:hover .dropdown-menu,
+        .group:hover .absolute {
+            background: white !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 9999 !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+        
+        /* Dark mode dropdowns */
+        .dark .group:hover .dropdown-menu,
+        .dark .group:hover .absolute {
+            background: #1f2937 !important;
+            border-color: #4b5563 !important;
+            color: #d1d5db !important;
+        }
+        
+        /* Mobile menu */
+        #mobile-menu {
+            background: white !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            z-index: 9998 !important;
+        }
+        
+        .dark #mobile-menu {
+            background: #1f2937 !important;
+            border-color: #4b5563 !important;
+        }
+        
+        /* Force mobile menu transformation */
+        #mobile-menu.show {
+            transform: translateY(0) !important;
+        }
+        
+        /* Dropdown item hover */
+        .group .absolute a:hover,
+        .dropdown-item:hover {
+            background: #f9fafb !important;
+            color: #2563eb !important;
+        }
+        
+        .dark .group .absolute a:hover,
+        .dark .dropdown-item:hover {
+            background: #374151 !important;
+            color: #60a5fa !important;
+        }
+    </style>
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
     
@@ -92,7 +144,112 @@
     {% include search-modal.html %}
     {% endif %}
 
-    <!-- Scripts -->
+    <!-- BRUTAL JAVASCRIPT FOR MOBILE MENU -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Mobile menu script loading...');
+        
+        // Get elements
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        
+        console.log('Button:', btn);
+        console.log('Menu:', menu);
+        
+        if (btn && menu) {
+            let isOpen = false;
+            console.log('Mobile menu elements found!');
+            
+            // Add click listener
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Button clicked! Current state:', isOpen);
+                
+                isOpen = !isOpen;
+                
+                if (isOpen) {
+                    console.log('Opening menu...');
+                    menu.style.transform = 'translateY(0)';
+                    menu.style.background = 'white';
+                    menu.style.borderBottom = '1px solid #e5e7eb';
+                    menu.style.zIndex = '9998';
+                    menu.classList.add('show');
+                    
+                    // Toggle icons
+                    const menuIcon = btn.querySelector('.mobile-menu-icon');
+                    const closeIcon = btn.querySelector('.mobile-close-icon');
+                    if (menuIcon) menuIcon.style.display = 'none';
+                    if (closeIcon) closeIcon.style.display = 'block';
+                } else {
+                    console.log('Closing menu...');
+                    menu.style.transform = 'translateY(-100%)';
+                    menu.classList.remove('show');
+                    
+                    // Toggle icons
+                    const menuIcon = btn.querySelector('.mobile-menu-icon');
+                    const closeIcon = btn.querySelector('.mobile-close-icon');
+                    if (menuIcon) menuIcon.style.display = 'block';
+                    if (closeIcon) closeIcon.style.display = 'none';
+                }
+            });
+            
+            // Handle dropdown toggles
+            const toggles = document.querySelectorAll('.mobile-dropdown-toggle');
+            console.log('Found dropdown toggles:', toggles.length);
+            
+            toggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Dropdown toggle clicked');
+                    
+                    const content = this.parentElement.querySelector('.mobile-dropdown-content');
+                    const chevron = this.querySelector('.mobile-chevron');
+                    
+                    if (content && chevron) {
+                        if (content.classList.contains('hidden')) {
+                            content.classList.remove('hidden');
+                            chevron.innerHTML = '▲';
+                        } else {
+                            content.classList.add('hidden');
+                            chevron.innerHTML = '▼';
+                        }
+                    }
+                });
+            });
+            
+            // Close menu when clicking links
+            menu.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A' && !e.target.classList.contains('mobile-dropdown-toggle')) {
+                    console.log('Link clicked, closing menu');
+                    isOpen = false;
+                    menu.style.transform = 'translateY(-100%)';
+                    menu.classList.remove('show');
+                    
+                    const menuIcon = btn.querySelector('.mobile-menu-icon');
+                    const closeIcon = btn.querySelector('.mobile-close-icon');
+                    if (menuIcon) menuIcon.style.display = 'block';
+                    if (closeIcon) closeIcon.style.display = 'none';
+                }
+            });
+            
+        } else {
+            console.error('Mobile menu elements not found!');
+        }
+        
+        // Force dropdown backgrounds
+        const dropdowns = document.querySelectorAll('.dropdown-menu, .group .absolute');
+        console.log('Found dropdowns:', dropdowns.length);
+        
+        dropdowns.forEach(function(dropdown) {
+            dropdown.style.background = 'white !important';
+            dropdown.style.border = '1px solid #e5e7eb !important';
+            dropdown.style.zIndex = '9999 !important';
+            dropdown.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15) !important';
+        });
+    });
+    </script>
+    
+    <!-- Original Scripts -->
     <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
     
     <!-- Google Analytics -->

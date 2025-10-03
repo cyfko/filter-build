@@ -91,20 +91,23 @@
     </div>
 
     <!-- Mobile Navigation Menu -->
-    <div id="mobile-menu" class="lg:hidden fixed top-16 left-0 right-0 z-30 transform -translate-y-full transition-transform duration-300 ease-in-out" style="background: white; border-bottom: 1px solid #e5e7eb;">
+    <div id="mobile-menu" class="lg:hidden fixed top-16 left-0 right-0 transform -translate-y-full transition-transform duration-300 ease-in-out" 
+         style="background: white !important; border-bottom: 1px solid #e5e7eb !important; z-index: 9998 !important;">
         <div class="px-4 py-2 space-y-1 max-h-screen overflow-y-auto">
             {% for item in site.navigation.main %}
                 {% if item.children %}
                     <!-- Mobile Dropdown -->
                     <div class="mobile-dropdown">
-                        <button class="mobile-dropdown-toggle w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-gray-50 rounded-md transition-colors" style="color: #374151;">
+                        <button class="mobile-dropdown-toggle w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-gray-50 rounded-md transition-colors" 
+                                style="color: #374151 !important; background: transparent !important;">
                             {{ item.title }}
                             <span class="mobile-chevron">▼</span>
                         </button>
                         <div class="mobile-dropdown-content hidden ml-4 mt-1 space-y-1">
                             {% for child in item.children %}
                             <a href="{{ child.url | relative_url }}" 
-                               class="block px-3 py-2 text-sm hover:bg-gray-50 rounded-md transition-colors" style="color: #6b7280;">
+                               class="block px-3 py-2 text-sm hover:bg-gray-50 rounded-md transition-colors" 
+                               style="color: #6b7280 !important; background: transparent !important;">
                                 {{ child.title }}
                             </a>
                             {% endfor %}
@@ -112,7 +115,8 @@
                     </div>
                 {% else %}
                     <a href="{{ item.url | relative_url }}" 
-                       class="block px-3 py-2 text-sm font-medium hover:bg-gray-50 rounded-md transition-colors {% if page.url == item.url %}bg-blue-50{% endif %}" style="color: #374151;">
+                       class="block px-3 py-2 text-sm font-medium hover:bg-gray-50 rounded-md transition-colors {% if page.url == item.url %}bg-blue-50{% endif %}" 
+                       style="color: #374151 !important; background: transparent !important;">
                         {{ item.title }}
                     </a>
                 {% endif %}
