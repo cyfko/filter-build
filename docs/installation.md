@@ -655,7 +655,7 @@ echo "✅ Check completed"
 1. **[Configuration Initiale](./implementations/core/)** : Setup PropertyReference et Context
 2. **[Quick Start Guide](./index.md#démarrage-rapide)** : Premier exemple fonctionnel
 3. **[Spring Integration](./implementations/spring-adapter/)** : Configuration complète Spring
-4. **[Examples](./examples/)** : Cas d'usage réels et patterns
+4. **[Examples](./examples.md)** : Cas d'usage réels et patterns
 
 ### Ressources Utiles
 
@@ -666,4 +666,4 @@ echo "✅ Check completed"
 
 ---
 
-*Installation réussie ? Découvrez maintenant la [documentation complète](./index.md) et les [exemples pratiques](./examples/) !*
+*Installation réussie ? Découvrez maintenant la [documentation complète](./index.md) et les [exemples pratiques](./examples.md) !*

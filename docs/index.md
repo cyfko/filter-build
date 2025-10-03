@@ -205,10 +205,7 @@ Page<User> results = userRepository.findAll(specification, pageable);
 
 ### Ressources
 
-- **[Exemples Complets](./examples/)** : Cas d'usage réels et patterns avancés
-- **[FAQ](./faq.md)** : Questions fréquemment posées
-- **[Troubleshooting](./troubleshooting.md)** : Dépannage et solutions communes
-- **[API Reference](./api/)** : Documentation complète des APIs
+- **[Exemples Complets](./examples.md)** : Cas d'usage réels et patterns avancés
 
 ---
 
@@ -314,7 +311,7 @@ Nous accueillons les contributions ! Consultez notre [Guide de Contribution](./c
 ### Support
 
 - **[GitHub Issues](https://github.com/cyfko/filter-build/issues)** : Rapports de bugs et demandes de fonctionnalités
-- **[Documentation](./troubleshooting.md)** : Guides de dépannage
+- **[Guide de Contribution](./contributing.md)** : Documentation et guides d'aide
 - **[Discussions](https://github.com/cyfko/filter-build/discussions)** : Questions et bonnes pratiques
 
 ---

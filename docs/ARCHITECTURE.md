@@ -608,10 +608,9 @@ public class UserController {
 - **[Référence API](../api-reference.md)** - Référence Javadoc complète
 
 ### Exemples & Guides
-- **[Exemples Usage de Base](../examples/basic-usage.md)** - Patterns de filtrage courants
-- **[Patterns Avancés](../examples/advanced-patterns.md)** - Scénarios complexes et cas limites
-- **[Optimisation Performance](../guides/performance.md)** - Stratégies d'optimisation
-- **[Guide Migration](../guides/migration.md)** - Mise à niveau entre versions
+- **[Exemples Complets](./examples.md)** - Patterns de filtrage de base et avancés
+- **[Guide de Contribution](./contributing.md)** - Optimisations et stratégies de performance
+- **[Guide Migration](./changelog.md)** - Mise à niveau entre versions
 
 ---
 

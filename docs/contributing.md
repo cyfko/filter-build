@@ -695,7 +695,7 @@ Merci de votre intérêt pour contribuer à FilterQL ! Votre aide est essentiell
 - **[Architecture](./architecture.md)** : Compréhension approfondie du design
 - **[Documentation Core](./implementations/core/)** : APIs et concepts principaux
 - **[Documentation Spring](./implementations/spring-adapter/)** : Intégration Spring Data JPA
-- **[Examples](./examples/)** : Cas d'usage et patterns avancés
+- **[Examples](./examples.md)** : Cas d'usage et patterns avancés
 
 ---
 

@@ -1369,9 +1369,8 @@ public class FilterQLMetricsService {
 ### Après Maîtrise des Exemples
 
 1. **[Architecture Deep Dive](./architecture.md)** : Compréhension interne FilterQL
-2. **[Contributing Guide](./contributing.md)** : Contribuer au projet
-3. **[Performance Tuning](./performance.md)** : Optimisations avancées
-4. **[Migration Guide](./changelog.md)** : Mise à jour versions
+2. **[Contributing Guide](./contributing.md)** : Contribuer au projet et optimisations
+3. **[Migration Guide](./changelog.md)** : Mise à jour versions
 
 ### Ressources Complémentaires
 

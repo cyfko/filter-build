@@ -513,7 +513,7 @@ cd core/java
 
 - **[Spring Adapter](../spring-adapter/)** : Intégration Spring Data JPA
 - **[Architecture](../../architecture.md)** : Architecture détaillée du système
-- **[Exemples](../../examples/)** : Cas d'usage complets
+- **[Exemples](../../examples.md)** : Cas d'usage complets
 
 ### Fichiers Sources Principaux
 
